@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.barangay.doc_request_system.model.DocumentRequest;
 import com.barangay.doc_request_system.model.User;
@@ -202,13 +203,13 @@ public class MainController {
         return "print_template";
     }
 
-    // Show Registration Page
+    // 10. Show Registration Page
     @GetMapping("/register")
     public String registerPage() {
         return "register";
     }
 
-    // Process Registration Form
+    // 11. Process Registration Form
     @PostMapping("/register")
     public String registerUser(@RequestParam String fullName,
                                @RequestParam String username,
@@ -216,13 +217,11 @@ public class MainController {
                                @RequestParam(required = false) String telegramChatId,
                                Model model) {
 
-        // Check if username already exists
         if (userRepository.findByUsername(username).isPresent()) {
             model.addAttribute("error", "Username already taken! Please choose another.");
             return "register";
         }
 
-        // Create new user (Default role: STUDENT)
         User newUser = new User(fullName, username, password, "STUDENT");
         if (telegramChatId != null && !telegramChatId.trim().isEmpty()) {
             newUser.setTelegramChatId(telegramChatId.trim());
@@ -230,7 +229,6 @@ public class MainController {
 
         userRepository.save(newUser);
 
-        // Send a test Telegram welcome message if Chat ID was provided
         if (newUser.getTelegramChatId() != null && !newUser.getTelegramChatId().isEmpty()) {
             String message = "🎉 Welcome to Barangay Portal, " + fullName + "!\n\n" +
                              "Your account has been successfully created. You will receive updates about your document requests here.";
@@ -239,5 +237,108 @@ public class MainController {
 
         model.addAttribute("success", "Account created successfully! Please log in.");
         return "index";
+    }
+
+    // ==========================================
+    // 12. ACCOUNT SETTINGS ENDPOINTS
+    // ==========================================
+
+    @GetMapping("/settings")
+    public String viewSettings(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "redirect:/";
+        }
+
+        // Refresh user data from database to ensure fresh info
+        User freshUser = userRepository.findById(user.getId()).orElse(user);
+        model.addAttribute("user", freshUser);
+        
+        return "settings";
+    }
+
+    @PostMapping("/settings/update-profile")
+    public String updateProfile(@RequestParam String fullName,
+                                @RequestParam String username,
+                                @RequestParam(required = false) String telegramChatId,
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) return "redirect:/";
+
+        // Check if username is already taken by another user
+        java.util.Optional<User> existingUser = userRepository.findByUsername(username);
+        if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Username is already taken by another user!");
+            return "redirect:/settings";
+        }
+
+        user.setFullName(fullName);
+        user.setUsername(username);
+        user.setTelegramChatId(telegramChatId != null ? telegramChatId.trim() : "");
+
+        userRepository.save(user);
+        session.setAttribute("loggedInUser", user); // Update session data
+
+        redirectAttributes.addFlashAttribute("successMessage", "Profile information updated successfully!");
+        return "redirect:/settings";
+    }
+
+    @PostMapping("/settings/change-password")
+    public String changePassword(@RequestParam String currentPassword,
+                                 @RequestParam String newPassword,
+                                 @RequestParam String confirmPassword,
+                                 HttpSession session,
+                                 RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) return "redirect:/";
+
+        if (!user.getPassword().equals(currentPassword)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Incorrect current password entered!");
+            return "redirect:/settings";
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "New passwords do not match!");
+            return "redirect:/settings";
+        }
+
+        user.setPassword(newPassword);
+        userRepository.save(user);
+        session.setAttribute("loggedInUser", user);
+
+        redirectAttributes.addFlashAttribute("successMessage", "Password changed successfully!");
+        return "redirect:/settings";
+    }
+
+    @PostMapping("/settings/delete-account")
+    public String deleteAccount(@RequestParam String confirmPassword,
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) return "redirect:/";
+
+        if (!user.getPassword().equals(confirmPassword)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Incorrect password confirmation. Account deletion cancelled.");
+            return "redirect:/settings";
+        }
+
+        try {
+            // 1. Delete all associated requests first to avoid foreign key errors
+            requestRepository.deleteByUser(user);
+
+            // 2. Delete the user
+            userRepository.delete(user);
+
+            // 3. Clear session
+            session.invalidate();
+
+            redirectAttributes.addFlashAttribute("success", "Your account has been permanently deleted.");
+            return "redirect:/";
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to delete account due to a server error.");
+            return "redirect:/settings";
+        }
     }
 }

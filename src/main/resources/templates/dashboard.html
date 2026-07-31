@@ -58,10 +58,14 @@
             <a class="navbar-brand d-flex align-items-center gap-2" href="#">
                 <i class="bi bi-building-fill"></i> Barangay Request Portal
             </a>
-            <div class="d-flex align-items-center gap-3">
-                <span class="navbar-text text-white d-none d-sm-inline">
+            <div class="d-flex align-items-center gap-2">
+                <span class="navbar-text text-white d-none d-sm-inline me-2">
                     <i class="bi bi-person-circle"></i> <strong th:text="'Welcome, ' + ${user.fullName}">Welcome</strong>
                 </span>
+                <!-- Settings Button Link -->
+                <a th:href="@{/settings}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-gear-fill"></i> Settings
+                </a>
                 <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
@@ -78,8 +82,8 @@
                 <h6 class="alert-heading mb-0 fw-bold">Get Instant Request Updates on Telegram!</h6>
             </div>
             <p class="mb-1 small">
-                To receive automated updates when your document is <b>Approved</b> or <b>Rejected</b>, open Telegram, search for 
-                <span class="badge bg-primary fs-6">@BrgyDocRequestBot</span>, and tap <b>START</b>.
+                To receive automated updates when your document is <b>Approved</b> or <b>Rejected</b>, open 
+                <a href="https://t.me/BrgyDocRequestBot" target="_blank" class="badge bg-primary fs-6 text-decoration-none">@BrgyDocRequestBot <i class="bi bi-box-arrow-up-right"></i></a>, and tap <b>START</b>.
             </p>
             <small class="text-muted">
                 <i class="bi bi-info-circle"></i> <i>Note: Telegram will block bot notifications unless you start the bot first.</i>
