@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barangay Portal - Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -22,7 +24,7 @@
                 <i class="bi bi-shield-lock-fill text-warning"></i> Barangay Admin Console
             </a>
             <div class="d-flex align-items-center gap-3">
-                <span class="navbar-text text-white">
+                <span class="navbar-text text-white d-none d-sm-inline">
                     <i class="bi bi-person-badge"></i> <strong th:text="${adminUser.fullName}">Administrator</strong>
                 </span>
                 <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">
@@ -33,7 +35,7 @@
     </nav>
 
     <div class="container pb-5">
-        <div class="card shadow-sm p-4">
+        <div class="card shadow-sm p-3 p-md-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="card-title text-dark mb-0">
                     <i class="bi bi-card-checklist text-primary"></i> Document Requests Management
@@ -50,7 +52,7 @@
                             <th>Purpose</th>
                             <th>Status</th>
                             <th>Remarks</th>
-                            <th class="text-center" style="width: 250px;">Actions</th>
+                            <th class="text-center" style="min-width: 200px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,13 +69,9 @@
                             <td class="small text-muted" th:text="${req.remarks != null ? req.remarks : '—'}">—</td>
                             <td class="text-center">
                                 <div th:if="${req.status == 'PENDING'}" class="d-flex gap-1 justify-content-center">
-                                    
-                                    <!-- Approve Button & Modal Trigger -->
                                     <button class="btn btn-sm btn-success" data-bs-toggle="modal" th:data-bs-target="'#approveModal' + ${req.id}">
                                         <i class="bi bi-check-circle"></i> Approve
                                     </button>
-
-                                    <!-- Reject Button & Modal Trigger -->
                                     <button class="btn btn-sm btn-danger" data-bs-toggle="modal" th:data-bs-target="'#rejectModal' + ${req.id}">
                                         <i class="bi bi-x-circle"></i> Reject
                                     </button>
@@ -83,7 +81,7 @@
 
                             <!-- Approve Modal -->
                             <div class="modal fade" th:id="'approveModal' + ${req.id}" tabindex="-1">
-                                <div class="modal-dialog">
+                                <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
                                         <form th:action="@{/admin/approve/{id}(id=${req.id})}" method="post">
                                             <div class="modal-header bg-success text-white">
@@ -108,7 +106,7 @@
 
                             <!-- Reject Modal -->
                             <div class="modal fade" th:id="'rejectModal' + ${req.id}" tabindex="-1">
-                                <div class="modal-dialog">
+                                <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
                                         <form th:action="@{/admin/reject/{id}(id=${req.id})}" method="post">
                                             <div class="modal-header bg-danger text-white">
