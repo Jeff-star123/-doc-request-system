@@ -1,5 +1,11 @@
 package com.barangay.doc_request_system.controller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -7,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.barangay.doc_request_system.model.DocumentRequest;
 import com.barangay.doc_request_system.model.User;
@@ -26,7 +33,7 @@ public class MainController {
     private DocumentRequestRepository requestRepository;
 
     @Autowired
-    private TelegramService telegramService; // 1. INJECT TELEGRAM SERVICE
+    private TelegramService telegramService;
 
     // 1. Home / Login Page
     @GetMapping("/")
@@ -66,15 +73,41 @@ public class MainController {
         return "dashboard";
     }
 
-    // 4. Submit Request Handler (NOTIFIES USER ON TELEGRAM)
+    // 4. Submit Request Handler (With ID Upload, Face Liveness Flag, & Telegram Notification)
     @PostMapping("/request/submit")
-    public String submitRequest(@RequestParam String documentType, 
-                                @RequestParam String purpose, 
+    public String submitRequest(@RequestParam("documentType") String documentType, 
+                                @RequestParam("purpose") String purpose, 
+                                @RequestParam("idCardFile") MultipartFile idCardFile,
+                                @RequestParam(value = "faceVerified", defaultValue = "false") boolean faceVerified,
                                 HttpSession session) {
+        
         User user = (User) session.getAttribute("loggedInUser");
         if (user == null) return "redirect:/";
 
         DocumentRequest docRequest = new DocumentRequest(user, documentType, purpose);
+        docRequest.setFaceVerified(faceVerified);
+
+        // Save ID Card Image File locally if provided
+        if (idCardFile != null && !idCardFile.isEmpty()) {
+            try {
+                String fileName = System.currentTimeMillis() + "_" + idCardFile.getOriginalFilename();
+                String uploadDir = "uploads/";
+                Path uploadPath = Paths.get(uploadDir);
+
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(idCardFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                
+                // Save path starting with /uploads/ so it binds correctly to WebConfig
+                docRequest.setIdCardImagePath("/uploads/" + fileName);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         DocumentRequest savedRequest = requestRepository.save(docRequest);
 
         // Send Telegram notification on submission
@@ -82,6 +115,7 @@ public class MainController {
             String message = "📄 Barangay Document Request Submitted!\n\n" +
                              "Document: " + savedRequest.getDocumentType() + "\n" +
                              "Purpose: " + savedRequest.getPurpose() + "\n" +
+                             "Face Verification: " + (savedRequest.isFaceVerified() ? "PASSED ✅" : "NOT PASSED ❌") + "\n" +
                              "Status: PENDING\n\n" +
                              "We will notify you once your document status changes!";
             telegramService.sendNotification(user.getTelegramChatId(), message);

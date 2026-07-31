@@ -46,6 +46,12 @@ public class DocumentRequest {
     @Column(columnDefinition = "TEXT")
     private String remarks;
 
+    @Column(name = "id_card_image_path")
+    private String idCardImagePath;
+
+    @Column(name = "face_verified")
+    private Boolean faceVerified = false;
+
     @Column(name = "requested_at", insertable = false, updatable = false)
     private LocalDateTime requestedAt;
 
@@ -77,6 +83,20 @@ public class DocumentRequest {
 
     public String getRemarks() { return remarks; }
     public void setRemarks(String remarks) { this.remarks = remarks; }
+
+    public String getIdCardImagePath() { return idCardImagePath; }
+    public void setIdCardImagePath(String idCardImagePath) { this.idCardImagePath = idCardImagePath; }
+
+    public Boolean getFaceVerified() { 
+        return faceVerified != null ? faceVerified : false; 
+    }
+    public void setFaceVerified(Boolean faceVerified) { 
+        this.faceVerified = faceVerified != null ? faceVerified : false; 
+    }
+
+    public boolean isFaceVerified() { 
+        return Boolean.TRUE.equals(this.faceVerified); 
+    }
 
     public LocalDateTime getRequestedAt() { return requestedAt; }
     public void setRequestedAt(LocalDateTime requestedAt) { this.requestedAt = requestedAt; }

@@ -31,6 +31,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/doc_request_db?allowPublicKeyRetrieval=true&useSSL=false
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+    volumes:
+      - ./uploads:/app/uploads
 
 volumes:
   mysql_data:

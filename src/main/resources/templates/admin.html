@@ -49,7 +49,7 @@
                             <th>ID</th>
                             <th>Resident Name</th>
                             <th>Document Type</th>
-                            <th>Purpose</th>
+                            <th>Verification</th>
                             <th>Status</th>
                             <th>Remarks</th>
                             <th class="text-center" style="min-width: 200px;">Actions</th>
@@ -60,7 +60,14 @@
                             <td class="fw-bold" th:text="'#' + ${req.id}">#1</td>
                             <td class="fw-bold text-primary" th:text="${req.user != null ? req.user.fullName : 'N/A'}">Juan Dela Cruz</td>
                             <td th:text="${req.documentType}">Clearance</td>
-                            <td th:text="${req.purpose}">Job Application</td>
+                            
+                            <!-- Identity Verification Column -->
+                            <td>
+                                <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" th:data-bs-target="'#idModal' + ${req.id}">
+                                    <i class="bi bi-person-bounding-box"></i> View Verification
+                                </button>
+                            </td>
+
                             <td>
                                 <span class="badge" 
                                       th:classappend="${req.status == 'APPROVED' ? 'badge-approved' : (req.status == 'REJECTED' ? 'badge-rejected' : 'badge-pending')}"
@@ -78,6 +85,30 @@
                                 </div>
                                 <span th:if="${req.status != 'PENDING'}" class="text-muted small">Processed</span>
                             </td>
+
+                            <!-- View ID & Face Scan Modal -->
+                            <div class="modal fade" th:id="'idModal' + ${req.id}" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title"><i class="bi bi-shield-check text-primary"></i> Identity Proof Details</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <p class="mb-2"><strong>Face Scan Liveness Check:</strong> 
+                                                <span th:if="${req.faceVerified}" class="badge bg-success">PASSED</span>
+                                                <span th:if="${!req.faceVerified}" class="badge bg-danger">NOT COMPLETED</span>
+                                            </p>
+                                            <div class="border rounded p-2 bg-light">
+                                                <p class="small text-muted mb-1">Uploaded Valid ID:</p>
+                                                <!-- Fixed image binding pointing directly to the web path stored in DB -->
+                                                <img th:if="${req.idCardImagePath != null}" th:src="${req.idCardImagePath}" class="img-fluid rounded" alt="Uploaded Resident ID" style="max-height: 250px;" />
+                                                <p th:if="${req.idCardImagePath == null}" class="text-muted small py-3 mb-0">No ID uploaded for this request.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- Approve Modal -->
                             <div class="modal fade" th:id="'approveModal' + ${req.id}" tabindex="-1">

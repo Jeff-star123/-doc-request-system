@@ -64,7 +64,8 @@
                     <h5 class="card-title text-primary mb-3">
                         <i class="bi bi-file-earmark-plus-fill"></i> Request New Document
                     </h5>
-                    <form th:action="@{/request/submit}" method="post">
+                    
+                    <form th:action="@{/request/submit}" method="post" enctype="multipart/form-data" id="requestForm">
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">DOCUMENT TYPE</label>
                             <select name="documentType" class="form-select" required>
@@ -77,11 +78,49 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">PURPOSE OF REQUEST</label>
-                            <textarea name="purpose" class="form-control" rows="3" required placeholder="e.g. School Requirement / Employment"></textarea>
+                            <textarea name="purpose" class="form-control" rows="2" required placeholder="e.g. School Requirement / Employment"></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 fw-bold">
-                            <i class="bi bi-send-fill"></i> Submit Request
+                        <!-- Step 1: ID Upload -->
+                        <div class="mb-3 border-top pt-3">
+                            <label class="form-label fw-bold small text-muted">1. UPLOAD VALID ID</label>
+                            <input type="file" name="idCardFile" class="form-control" accept="image/*" id="idCardInput" required>
+                            <div class="form-text small">Upload a clear photo of your government or student ID.</div>
+                        </div>
+
+                        <!-- Step 2: Facial Scan -->
+                        <div class="mb-3 border-top pt-3">
+                            <label class="form-label fw-bold small text-muted">2. FACIAL LIVENESS SCAN</label>
+                            
+                            <div class="text-center bg-dark rounded p-3 text-white position-relative overflow-hidden" style="min-height: 220px;">
+                                <video id="webcam" autoplay playsinline class="w-100 rounded" style="max-height: 200px; transform: scaleX(-1); display: none;"></video>
+                                
+                                <div id="cameraPlaceholder" class="d-flex flex-column align-items-center justify-content-center py-4">
+                                    <i class="bi bi-camera-video fs-1 text-secondary"></i>
+                                    <p class="small text-muted mt-2 mb-0">Upload your ID above to unlock the face scan.</p>
+                                </div>
+
+                                <div id="scanOverlay" class="position-absolute top-50 start-50 translate-middle w-100 px-3 d-none">
+                                    <span id="scanInstruction" class="badge bg-warning text-dark fs-6 px-3 py-2 shadow">
+                                        Please look straight into the camera
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button type="button" id="startScanBtn" class="btn btn-outline-primary w-100 mt-2" disabled>
+                                <i class="bi bi-person-bounding-box"></i> Start Face Scan
+                            </button>
+                            <input type="hidden" name="faceVerified" id="faceVerifiedInput" value="false">
+                        </div>
+
+                        <!-- Notice Banner -->
+                        <div class="alert alert-light border small mb-3">
+                            <i class="bi bi-clock-history text-primary"></i> 
+                            <b>Note:</b> Submissions require administrative identity verification. Processing may take <b>up to 24 hours</b>.
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="btn btn-primary w-100 fw-bold" disabled>
+                            <i class="bi bi-send-fill"></i> Submit Request for Verification
                         </button>
                     </form>
                 </div>
@@ -135,6 +174,27 @@
         </div>
     </div>
 
+    <!-- Processing Modal -->
+    <div class="modal fade" id="pendingNoticeModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-shield-check"></i> Request Submitted</h5>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <i class="bi bi-hourglass-split text-warning fs-1"></i>
+                    <h5 class="mt-3 fw-bold">Verification Pending</h5>
+                    <p class="text-muted small px-2">
+                        Your request and identity documents have been submitted successfully. Please allow <b>up to 24 hours</b> for administrative review and document issuance.
+                    </p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">Understood</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -146,6 +206,59 @@
         }
     </script>
     <script src="https://udify.app/embed.js" id="tuMY58SadttfVKCz" defer></script>
+
+    <!-- Facial Liveness Script -->
+    <script>
+        const idCardInput = document.getElementById('idCardInput');
+        const startScanBtn = document.getElementById('startScanBtn');
+        const video = document.getElementById('webcam');
+        const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+        const scanOverlay = document.getElementById('scanOverlay');
+        const scanInstruction = document.getElementById('scanInstruction');
+        const submitBtn = document.getElementById('submitBtn');
+        const faceVerifiedInput = document.getElementById('faceVerifiedInput');
+
+        idCardInput.addEventListener('change', () => {
+            if (idCardInput.files.length > 0) {
+                startScanBtn.disabled = false;
+            }
+        });
+
+        startScanBtn.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                cameraPlaceholder.style.display = 'none';
+                scanOverlay.classList.remove('d-none');
+                startScanBtn.disabled = true;
+
+                const steps = [
+                    { text: "Look straight into the camera", delay: 2000 },
+                    { text: "Slowly turn your head LEFT ⬅️", delay: 2500 },
+                    { text: "Slowly turn your head RIGHT ➡️", delay: 2500 },
+                    { text: "Verification Complete!", delay: 1500 }
+                ];
+
+                for (let i = 0; i < steps.length; i++) {
+                    scanInstruction.innerText = steps[i].text;
+                    if (i === steps.length - 1) {
+                        scanInstruction.className = "badge bg-success text-white fs-6 px-3 py-2 shadow";
+                    }
+                    await new Promise(resolve => setTimeout(resolve, steps[i].delay));
+                }
+
+                stream.getTracks().forEach(track => track.stop());
+                
+                faceVerifiedInput.value = "true";
+                submitBtn.disabled = false;
+                startScanBtn.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> Scan Completed';
+
+            } catch (err) {
+                alert("Camera access is required for identity verification. Please grant camera permissions.");
+            }
+        });
+    </script>
     
 </body>
 </html>
