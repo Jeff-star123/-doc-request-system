@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Barangay Portal - Student Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
+        .card { border: none; border-radius: 10px; }
+        .table-hover tbody tr:hover { background-color: #f1f3f5; }
+        .badge-pending { background-color: #ffc107; color: #000; }
+        .badge-approved { background-color: #198754; }
+        .badge-rejected { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <i class="bi bi-building-fill"></i> Barangay Request Portal
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <span class="navbar-text text-white">
+                    <i class="bi bi-person-circle"></i> <strong th:text="'Welcome, ' + ${user.fullName}">Welcome</strong>
+                </span>
+                <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+
+        <!-- Telegram Bot Announcement Banner -->
+        <div class="alert alert-info alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-telegram fs-4 text-primary"></i>
+                <h6 class="alert-heading mb-0 fw-bold">Get Instant Request Updates on Telegram!</h6>
+            </div>
+            <p class="mb-1 small">
+                To receive automated updates when your document is <b>Approved</b> or <b>Rejected</b>, open Telegram, search for 
+                <span class="badge bg-primary fs-6">@BrgyDocRequestBot</span>, and tap <b>START</b>.
+            </p>
+            <small class="text-muted">
+                <i class="bi bi-info-circle"></i> <i>Note: Telegram will block bot notifications unless you start the bot first.</i>
+            </small>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row g-4">
+            
+            <!-- Form Column -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm p-4">
+                    <h5 class="card-title text-primary mb-3">
+                        <i class="bi bi-file-earmark-plus-fill"></i> Request New Document
+                    </h5>
+                    <form th:action="@{/request/submit}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">DOCUMENT TYPE</label>
+                            <select name="documentType" class="form-select" required>
+                                <option value="" disabled selected>Select Document...</option>
+                                <option value="Barangay Clearance">Barangay Clearance</option>
+                                <option value="Certificate of Residency">Certificate of Residency</option>
+                                <option value="Certificate of Indigency">Certificate of Indigency</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">PURPOSE OF REQUEST</label>
+                            <textarea name="purpose" class="form-control" rows="3" required placeholder="e.g. School Requirement / Employment"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 fw-bold">
+                            <i class="bi bi-send-fill"></i> Submit Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table Column -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm p-4">
+                    <h5 class="card-title text-primary mb-3">
+                        <i class="bi bi-clock-history"></i> My Request History
+                    </h5>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mt-2">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Purpose</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="req : ${requests}">
+                                    <td class="fw-bold" th:text="${req.documentType}">Clearance</td>
+                                    <td th:text="${req.purpose}">Purpose</td>
+                                    <td>
+                                        <span th:if="${req.status == 'PENDING'}" class="badge badge-pending">PENDING</span>
+                                        <span th:if="${req.status == 'APPROVED'}" class="badge badge-approved">APPROVED</span>
+                                        <span th:if="${req.status == 'REJECTED'}" class="badge badge-rejected">REJECTED</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a th:if="${req.status == 'APPROVED'}" 
+                                           th:href="@{'/request/print/' + ${req.id}}" 
+                                           class="btn btn-sm btn-outline-success" 
+                                           target="_blank">
+                                            <i class="bi bi-printer-fill"></i> Print Form
+                                        </a>
+                                        <span th:if="${req.status != 'APPROVED'}" class="text-muted small">N/A</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(requests)}">
+                                    <td colspan="4" class="text-center text-muted py-4">No request history found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS (Enables the banner dismiss 'X' button) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Dify Floating AI Assistant -->
+    <script>
+        window.difyChatbotConfig = {
+            token: 'tuMY58SadttfVKCz',
+            baseUrl: 'https://udify.app'
+        }
+    </script>
+    <script src="https://udify.app/embed.js" id="tuMY58SadttfVKCz" defer></script>
+    
+</body>
+</html>

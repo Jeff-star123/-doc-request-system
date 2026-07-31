@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Barangay Portal - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
+        .card { border: none; border-radius: 10px; }
+        .badge-pending { background-color: #ffc107; color: #000; }
+        .badge-approved { background-color: #198754; }
+        .badge-rejected { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <i class="bi bi-shield-lock-fill text-warning"></i> Barangay Admin Console
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <span class="navbar-text text-white">
+                    <i class="bi bi-person-badge"></i> <strong th:text="${adminUser.fullName}">Administrator</strong>
+                </span>
+                <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <div class="card shadow-sm p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title text-dark mb-0">
+                    <i class="bi bi-card-checklist text-primary"></i> Document Requests Management
+                </h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Resident Name</th>
+                            <th>Document Type</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                            <th class="text-center" style="width: 250px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="req : ${requests}">
+                            <td class="fw-bold" th:text="'#' + ${req.id}">#1</td>
+                            <td class="fw-bold text-primary" th:text="${req.user != null ? req.user.fullName : 'N/A'}">Juan Dela Cruz</td>
+                            <td th:text="${req.documentType}">Clearance</td>
+                            <td th:text="${req.purpose}">Job Application</td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${req.status == 'APPROVED' ? 'badge-approved' : (req.status == 'REJECTED' ? 'badge-rejected' : 'badge-pending')}"
+                                      th:text="${req.status}">PENDING</span>
+                            </td>
+                            <td class="small text-muted" th:text="${req.remarks != null ? req.remarks : '—'}">—</td>
+                            <td class="text-center">
+                                <div th:if="${req.status == 'PENDING'}" class="d-flex gap-1 justify-content-center">
+                                    
+                                    <!-- Approve Button & Modal Trigger -->
+                                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" th:data-bs-target="'#approveModal' + ${req.id}">
+                                        <i class="bi bi-check-circle"></i> Approve
+                                    </button>
+
+                                    <!-- Reject Button & Modal Trigger -->
+                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" th:data-bs-target="'#rejectModal' + ${req.id}">
+                                        <i class="bi bi-x-circle"></i> Reject
+                                    </button>
+                                </div>
+                                <span th:if="${req.status != 'PENDING'}" class="text-muted small">Processed</span>
+                            </td>
+
+                            <!-- Approve Modal -->
+                            <div class="modal fade" th:id="'approveModal' + ${req.id}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form th:action="@{/admin/approve/{id}(id=${req.id})}" method="post">
+                                            <div class="modal-header bg-success text-white">
+                                                <h5 class="modal-title">Approve Request</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body text-start">
+                                                <p>Are you sure you want to approve this request for <strong th:text="${req.documentType}"></strong>?</p>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Remarks (Optional)</label>
+                                                    <input type="text" name="remarks" class="form-control" placeholder="e.g. Approved by Barangay Captain" value="Approved by Admin" />
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-success">Confirm Approval</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reject Modal -->
+                            <div class="modal fade" th:id="'rejectModal' + ${req.id}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form th:action="@{/admin/reject/{id}(id=${req.id})}" method="post">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title">Reject Request</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body text-start">
+                                                <p>Are you sure you want to reject this request for <strong th:text="${req.documentType}"></strong>?</p>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Reason for Rejection</label>
+                                                    <input type="text" name="remarks" class="form-control" placeholder="e.g. Incomplete requirements" required />
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(requests)}">
+                            <td colspan="7" class="text-center text-muted py-4">No document requests found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
