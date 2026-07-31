@@ -22,6 +22,32 @@
         .badge-pending { background-color: #ffc107; color: #000; }
         .badge-approved { background-color: #198754; }
         .badge-rejected { background-color: #dc3545; }
+
+        /* Fullscreen Immersive Biometric Modal Styling */
+        #immersiveScanModal .modal-content {
+            background-color: #0b0f19;
+            color: #fff;
+            border: none;
+            border-radius: 0;
+        }
+        /* Organic Oval Guide Frame overlay */
+        .oval-guide-container {
+            position: relative;
+            width: 280px;
+            height: 380px;
+            margin: 0 auto;
+            border-radius: 50% / 60%;
+            overflow: hidden;
+            box-shadow: 0 0 0 9999px rgba(11, 15, 25, 0.85); /* Darkens everything outside the oval */
+            border: 4px solid #198754;
+            transition: border-color 0.3s ease;
+        }
+        @media (min-width: 768px) {
+            .oval-guide-container {
+                width: 340px;
+                height: 460px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -93,32 +119,17 @@
                             <div class="form-text small">Upload a clear photo of your government or student ID.</div>
                         </div>
 
-                        <!-- Step 2: Facial Scan -->
+                        <!-- Step 2: Facial Scan Trigger Panel -->
                         <div class="mb-3 border-top pt-3">
                             <label class="form-label fw-bold small text-muted">2. FACIAL LIVENESS SCAN</label>
                             
-                            <div class="text-center bg-dark rounded p-3 text-white position-relative overflow-hidden" style="min-height: 220px;">
-                                <video id="webcam" autoplay playsinline muted class="w-100 rounded" style="max-height: 200px; transform: scaleX(-1); display: none;"></video>
-                                
-                                <div id="cameraPlaceholder" class="d-flex flex-column align-items-center justify-content-center py-4">
-                                    <i class="bi bi-camera-video fs-1 text-secondary"></i>
-                                    <p class="small text-muted mt-2 mb-0">Upload your ID above to unlock the face scan.</p>
-                                </div>
-
-                                <div id="scanOverlay" class="position-absolute top-50 start-50 translate-middle w-100 px-3 d-none">
-                                    <span id="scanInstruction" class="badge bg-warning text-dark fs-6 px-3 py-2 shadow">
-                                        Position your face in the center
-                                    </span>
-                                </div>
+                            <div id="scanStatusBox" class="p-3 bg-light border rounded text-center">
+                                <i class="bi bi-shield-lock fs-3 text-muted"></i>
+                                <p class="small text-muted mb-0 mt-1" id="scanStatusText">Upload your valid ID above to enable the biometric face scanner.</p>
                             </div>
 
-                            <!-- Progress Bar -->
-                            <div class="progress mt-2 d-none" id="scanProgressContainer" style="height: 8px;">
-                                <div id="livenessProgress" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width: 0%;"></div>
-                            </div>
-
-                            <button type="button" id="startScanBtn" class="btn btn-outline-primary w-100 mt-2" disabled>
-                                <i class="bi bi-person-bounding-box"></i> Start Face Scan
+                            <button type="button" id="startScanBtn" class="btn btn-outline-primary w-100 mt-2 fw-semibold shadow-sm" disabled>
+                                <i class="bi bi-person-bounding-box"></i> Launch Fullscreen Face Scan
                             </button>
                             <input type="hidden" name="faceVerified" id="faceVerifiedInput" value="false">
                         </div>
@@ -184,6 +195,49 @@
         </div>
     </div>
 
+    <!-- Fullscreen Immersive Facial Scan Modal -->
+    <div class="modal fade" id="immersiveScanModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content d-flex flex-column justify-content-between p-4">
+                
+                <!-- Modal Top Header -->
+                <div class="d-flex justify-content-between align-items-center w-100 max-w-lg mx-auto">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-success fs-4"></i>
+                        <h5 class="mb-0 fw-bold">Secure Biometric Verification</h5>
+                    </div>
+                    <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" id="cancelScanBtn">Cancel</button>
+                </div>
+
+                <!-- Modal Center Video Viewport with Organic Oval Frame -->
+                <div class="text-center my-auto">
+                    <!-- Instruction Badge on top of frame -->
+                    <div class="mb-3">
+                        <span id="modalInstruction" class="badge bg-warning text-dark px-4 py-2 fs-6 shadow-sm rounded-pill">
+                            Position your face inside the oval frame
+                        </span>
+                    </div>
+
+                    <!-- Immersive Oval Video Window -->
+                    <div class="oval-guide-container shadow-lg">
+                        <video id="webcam" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress w-50 mx-auto mt-4 bg-secondary" style="height: 8px; border-radius: 6px;">
+                        <div id="livenessProgress" class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer Branding / Help -->
+                <div class="text-center text-muted small">
+                    <p class="mb-0"><i class="bi bi-lock-fill text-success"></i> End-to-end encrypted local client analysis</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -196,35 +250,42 @@
     </script>
     <script src="https://udify.app/embed.js" id="tuMY58SadttfVKCz" defer></script>
 
-    <!-- Modern MediaPipe Facial Liveness Script -->
+    <!-- Fullscreen MediaPipe Facial Liveness Script -->
     <script>
         const idCardInput = document.getElementById('idCardInput');
         const startScanBtn = document.getElementById('startScanBtn');
-        const video = document.getElementById('webcam');
-        const cameraPlaceholder = document.getElementById('cameraPlaceholder');
-        const scanOverlay = document.getElementById('scanOverlay');
-        const scanInstruction = document.getElementById('scanInstruction');
+        const scanStatusBox = document.getElementById('scanStatusBox');
+        const scanStatusText = document.getElementById('scanStatusText');
         const submitBtn = document.getElementById('submitBtn');
         const faceVerifiedInput = document.getElementById('faceVerifiedInput');
-        const scanProgressContainer = document.getElementById('scanProgressContainer');
+        
+        const immersiveModal = new bootstrap.Modal(document.getElementById('immersiveScanModal'));
+        const video = document.getElementById('webcam');
+        const modalInstruction = document.getElementById('modalInstruction');
         const livenessProgress = document.getElementById('livenessProgress');
+        const cancelScanBtn = document.getElementById('cancelScanBtn');
+
+        let activeCameraStream = null;
+        let isScanFinished = false;
 
         idCardInput.addEventListener('change', () => {
             if (idCardInput.files.length > 0) {
                 startScanBtn.disabled = false;
+                scanStatusBox.className = "p-3 bg-success bg-opacity-10 border border-success rounded text-center";
+                scanStatusText.className = "small text-success fw-bold mb-0 mt-1";
+                scanStatusText.innerHTML = '<i class="bi bi-check-circle-fill"></i> ID attached successfully. Ready for face verification.';
             }
         });
 
         startScanBtn.addEventListener('click', async () => {
-            startScanBtn.disabled = true;
-            cameraPlaceholder.style.display = 'none';
-            video.style.display = 'block';
-            scanOverlay.classList.remove('d-none');
-            scanProgressContainer.classList.remove('d-none');
+            immersiveModal.show();
+            livenessProgress.style.width = '0%';
+            modalInstruction.innerText = "Position your face inside the oval frame";
+            modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 shadow-sm rounded-pill";
 
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 480, height: 480 } });
-                video.srcObject = stream;
+                activeCameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 640 } });
+                video.srcObject = activeCameraStream;
 
                 let step = 0; // 0: Center, 1: Left, 2: Right
                 let progress = 0;
@@ -241,11 +302,11 @@
                 });
 
                 faceMesh.onResults((results) => {
-                    if (step >= 3) return;
+                    if (isScanFinished || step >= 3) return;
 
                     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-                        scanInstruction.innerText = "⚠️ Position your face clearly in frame";
-                        scanInstruction.className = "badge bg-danger text-white fs-6 px-3 py-2 shadow";
+                        modalInstruction.innerText = "⚠️ No face detected. Move closer.";
+                        modalInstruction.className = "badge bg-danger text-white px-4 py-2 fs-6 shadow-sm rounded-pill";
                         return;
                     }
 
@@ -254,49 +315,52 @@
                     const leftEarX = landmarks[234].x;
                     const rightEarX = landmarks[454].x;
 
-                    // Calculate head orientation balance
+                    // Calculate balance
                     const balance = (noseX - rightEarX) / (leftEarX - rightEarX);
 
                     if (step === 0) {
-                        scanInstruction.innerText = "📌 Step 1: Look straight ahead";
-                        scanInstruction.className = "badge bg-warning text-dark fs-6 px-3 py-2 shadow";
+                        modalInstruction.innerText = "📌 Step 1: Look straight ahead";
+                        modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 shadow-sm rounded-pill";
                         if (balance > 0.35 && balance < 0.65) {
                             progress += 3;
                             livenessProgress.style.width = progress + '%';
                             if (progress >= 35) { step = 1; progress = 35; }
                         }
                     } else if (step === 1) {
-                        scanInstruction.innerText = "⬅️ Step 2: Slowly turn your head LEFT";
-                        scanInstruction.className = "badge bg-info text-dark fs-6 px-3 py-2 shadow";
+                        modalInstruction.innerText = "⬅️ Step 2: Slowly turn your head LEFT";
+                        modalInstruction.className = "badge bg-info text-dark px-4 py-2 fs-6 shadow-sm rounded-pill";
                         if (balance < 0.32) {
                             progress += 3;
                             livenessProgress.style.width = progress + '%';
                             if (progress >= 70) { step = 2; progress = 70; }
                         }
                     } else if (step === 2) {
-                        scanInstruction.innerText = "➡️ Step 3: Now turn your head RIGHT";
-                        scanInstruction.className = "badge bg-warning text-dark fs-6 px-3 py-2 shadow";
+                        modalInstruction.innerText = "➡️ Step 3: Now turn your head RIGHT";
+                        modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 shadow-sm rounded-pill";
                         if (balance > 0.68) {
                             progress += 4;
                             livenessProgress.style.width = progress + '%';
                             if (progress >= 100) {
-                                step = 3; // Finished
+                                step = 3; 
+                                isScanFinished = true;
                                 livenessProgress.style.width = '100%';
-                                scanInstruction.innerText = "✅ Biometric Scan Verified!";
-                                scanInstruction.className = "badge bg-success text-white fs-6 px-3 py-2 shadow";
+                                modalInstruction.innerText = "✅ Biometric Liveness Verified Successfully!";
+                                modalInstruction.className = "badge bg-success text-white px-4 py-2 fs-6 shadow-sm rounded-pill";
                                 
                                 faceVerifiedInput.value = "true";
                                 submitBtn.disabled = false;
-                                startScanBtn.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> Verification Passed Successfully';
 
-                                // Stop camera feed after brief delay
                                 setTimeout(() => {
-                                    stream.getTracks().forEach(track => track.stop());
-                                    video.style.display = 'none';
-                                    scanOverlay.classList.add('d-none');
-                                    scanProgressContainer.classList.add('d-none');
-                                    cameraPlaceholder.style.display = 'flex';
-                                    cameraPlaceholder.innerHTML = '<i class="bi bi-shield-check-fill text-success fs-1"></i><p class="small text-success fw-bold mt-2 mb-0">Face Liveness Confirmed</p>';
+                                    if (activeCameraStream) {
+                                        activeCameraStream.getTracks().forEach(track => track.stop());
+                                    }
+                                    immersiveModal.hide();
+                                    
+                                    // Update dashboard view button state
+                                    startScanBtn.className = "btn btn-success w-100 mt-2 fw-semibold shadow-sm";
+                                    startScanBtn.innerHTML = '<i class="bi bi-shield-check-fill"></i> Face Scan Verified Successfully';
+                                    startScanBtn.disabled = true;
+                                    scanStatusText.innerHTML = '<i class="bi bi-check-circle-fill"></i> Biometric identity confirmed!';
                                 }, 1200);
                             }
                         }
@@ -305,19 +369,26 @@
 
                 const camera = new Camera(video, {
                     onFrame: async () => {
-                        if (step < 3) {
+                        if (!isScanFinished && step < 3) {
                             await faceMesh.send({ image: video });
                         }
                     },
-                    width: 480,
-                    height: 480
+                    width: 640,
+                    height: 640
                 });
                 camera.start();
 
             } catch (err) {
-                alert("Camera permission is required for liveness check.");
-                startScanBtn.disabled = false;
+                alert("Camera permission is required to perform the liveness scan.");
+                immersiveModal.hide();
             }
+        });
+
+        cancelScanBtn.addEventListener('click', () => {
+            if (activeCameraStream) {
+                activeCameraStream.getTracks().forEach(track => track.stop());
+            }
+            immersiveModal.hide();
         });
     </script>
     
