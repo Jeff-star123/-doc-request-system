@@ -86,24 +86,39 @@
                                 <span th:if="${req.status != 'PENDING'}" class="text-muted small">Processed</span>
                             </td>
 
-                            <!-- View ID & Face Scan Modal -->
+                            <!-- View Verification Modal -->
                             <div class="modal fade" th:id="'idModal' + ${req.id}" tabindex="-1">
-                                <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-dialog modal-lg modal-dialog-centered">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title"><i class="bi bi-shield-check text-primary"></i> Identity Proof Details</h5>
+                                            <h5 class="modal-title"><i class="bi bi-shield-check text-primary"></i> Verification Details</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
-                                        <div class="modal-body text-center">
-                                            <p class="mb-2"><strong>Face Scan Liveness Check:</strong> 
+                                        <div class="modal-body">
+                                            <div class="text-center mb-3">
+                                                <strong>Biometric Liveness Scan Status:</strong> 
                                                 <span th:if="${req.faceVerified}" class="badge bg-success">PASSED</span>
                                                 <span th:if="${!req.faceVerified}" class="badge bg-danger">NOT COMPLETED</span>
-                                            </p>
-                                            <div class="border rounded p-2 bg-light">
-                                                <p class="small text-muted mb-1">Uploaded Valid ID:</p>
-                                                <!-- Fixed image binding pointing directly to the web path stored in DB -->
-                                                <img th:if="${req.idCardImagePath != null}" th:src="${req.idCardImagePath}" class="img-fluid rounded" alt="Uploaded Resident ID" style="max-height: 250px;" />
-                                                <p th:if="${req.idCardImagePath == null}" class="text-muted small py-3 mb-0">No ID uploaded for this request.</p>
+                                            </div>
+
+                                            <div class="row g-3">
+                                                <!-- Uploaded Valid ID -->
+                                                <div class="col-md-6">
+                                                    <div class="border rounded p-2 bg-light text-center h-100">
+                                                        <p class="small fw-bold text-muted mb-2">Step 1: Uploaded Valid ID</p>
+                                                        <img th:if="${req.idCardImagePath != null}" th:src="${req.idCardImagePath}" class="img-fluid rounded border" alt="Uploaded Resident ID" style="max-height: 220px;" />
+                                                        <p th:if="${req.idCardImagePath == null}" class="text-muted small py-4 mb-0">No ID uploaded.</p>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Selfie holding ID -->
+                                                <div class="col-md-6">
+                                                    <div class="border rounded p-2 bg-light text-center h-100">
+                                                        <p class="small fw-bold text-muted mb-2">Step 2: Selfie Holding ID</p>
+                                                        <img th:if="${req.selfieImagePath != null}" th:src="${req.selfieImagePath}" class="img-fluid rounded border" alt="Selfie with ID" style="max-height: 220px;" />
+                                                        <p th:if="${req.selfieImagePath == null}" class="text-muted small py-4 mb-0">No selfie uploaded.</p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

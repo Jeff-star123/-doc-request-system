@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -36,13 +37,15 @@ public class MainController {
     @Autowired
     private TelegramService telegramService;
 
-    // 1. Home / Login Page
+    private User getAuthenticatedUser(HttpSession session) {
+        return (User) session.getAttribute("loggedInUser");
+    }
+
     @GetMapping("/")
     public String index() {
         return "index";
     }
 
-    // 2. Simple Login Handler
     @PostMapping("/login")
     public String login(@RequestParam String username, 
                         @RequestParam String password, 
@@ -63,10 +66,9 @@ public class MainController {
         return "index";
     }
 
-    // 3. Student Dashboard View
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getAuthenticatedUser(session);
         if (user == null) return "redirect:/";
 
         model.addAttribute("user", user);
@@ -74,48 +76,60 @@ public class MainController {
         return "dashboard";
     }
 
-    // 4. Submit Request Handler (With ID Upload, Face Liveness Flag, & Telegram Notification)
     @PostMapping("/request/submit")
     public String submitRequest(@RequestParam("documentType") String documentType, 
                                 @RequestParam("purpose") String purpose, 
+                                @RequestParam(value = "idType", defaultValue = "Unspecified ID") String idType,
                                 @RequestParam("idCardFile") MultipartFile idCardFile,
+                                @RequestParam(value = "selfieWithIdFile", required = false) MultipartFile selfieWithIdFile,
                                 @RequestParam(value = "faceVerified", defaultValue = "false") boolean faceVerified,
-                                HttpSession session) {
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
         
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getAuthenticatedUser(session);
         if (user == null) return "redirect:/";
 
-        DocumentRequest docRequest = new DocumentRequest(user, documentType, purpose);
+        String formattedPurpose = "[" + idType + "] " + purpose;
+        DocumentRequest docRequest = new DocumentRequest(user, documentType, formattedPurpose);
         docRequest.setFaceVerified(faceVerified);
 
-        // Save ID Card Image File locally if provided
-        if (idCardFile != null && !idCardFile.isEmpty()) {
-            try {
-                String fileName = System.currentTimeMillis() + "_" + idCardFile.getOriginalFilename();
-                String uploadDir = "uploads/";
-                Path uploadPath = Paths.get(uploadDir);
+        Path uploadPath = Paths.get("uploads");
+        try {
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
 
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
-                }
-
+            // Save ID Card File
+            if (idCardFile != null && !idCardFile.isEmpty()) {
+                String originalFilename = Paths.get(idCardFile.getOriginalFilename()).getFileName().toString();
+                String fileName = System.currentTimeMillis() + "_id_" + originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
                 Path filePath = uploadPath.resolve(fileName);
                 Files.copy(idCardFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                
-                // Save path starting with /uploads/ so it binds correctly to WebConfig
                 docRequest.setIdCardImagePath("/uploads/" + fileName);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+
+            // Save Selfie with ID File
+            if (selfieWithIdFile != null && !selfieWithIdFile.isEmpty()) {
+                String originalFilename = Paths.get(selfieWithIdFile.getOriginalFilename()).getFileName().toString();
+                String fileName = System.currentTimeMillis() + "_selfie_" + originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(selfieWithIdFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                docRequest.setSelfieImagePath("/uploads/" + fileName);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Error uploading files. Please try again.");
+            return "redirect:/dashboard";
         }
 
         DocumentRequest savedRequest = requestRepository.save(docRequest);
 
-        // Send Telegram notification on submission
-        if (user.getTelegramChatId() != null && !user.getTelegramChatId().isEmpty()) {
+        if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
             String message = "📄 Barangay Document Request Submitted!\n\n" +
                              "Document: " + savedRequest.getDocumentType() + "\n" +
-                             "Purpose: " + savedRequest.getPurpose() + "\n" +
+                             "ID Type: " + idType + "\n" +
+                             "Purpose: " + purpose + "\n" +
                              "Face Verification: " + (savedRequest.isFaceVerified() ? "PASSED ✅" : "NOT PASSED ❌") + "\n" +
                              "Status: PENDING\n\n" +
                              "We will notify you once your document status changes!";
@@ -125,17 +139,15 @@ public class MainController {
         return "redirect:/dashboard";
     }
 
-    // 5. Logout
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
     }
 
-    // 6. Admin Dashboard View
     @GetMapping("/admin")
     public String adminDashboard(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getAuthenticatedUser(session);
         if (user == null || !"ADMIN".equals(user.getRole())) {
             return "redirect:/";
         }
@@ -145,18 +157,16 @@ public class MainController {
         return "admin";
     }
 
-    // 7. Approve Request Action (NOTIFIES USER ON TELEGRAM)
     @PostMapping("/admin/approve/{id}")
     public String approveRequest(@PathVariable Long id, @RequestParam(required = false) String remarks) {
         DocumentRequest docRequest = requestRepository.findById(id).orElse(null);
         if (docRequest != null) {
             docRequest.setStatus("APPROVED");
-            docRequest.setRemarks(remarks != null ? remarks : "Approved by Admin");
+            docRequest.setRemarks(remarks != null && !remarks.isBlank() ? remarks : "Approved by Admin");
             requestRepository.save(docRequest);
 
-            // Send Telegram Notification
             User user = docRequest.getUser();
-            if (user != null && user.getTelegramChatId() != null && !user.getTelegramChatId().isEmpty()) {
+            if (user != null && user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
                 String message = "✅ Document Request APPROVED!\n\n" +
                                  "Document: " + docRequest.getDocumentType() + "\n" +
                                  "Remarks: " + docRequest.getRemarks() + "\n\n" +
@@ -167,18 +177,16 @@ public class MainController {
         return "redirect:/admin";
     }
 
-    // 8. Reject Request Action (NOTIFIES USER ON TELEGRAM)
     @PostMapping("/admin/reject/{id}")
     public String rejectRequest(@PathVariable Long id, @RequestParam(required = false) String remarks) {
         DocumentRequest docRequest = requestRepository.findById(id).orElse(null);
         if (docRequest != null) {
             docRequest.setStatus("REJECTED");
-            docRequest.setRemarks(remarks != null ? remarks : "Rejected by Admin");
+            docRequest.setRemarks(remarks != null && !remarks.isBlank() ? remarks : "Rejected by Admin");
             requestRepository.save(docRequest);
 
-            // Send Telegram Notification
             User user = docRequest.getUser();
-            if (user != null && user.getTelegramChatId() != null && !user.getTelegramChatId().isEmpty()) {
+            if (user != null && user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
                 String message = "❌ Document Request REJECTED\n\n" +
                                  "Document: " + docRequest.getDocumentType() + "\n" +
                                  "Reason/Remarks: " + docRequest.getRemarks();
@@ -188,10 +196,9 @@ public class MainController {
         return "redirect:/admin";
     }
 
-    // 9. Printable Document Page
     @GetMapping("/request/print/{id}")
     public String printDocument(@PathVariable Long id, HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getAuthenticatedUser(session);
         if (user == null) return "redirect:/";
 
         DocumentRequest docRequest = requestRepository.findById(id).orElse(null);
@@ -203,13 +210,11 @@ public class MainController {
         return "print_template";
     }
 
-    // 10. Show Registration Page
     @GetMapping("/register")
     public String registerPage() {
         return "register";
     }
 
-    // 11. Process Registration Form
     @PostMapping("/register")
     public String registerUser(@RequestParam String fullName,
                                @RequestParam String username,
@@ -239,18 +244,11 @@ public class MainController {
         return "index";
     }
 
-    // ==========================================
-    // 12. ACCOUNT SETTINGS ENDPOINTS
-    // ==========================================
-
     @GetMapping("/settings")
     public String viewSettings(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
-        if (user == null) {
-            return "redirect:/";
-        }
+        User user = getAuthenticatedUser(session);
+        if (user == null) return "redirect:/";
 
-        // Refresh user data from database to ensure fresh info
         User freshUser = userRepository.findById(user.getId()).orElse(user);
         model.addAttribute("user", freshUser);
         
@@ -263,11 +261,10 @@ public class MainController {
                                 @RequestParam(required = false) String telegramChatId,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getAuthenticatedUser(session);
         if (user == null) return "redirect:/";
 
-        // Check if username is already taken by another user
-        java.util.Optional<User> existingUser = userRepository.findByUsername(username);
+        Optional<User> existingUser = userRepository.findByUsername(username);
         if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Username is already taken by another user!");
             return "redirect:/settings";
@@ -278,7 +275,7 @@ public class MainController {
         user.setTelegramChatId(telegramChatId != null ? telegramChatId.trim() : "");
 
         userRepository.save(user);
-        session.setAttribute("loggedInUser", user); // Update session data
+        session.setAttribute("loggedInUser", user);
 
         redirectAttributes.addFlashAttribute("successMessage", "Profile information updated successfully!");
         return "redirect:/settings";
@@ -290,7 +287,7 @@ public class MainController {
                                  @RequestParam String confirmPassword,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes) {
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getAuthenticatedUser(session);
         if (user == null) return "redirect:/";
 
         if (!user.getPassword().equals(currentPassword)) {
@@ -315,7 +312,7 @@ public class MainController {
     public String deleteAccount(@RequestParam String confirmPassword,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getAuthenticatedUser(session);
         if (user == null) return "redirect:/";
 
         if (!user.getPassword().equals(confirmPassword)) {
@@ -324,13 +321,8 @@ public class MainController {
         }
 
         try {
-            // 1. Delete all associated requests first to avoid foreign key errors
             requestRepository.deleteByUser(user);
-
-            // 2. Delete the user
             userRepository.delete(user);
-
-            // 3. Clear session
             session.invalidate();
 
             redirectAttributes.addFlashAttribute("success", "Your account has been permanently deleted.");

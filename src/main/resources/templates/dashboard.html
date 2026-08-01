@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barangay Portal - Student Dashboard</title>
+    
+    <!-- Bootstrap 5 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     
@@ -11,26 +13,120 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 
-    <style>
-        body { 
-            background-color: #f8f9fa; 
-            padding-bottom: 80px; 
-        }
-        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
-        .card { border: none; border-radius: 10px; }
-        .table-hover tbody tr:hover { background-color: #f1f3f5; }
-        .badge-pending { background-color: #ffc107; color: #000; }
-        .badge-approved { background-color: #198754; }
-        .badge-rejected { background-color: #dc3545; }
+    <!-- Tesseract.js for Client-Side OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-        /* Fullscreen Immersive Biometric Modal Styling */
+    <style>
+        :root {
+            --bs-primary-rgb: 13, 110, 253;
+            --portal-bg: #f4f6f9;
+        }
+
+        body {
+            background-color: var(--portal-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #334155;
+            padding-bottom: 80px;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        .card-custom {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            background-color: #ffffff;
+        }
+
+        /* Stepper Navigation Indicator */
+        .stepper-wrapper {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .stepper-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 18px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background-color: #e2e8f0;
+            z-index: 1;
+        }
+
+        .stepper-item {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .stepper-item .step-counter {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #f1f5f9;
+            border: 2px solid #cbd5e1;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .stepper-item.active .step-counter {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #ffffff;
+        }
+
+        .stepper-item.completed .step-counter {
+            background-color: #198754;
+            border-color: #198754;
+            color: #ffffff;
+        }
+
+        .stepper-item .step-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stepper-item.active .step-name { color: #0d6efd; }
+        .stepper-item.completed .step-name { color: #198754; }
+
+        /* Step Section Transitions */
+        .step-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .step-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Immersive Biometric Modal */
         #immersiveScanModal .modal-content {
-            background-color: #0b0f19;
+            background-color: #0f172a;
             color: #fff;
             border: none;
-            border-radius: 0;
         }
-        /* Organic Oval Guide Frame overlay */
+
         .oval-guide-container {
             position: relative;
             width: 280px;
@@ -38,153 +134,212 @@
             margin: 0 auto;
             border-radius: 50% / 60%;
             overflow: hidden;
-            box-shadow: 0 0 0 9999px rgba(11, 15, 25, 0.85); /* Darkens everything outside the oval */
-            border: 4px solid #198754;
-            transition: border-color 0.3s ease;
+            box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.85);
+            border: 3px solid #10b981;
         }
+
         @media (min-width: 768px) {
-            .oval-guide-container {
-                width: 340px;
-                height: 460px;
-            }
+            .oval-guide-container { width: 340px; height: 440px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4 py-3">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-                <i class="bi bi-building-fill"></i> Barangay Request Portal
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#">
+                <i class="bi bi-building-fill text-primary"></i> Barangay Request Portal
             </a>
             <div class="d-flex align-items-center gap-2">
-                <span class="navbar-text text-white d-none d-sm-inline me-2">
-                    <i class="bi bi-person-circle"></i> <strong th:text="'Welcome, ' + ${user.fullName}">Welcome</strong>
+                <span class="navbar-text text-light d-none d-sm-inline me-3 small">
+                    <i class="bi bi-person-circle"></i> <strong th:text="${user.fullName}">User</strong>
                 </span>
-                <!-- Settings Button Link -->
-                <a th:href="@{/settings}" class="btn btn-outline-light btn-sm">
-                    <i class="bi bi-gear-fill"></i> Settings
-                </a>
-                <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
+                <a th:href="@{/settings}" class="btn btn-outline-light btn-sm px-3"><i class="bi bi-gear"></i> Settings</a>
+                <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm px-3"><i class="bi bi-box-arrow-right"></i> Logout</a>
             </div>
         </div>
     </nav>
 
-    <div class="container pb-4">
+    <div class="container">
+        
+        <!-- Flash Alert -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}">Error message</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
 
-        <!-- Telegram Bot Announcement Banner -->
+        <!-- Telegram Announcement Banner -->
         <div class="alert alert-info alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
             <div class="d-flex align-items-center gap-2 mb-1">
                 <i class="bi bi-telegram fs-4 text-primary"></i>
                 <h6 class="alert-heading mb-0 fw-bold">Get Instant Request Updates on Telegram!</h6>
             </div>
             <p class="mb-1 small">
-                To receive automated updates when your document is <b>Approved</b> or <b>Rejected</b>, open 
-                <a href="https://t.me/BrgyDocRequestBot" target="_blank" class="badge bg-primary fs-6 text-decoration-none">@BrgyDocRequestBot <i class="bi bi-box-arrow-up-right"></i></a>, and tap <b>START</b>.
+                To receive automated status notifications when your document is processed, open 
+                <a href="https://t.me/BrgyDocRequestBot" target="_blank" class="badge bg-primary fs-6 text-decoration-none">@BrgyDocRequestBot <i class="bi bi-box-arrow-up-right"></i></a> and tap <b>START</b>.
             </p>
-            <small class="text-muted">
-                <i class="bi bi-info-circle"></i> <i>Note: Telegram will block bot notifications unless you start the bot first.</i>
-            </small>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
         <div class="row g-4">
             
-            <!-- Form Column -->
-            <div class="col-lg-5">
-                <div class="card shadow-sm p-3 p-md-4">
-                    <h5 class="card-title text-primary mb-3">
-                        <i class="bi bi-file-earmark-plus-fill"></i> Request New Document
-                    </h5>
-                    
+            <!-- Dynamic 3-Step Request Form -->
+            <div class="col-lg-6">
+                <div class="card card-custom p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold mb-0 text-dark">
+                            <i class="bi bi-file-earmark-plus-fill text-primary me-1"></i> Document Application
+                        </h5>
+                        <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1">Identity Verification</span>
+                    </div>
+
+                    <!-- Modern Stepper Header -->
+                    <div class="stepper-wrapper">
+                        <div class="stepper-item active" id="stepIndicator1">
+                            <div class="step-counter" id="num1">1</div>
+                            <div class="step-name">ID Upload</div>
+                        </div>
+                        <div class="stepper-item" id="stepIndicator2">
+                            <div class="step-counter" id="num2">2</div>
+                            <div class="step-name">Selfie Proof</div>
+                        </div>
+                        <div class="stepper-item" id="stepIndicator3">
+                            <div class="step-counter" id="num3">3</div>
+                            <div class="step-name">Face Scan</div>
+                        </div>
+                    </div>
+
                     <form th:action="@{/request/submit}" method="post" enctype="multipart/form-data" id="requestForm">
+                        
+                        <!-- Base Document Details -->
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">DOCUMENT TYPE</label>
-                            <select name="documentType" class="form-select" required>
-                                <option value="" disabled selected>Select Document...</option>
+                            <label class="form-label small fw-semibold text-muted">DOCUMENT TYPE</label>
+                            <select name="documentType" class="form-select shadow-none" required>
+                                <option value="" disabled selected>Select document...</option>
                                 <option value="Barangay Clearance">Barangay Clearance</option>
                                 <option value="Certificate of Residency">Certificate of Residency</option>
                                 <option value="Certificate of Indigency">Certificate of Indigency</option>
                             </select>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">PURPOSE OF REQUEST</label>
-                            <textarea name="purpose" class="form-control" rows="2" required placeholder="e.g. School Requirement / Employment"></textarea>
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold text-muted">PURPOSE OF REQUEST</label>
+                            <textarea name="purpose" class="form-control shadow-none" rows="2" required placeholder="e.g. School Requirement / Employment Application"></textarea>
                         </div>
 
-                        <!-- Step 1: ID Upload -->
-                        <div class="mb-3 border-top pt-3">
-                            <label class="form-label fw-bold small text-muted">1. UPLOAD VALID ID</label>
-                            <input type="file" name="idCardFile" class="form-control" accept="image/*" id="idCardInput" required>
-                            <div class="form-text small">Upload a clear photo of your government or student ID.</div>
-                        </div>
+                        <hr class="text-muted opacity-25 my-3">
 
-                        <!-- Step 2: Facial Scan Trigger Panel -->
-                        <div class="mb-3 border-top pt-3">
-                            <label class="form-label fw-bold small text-muted">2. FACIAL LIVENESS SCAN</label>
-                            
-                            <div id="scanStatusBox" class="p-3 bg-light border rounded text-center">
-                                <i class="bi bi-shield-lock fs-3 text-muted"></i>
-                                <p class="small text-muted mb-0 mt-1" id="scanStatusText">Upload your valid ID above to enable the biometric face scanner.</p>
+                        <!-- STEP 1: Select & Upload Valid ID -->
+                        <div class="step-section active" id="step1Section">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="fw-bold text-dark mb-0">Step 1: Select & Upload Valid ID</h6>
+                                <span class="badge bg-light text-dark border">Required</span>
                             </div>
 
-                            <button type="button" id="startScanBtn" class="btn btn-outline-primary w-100 mt-2 fw-semibold shadow-sm" disabled>
-                                <i class="bi bi-person-bounding-box"></i> Launch Fullscreen Face Scan
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">SELECT ID TYPE</label>
+                                <select id="idTypeSelect" name="idType" class="form-select" required>
+                                    <option value="" disabled selected>Choose ID type...</option>
+                                    <option value="National ID">Philippine National ID (PhilSys)</option>
+                                    <option value="School ID">Student / School ID</option>
+                                    <option value="Driver's License">Driver's License</option>
+                                    <option value="UMID / SSS">UMID / SSS ID</option>
+                                    <option value="Barangay ID">Barangay ID</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">ATTACH ID IMAGE</label>
+                                <input type="file" name="idCardFile" class="form-control" accept="image/*" id="idCardInput" disabled required>
+                            </div>
+
+                            <div id="ocrFeedback" class="p-3 rounded-3 small d-none mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="spinner-border spinner-border-sm text-primary d-none" id="ocrSpinner" role="status"></div>
+                                    <span id="ocrStatusText">Analyzing uploaded ID document...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 2: Selfie Holding ID (Hidden until Step 1 validated) -->
+                        <div class="step-section" id="step2Section">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="fw-bold text-dark mb-0">Step 2: Selfie Holding Your ID</h6>
+                                <span class="badge bg-light text-dark border">Verification</span>
+                            </div>
+                            <p class="small text-muted mb-3">Please upload a photo of yourself holding the ID selected in Step 1.</p>
+
+                            <div class="mb-3">
+                                <input type="file" name="selfieWithIdFile" class="form-control" accept="image/*" id="selfieInput" required>
+                            </div>
+
+                            <div id="selfieFeedback" class="alert alert-success p-2 small mb-3 d-none">
+                                <i class="bi bi-check-circle-fill me-1"></i> Selfie attached. Unlocking Step 3.
+                            </div>
+                        </div>
+
+                        <!-- STEP 3: Facial Liveness Scan (Hidden until Step 2 uploaded) -->
+                        <div class="step-section" id="step3Section">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="fw-bold text-dark mb-0">Step 3: Biometric Liveness Check</h6>
+                                <span class="badge bg-light text-dark border">Final Step</span>
+                            </div>
+
+                            <div id="scanStatusBox" class="p-3 bg-light border rounded-3 text-center mb-3">
+                                <i class="bi bi-person-bounding-box fs-2 text-muted"></i>
+                                <p class="small text-muted mb-0 mt-1" id="scanStatusText">Perform a face scan to complete identity verification.</p>
+                            </div>
+
+                            <button type="button" id="startScanBtn" class="btn btn-outline-primary w-100 fw-semibold mb-3 py-2 shadow-sm">
+                                <i class="bi bi-camera-fill me-1"></i> Launch Face Liveness Scan
                             </button>
                             <input type="hidden" name="faceVerified" id="faceVerifiedInput" value="false">
                         </div>
 
-                        <!-- Notice Banner -->
-                        <div class="alert alert-light border small mb-3">
-                            <i class="bi bi-clock-history text-primary"></i> 
-                            <b>Note:</b> Submissions require administrative identity verification. Processing may take <b>up to 24 hours</b>.
-                        </div>
-
-                        <button type="submit" id="submitBtn" class="btn btn-primary w-100 fw-bold" disabled>
-                            <i class="bi bi-send-fill"></i> Submit Request for Verification
+                        <!-- Final Submission Button -->
+                        <button type="submit" id="submitBtn" class="btn btn-primary w-100 py-2 fw-semibold mt-2" disabled>
+                            <i class="bi bi-send-fill me-1"></i> Submit Request for Verification
                         </button>
+
                     </form>
                 </div>
             </div>
 
-            <!-- Table Column -->
-            <div class="col-lg-7">
-                <div class="card shadow-sm p-3 p-md-4">
-                    <h5 class="card-title text-primary mb-3">
-                        <i class="bi bi-clock-history"></i> My Request History
+            <!-- Request History View -->
+            <div class="col-lg-6">
+                <div class="card card-custom p-4">
+                    <h5 class="fw-bold mb-3 text-dark">
+                        <i class="bi bi-clock-history text-primary me-1"></i> My Request History
                     </h5>
 
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mt-2">
-                            <thead class="table-light">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small">
                                 <tr>
                                     <th>Document</th>
                                     <th>Purpose</th>
                                     <th>Status</th>
-                                    <th class="text-center">Action</th>
+                                    <th class="text-end">Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="small">
                                 <tr th:each="req : ${requests}">
-                                    <td class="fw-bold" th:text="${req.documentType}">Clearance</td>
-                                    <td th:text="${req.purpose}">Purpose</td>
+                                    <td class="fw-semibold" th:text="${req.documentType}">Clearance</td>
+                                    <td class="text-muted" th:text="${req.purpose}">Purpose</td>
                                     <td>
-                                        <span th:if="${req.status == 'PENDING'}" class="badge badge-pending">PENDING</span>
-                                        <span th:if="${req.status == 'APPROVED'}" class="badge badge-approved">APPROVED</span>
-                                        <span th:if="${req.status == 'REJECTED'}" class="badge badge-rejected">REJECTED</span>
+                                        <span th:if="${req.status == 'PENDING'}" class="badge bg-warning text-dark">PENDING</span>
+                                        <span th:if="${req.status == 'APPROVED'}" class="badge bg-success">APPROVED</span>
+                                        <span th:if="${req.status == 'REJECTED'}" class="badge bg-danger">REJECTED</span>
                                     </td>
-                                    <td class="text-center">
+                                    <td class="text-end">
                                         <a th:if="${req.status == 'APPROVED'}" 
                                            th:href="@{'/request/print/' + ${req.id}}" 
-                                           class="btn btn-sm btn-outline-success" 
+                                           class="btn btn-sm btn-outline-success px-2 py-1" 
                                            target="_blank">
-                                            <i class="bi bi-printer-fill"></i> Print Form
+                                            <i class="bi bi-printer-fill"></i> Print
                                         </a>
-                                        <span th:if="${req.status != 'APPROVED'}" class="text-muted small">N/A</span>
+                                        <span th:if="${req.status != 'APPROVED'}" class="text-muted">--</span>
                                     </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(requests)}">
@@ -199,64 +354,64 @@
         </div>
     </div>
 
-    <!-- Fullscreen Immersive Facial Scan Modal -->
+    <!-- Fullscreen Biometric Liveness Modal -->
     <div class="modal fade" id="immersiveScanModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content d-flex flex-column justify-content-between p-4">
-                
-                <!-- Modal Top Header -->
                 <div class="d-flex justify-content-between align-items-center w-100 max-w-lg mx-auto">
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-shield-check text-success fs-4"></i>
-                        <h5 class="mb-0 fw-bold">Secure Biometric Verification</h5>
+                        <h5 class="mb-0 fw-bold">Identity Liveness Check</h5>
                     </div>
                     <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" id="cancelScanBtn">Cancel</button>
                 </div>
 
-                <!-- Modal Center Video Viewport with Organic Oval Frame -->
                 <div class="text-center my-auto">
-                    <!-- Instruction Badge on top of frame -->
                     <div class="mb-3">
-                        <span id="modalInstruction" class="badge bg-warning text-dark px-4 py-2 fs-6 shadow-sm rounded-pill">
-                            Position your face inside the oval frame
+                        <span id="modalInstruction" class="badge bg-warning text-dark px-4 py-2 fs-6 rounded-pill shadow-sm">
+                            Fit your face inside the oval guide
                         </span>
                     </div>
 
-                    <!-- Immersive Oval Video Window -->
-                    <div class="oval-guide-container shadow-lg">
+                    <div class="oval-guide-container">
                         <video id="webcam" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
                     </div>
 
-                    <!-- Progress Bar -->
-                    <div class="progress w-50 mx-auto mt-4 bg-secondary" style="height: 8px; border-radius: 6px;">
+                    <div class="progress w-50 mx-auto mt-4 bg-secondary bg-opacity-50" style="height: 8px;">
                         <div id="livenessProgress" class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width: 0%;"></div>
                     </div>
                 </div>
 
-                <!-- Modal Footer Branding / Help -->
                 <div class="text-center text-muted small">
-                    <p class="mb-0"><i class="bi bi-lock-fill text-success"></i> End-to-end encrypted local client analysis</p>
+                    <p class="mb-0"><i class="bi bi-lock-fill text-success"></i> Encrypted client-side facial landmark detection</p>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Dify Floating AI Assistant -->
     <script>
-        window.difyChatbotConfig = {
-            token: 'tuMY58SadttfVKCz',
-            baseUrl: 'https://udify.app'
-        }
-    </script>
-    <script src="https://udify.app/embed.js" id="tuMY58SadttfVKCz" defer></script>
-
-    <!-- Fullscreen MediaPipe Facial Liveness Script -->
-    <script>
+        const idTypeSelect = document.getElementById('idTypeSelect');
         const idCardInput = document.getElementById('idCardInput');
+        const ocrFeedback = document.getElementById('ocrFeedback');
+        const ocrSpinner = document.getElementById('ocrSpinner');
+        const ocrStatusText = document.getElementById('ocrStatusText');
+
+        const step2Section = document.getElementById('step2Section');
+        const step3Section = document.getElementById('step3Section');
+
+        const stepIndicator1 = document.getElementById('stepIndicator1');
+        const stepIndicator2 = document.getElementById('stepIndicator2');
+        const stepIndicator3 = document.getElementById('stepIndicator3');
+
+        const num1 = document.getElementById('num1');
+        const num2 = document.getElementById('num2');
+        const num3 = document.getElementById('num3');
+
+        const selfieInput = document.getElementById('selfieInput');
+        const selfieFeedback = document.getElementById('selfieFeedback');
+
         const startScanBtn = document.getElementById('startScanBtn');
         const scanStatusBox = document.getElementById('scanStatusBox');
         const scanStatusText = document.getElementById('scanStatusText');
@@ -272,26 +427,101 @@
         let activeCameraStream = null;
         let isScanFinished = false;
 
-        idCardInput.addEventListener('change', () => {
-            if (idCardInput.files.length > 0) {
-                startScanBtn.disabled = false;
-                scanStatusBox.className = "p-3 bg-success bg-opacity-10 border border-success rounded text-center";
-                scanStatusText.className = "small text-success fw-bold mb-0 mt-1";
-                scanStatusText.innerHTML = '<i class="bi bi-check-circle-fill"></i> ID attached successfully. Ready for face verification.';
+        idTypeSelect.addEventListener('change', () => {
+            if (idTypeSelect.value) {
+                idCardInput.disabled = false;
             }
         });
 
+        // STEP 1: OCR Verification & Progressive Reveal
+        idCardInput.addEventListener('change', async () => {
+            const file = idCardInput.files[0];
+            if (!file) return;
+
+            const selectedType = idTypeSelect.value;
+
+            ocrFeedback.classList.remove('d-none', 'alert-danger', 'alert-success', 'alert-info');
+            ocrFeedback.classList.add('alert', 'alert-info');
+            ocrSpinner.classList.remove('d-none');
+            ocrStatusText.innerText = `Analyzing uploaded document for ${selectedType}...`;
+
+            try {
+                const result = await Tesseract.recognize(file, 'eng');
+                const text = result.data.text.toUpperCase();
+
+                const keywordsMap = {
+                    "National ID": ["PHILIPPINES", "PILIPINAS", "PHILSYS", "PAMBANSANG", "IDENTITY"],
+                    "School ID": ["STUDENT", "COLLEGE", "UNIVERSITY", "SCHOOL", "CAMPUS", "STUDENT NO"],
+                    "Driver's License": ["DRIVER", "LICENSE", "LTO", "TRANSPORTATION"],
+                    "UMID / SSS": ["SOCIAL SECURITY", "UMID", "SSS", "CRN"],
+                    "Barangay ID": ["BARANGAY", "OFFICE", "RESIDENT"]
+                };
+
+                const expectedKeywords = keywordsMap[selectedType] || [];
+                const matchFound = expectedKeywords.some(keyword => text.includes(keyword));
+
+                ocrSpinner.classList.add('d-none');
+
+                if (matchFound) {
+                    ocrFeedback.className = "alert alert-success p-3 rounded-3 small mb-3";
+                    ocrStatusText.innerHTML = `<strong><i class="bi bi-check-circle-fill"></i> ID Verified:</strong> Document matches <b>${selectedType}</b>. Unlocking Step 2...`;
+
+                    stepIndicator1.classList.remove('active');
+                    stepIndicator1.classList.add('completed');
+                    num1.innerHTML = '<i class="bi bi-check-lg"></i>';
+
+                    setTimeout(() => {
+                        step2Section.classList.add('active');
+                        stepIndicator2.classList.add('active');
+                    }, 400);
+
+                } else {
+                    ocrFeedback.className = "alert alert-danger p-3 rounded-3 small mb-3";
+                    ocrStatusText.innerHTML = `<strong><i class="bi bi-x-circle-fill"></i> Document Mismatch:</strong> The image uploaded does not match <b>${selectedType}</b>. Please attach a clear, valid ID to proceed.`;
+                    
+                    step2Section.classList.remove('active');
+                    step3Section.classList.remove('active');
+                    stepIndicator2.classList.remove('active', 'completed');
+                    stepIndicator3.classList.remove('active', 'completed');
+                    submitBtn.disabled = true;
+                }
+
+            } catch (error) {
+                console.error("OCR Error:", error);
+                ocrSpinner.classList.add('d-none');
+                ocrFeedback.className = "alert alert-danger p-3 rounded-3 small mb-3";
+                ocrStatusText.innerHTML = `<strong><i class="bi bi-exclamation-triangle-fill"></i> Error:</strong> Could not read image text clearly. Please upload a clearer photo.`;
+            }
+        });
+
+        // STEP 2: Selfie Upload Unlocks Step 3
+        selfieInput.addEventListener('change', () => {
+            if (selfieInput.files.length > 0) {
+                selfieFeedback.classList.remove('d-none');
+
+                stepIndicator2.classList.remove('active');
+                stepIndicator2.classList.add('completed');
+                num2.innerHTML = '<i class="bi bi-check-lg"></i>';
+
+                setTimeout(() => {
+                    step3Section.classList.add('active');
+                    stepIndicator3.classList.add('active');
+                }, 300);
+            }
+        });
+
+        // STEP 3: Biometric Liveness Check
         startScanBtn.addEventListener('click', async () => {
             immersiveModal.show();
             livenessProgress.style.width = '0%';
-            modalInstruction.innerText = "Position your face inside the oval frame";
-            modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 shadow-sm rounded-pill";
+            modalInstruction.innerText = "Fit your face inside the oval guide";
+            modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 rounded-pill shadow-sm";
 
             try {
                 activeCameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 640 } });
                 video.srcObject = activeCameraStream;
 
-                let step = 0; // 0: Center, 1: Left, 2: Right
+                let step = 0;
                 let progress = 0;
 
                 const faceMesh = new FaceMesh({
@@ -309,8 +539,8 @@
                     if (isScanFinished || step >= 3) return;
 
                     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-                        modalInstruction.innerText = "⚠️ No face detected. Move closer.";
-                        modalInstruction.className = "badge bg-danger text-white px-4 py-2 fs-6 shadow-sm rounded-pill";
+                        modalInstruction.innerText = "⚠️ Position face inside oval frame";
+                        modalInstruction.className = "badge bg-danger text-white px-4 py-2 fs-6 rounded-pill shadow-sm";
                         return;
                     }
 
@@ -319,12 +549,11 @@
                     const leftEarX = landmarks[234].x;
                     const rightEarX = landmarks[454].x;
 
-                    // Calculate balance
                     const balance = (noseX - rightEarX) / (leftEarX - rightEarX);
 
                     if (step === 0) {
                         modalInstruction.innerText = "📌 Step 1: Look straight ahead";
-                        modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 shadow-sm rounded-pill";
+                        modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 rounded-pill shadow-sm";
                         if (balance > 0.35 && balance < 0.65) {
                             progress += 3;
                             livenessProgress.style.width = progress + '%';
@@ -332,15 +561,15 @@
                         }
                     } else if (step === 1) {
                         modalInstruction.innerText = "⬅️ Step 2: Slowly turn your head LEFT";
-                        modalInstruction.className = "badge bg-info text-dark px-4 py-2 fs-6 shadow-sm rounded-pill";
+                        modalInstruction.className = "badge bg-info text-dark px-4 py-2 fs-6 rounded-pill shadow-sm";
                         if (balance < 0.32) {
                             progress += 3;
                             livenessProgress.style.width = progress + '%';
                             if (progress >= 70) { step = 2; progress = 70; }
                         }
                     } else if (step === 2) {
-                        modalInstruction.innerText = "➡️ Step 3: Now turn your head RIGHT";
-                        modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 shadow-sm rounded-pill";
+                        modalInstruction.innerText = "➡️ Step 3: Turn your head RIGHT";
+                        modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 rounded-pill shadow-sm";
                         if (balance > 0.68) {
                             progress += 4;
                             livenessProgress.style.width = progress + '%';
@@ -348,23 +577,27 @@
                                 step = 3; 
                                 isScanFinished = true;
                                 livenessProgress.style.width = '100%';
-                                modalInstruction.innerText = "✅ Biometric Liveness Verified Successfully!";
-                                modalInstruction.className = "badge bg-success text-white px-4 py-2 fs-6 shadow-sm rounded-pill";
+                                modalInstruction.innerText = "✅ Biometric Liveness Passed!";
+                                modalInstruction.className = "badge bg-success text-white px-4 py-2 fs-6 rounded-pill shadow-sm";
                                 
                                 faceVerifiedInput.value = "true";
                                 submitBtn.disabled = false;
+
+                                stepIndicator3.classList.remove('active');
+                                stepIndicator3.classList.add('completed');
+                                num3.innerHTML = '<i class="bi bi-check-lg"></i>';
 
                                 setTimeout(() => {
                                     if (activeCameraStream) {
                                         activeCameraStream.getTracks().forEach(track => track.stop());
                                     }
                                     immersiveModal.hide();
-                                    
-                                    // Update dashboard view button state
-                                    startScanBtn.className = "btn btn-success w-100 mt-2 fw-semibold shadow-sm";
-                                    startScanBtn.innerHTML = '<i class="bi bi-shield-check-fill"></i> Face Scan Verified Successfully';
+
+                                    startScanBtn.className = "btn btn-success w-100 fw-semibold mb-3 py-2";
+                                    startScanBtn.innerHTML = '<i class="bi bi-shield-check-fill me-1"></i> Biometric Scan Complete';
                                     startScanBtn.disabled = true;
-                                    scanStatusText.innerHTML = '<i class="bi bi-check-circle-fill"></i> Biometric identity confirmed!';
+                                    scanStatusBox.className = "p-3 bg-success bg-opacity-10 border border-success rounded-3 text-center mb-3";
+                                    scanStatusText.innerHTML = '<strong class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Liveness Verified. You may now submit your application.</strong>';
                                 }, 1200);
                             }
                         }
@@ -383,7 +616,7 @@
                 camera.start();
 
             } catch (err) {
-                alert("Camera permission is required to perform the liveness scan.");
+                alert("Camera permission is required to perform biometric scan.");
                 immersiveModal.hide();
             }
         });
@@ -395,6 +628,5 @@
             immersiveModal.hide();
         });
     </script>
-    
 </body>
 </html>

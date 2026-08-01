@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedStoredProcedureQuery;
 import jakarta.persistence.ParameterMode;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.StoredProcedureParameter;
 import jakarta.persistence.Table;
 
@@ -49,10 +50,13 @@ public class DocumentRequest {
     @Column(name = "id_card_image_path")
     private String idCardImagePath;
 
+    @Column(name = "selfie_image_path")
+    private String selfieImagePath;
+
     @Column(name = "face_verified")
     private Boolean faceVerified = false;
 
-    @Column(name = "requested_at", insertable = false, updatable = false)
+    @Column(name = "requested_at", updatable = false)
     private LocalDateTime requestedAt;
 
     // Constructors
@@ -63,6 +67,13 @@ public class DocumentRequest {
         this.documentType = documentType;
         this.purpose = purpose;
         this.status = "PENDING";
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.requestedAt == null) {
+            this.requestedAt = LocalDateTime.now();
+        }
     }
 
     // Getters and Setters
@@ -86,6 +97,9 @@ public class DocumentRequest {
 
     public String getIdCardImagePath() { return idCardImagePath; }
     public void setIdCardImagePath(String idCardImagePath) { this.idCardImagePath = idCardImagePath; }
+
+    public String getSelfieImagePath() { return selfieImagePath; }
+    public void setSelfieImagePath(String selfieImagePath) { this.selfieImagePath = selfieImagePath; }
 
     public Boolean getFaceVerified() { 
         return faceVerified != null ? faceVerified : false; 
