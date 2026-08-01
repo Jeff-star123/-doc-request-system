@@ -129,8 +129,8 @@
 
                             <td>
                                 <span class="badge" 
-                                      th:classappend="${req.status == 'APPROVED' ? 'badge-approved' : (req.status == 'REJECTED' ? 'badge-rejected' : 'badge-pending')}"
-                                      th:text="${req.status}">PENDING</span>
+                                    th:classappend="${req.status == 'APPROVED' ? 'badge-approved' : (req.status == 'REJECTED' ? 'badge-rejected' : 'badge-pending')}"
+                                    th:text="${req.status}">PENDING</span>
                             </td>
                             <td class="small text-muted" th:text="${req.remarks != null ? req.remarks : '—'}">—</td>
                             <td class="text-center">
@@ -280,13 +280,24 @@
                             <td th:text="${'@' + u.username}">username</td>
                             <td th:text="${u.role}">STUDENT</td>
                             <td>
-                                <span class="badge" th:classappend="${u.status == 'ACTIVE' ? 'bg-success' : (u.status == 'REACTIVATION_PENDING' ? 'bg-warning text-dark' : 'bg-secondary')}" th:text="${u.status}">ACTIVE</span>
+                                <span class="badge" th:classappend="${u.status == 'ACTIVE' || u.status == null ? 'bg-success' : (u.status == 'REACTIVATION_PENDING' ? 'bg-warning text-dark' : 'bg-secondary')}" th:text="${u.status != null ? u.status : 'ACTIVE'}">ACTIVE</span>
                             </td>
                             <td>
-                                <form th:if="${u.role != 'ADMIN' and u.status == 'ACTIVE'}" th:action="@{/admin/user/deactivate/{id}(id=${u.id})}" method="post" class="d-inline" onsubmit="return confirm('Deactivate this user account? They will lose access until reactivated.');">
-                                    <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-pause-circle"></i> Deactivate</button>
-                                </form>
+                                <!-- Do not show deactivation actions for Admin accounts -->
                                 <span th:if="${u.role == 'ADMIN'}" class="text-muted small">System Admin</span>
+                                
+                                <!-- Actions for Student / Regular accounts -->
+                                <div th:if="${u.role != 'ADMIN'}" class="d-flex gap-1">
+                                    <!-- Deactivate Button (Shows if ACTIVE or null) with explicit warning about admin approval -->
+                                    <form th:if="${u.status == 'ACTIVE' || u.status == null}" th:action="@{/admin/user/deactivate/{id}(id=${u.id})}" method="post" class="d-inline" onsubmit="return confirm('⚠️ WARNING: Deactivating this account will lock the user out. They will require ADMIN APPROVAL to reactivate their account. Do you wish to proceed?');">
+                                        <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-pause-circle"></i> Deactivate</button>
+                                    </form>
+
+                                    <!-- Activate / Reactivate Button (Shows if DEACTIVATED or REACTIVATION_PENDING) -->
+                                    <form th:if="${u.status == 'DEACTIVATED' || u.status == 'REACTIVATION_PENDING'}" th:action="@{/admin/user/approve-reactivation/{id}(id=${u.id})}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle"></i> Activate</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
