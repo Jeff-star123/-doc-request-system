@@ -124,7 +124,7 @@
                     <h5 class="text-warning-emphasis fw-bold mb-2">
                         <i class="bi bi-pause-circle-fill"></i> Account Deactivation
                     </h5>
-                    <p class="text-muted small mb-3">Deactivating your account will temporarily disable portal access. All submitted requests and document records will remain safely saved for barangay admin review. You can reactivate anytime simply by logging back in.</p>
+                    <p class="text-muted small mb-3">⚠️ Deactivating your account will temporarily disable your portal access. All submitted requests will remain safely saved, but <strong>you will require ADMIN APPROVAL to reactivate your account</strong> once deactivated.</p>
                     
                     <button type="button" class="btn btn-warning fw-semibold px-4" data-bs-toggle="modal" data-bs-target="#deactivateAccountModal">
                         <i class="bi bi-person-x-fill"></i> Deactivate Account
@@ -198,7 +198,13 @@
                     </div>
                     <div class="modal-body">
                         <p class="text-dark fw-semibold">Are you sure you want to deactivate your account?</p>
-                        <p class="small text-muted">Please enter your password to confirm identity:</p>
+                        
+                        <!-- Warning Alert Box -->
+                        <div class="alert alert-danger py-2 small mb-3">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i> <strong>Warning:</strong> You will not be able to log back in freely. Reactivation will require manual approval from a Barangay Administrator.
+                        </div>
+
+                        <p class="small text-muted mb-1">Please enter your password to confirm identity:</p>
                         <div class="mb-3">
                             <div class="input-group">
                                 <input type="password" id="deactivateConfirmPassword" name="confirmPassword" class="form-control" placeholder="Enter password to confirm" required>
@@ -261,10 +267,10 @@
     <!-- Dify AI Chatbot Integration -->
     <script>
      window.difyChatbotConfig = {
-      token: 'tuMY58SadttfVKCz',
-      inputs: {},
-      systemVariables: {},
-      userVariables: {}
+     token: 'tuMY58SadttfVKCz',
+     inputs: {},
+     systemVariables: {},
+     userVariables: {}
      }
     </script>
     <script
