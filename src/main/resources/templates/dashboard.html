@@ -127,7 +127,6 @@
             margin: 0 auto;
             border-radius: 50% / 60%;
             overflow: hidden;
-            /* Lowered the backdrop overlay opacity from 0.85 to 0.45 to brighten surroundings */
             box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45);
             border: 3px solid #10b981;
         }
@@ -136,7 +135,6 @@
             .oval-guide-container { width: 340px; height: 440px; }
         }
 
-        /* Class for flipping the camera view */
         .video-flipped {
             transform: scaleX(-1);
         }
@@ -397,7 +395,7 @@
         </div>
     </div>
 
-    <!-- General Camera Capture Modal (For ID and Selfie Snapshots with Flip Option) -->
+    <!-- General Camera Capture Modal (For ID and Selfie Snapshots with Rear/Front & Mirror Options) -->
     <div class="modal fade" id="cameraCaptureModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content p-4">
@@ -406,12 +404,19 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-                <!-- Camera Options Bar (Flip Toggle) -->
-                <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-                    <span class="small text-muted"><i class="bi bi-info-circle"></i> If ID text looks mirrored/reversed, toggle mirror view.</span>
+                <!-- Camera Options Bar (Camera Facing Mode & Mirror Toggle) -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 px-1 bg-dark bg-opacity-50 p-2 rounded border border-secondary border-opacity-25">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="useRearCameraToggle">
+                        <label class="form-check-label small fw-semibold text-light" for="useRearCameraToggle">
+                            <i class="bi bi-phone-flip"></i> Use Rear Camera (Back)
+                        </label>
+                    </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" role="switch" id="flipCameraToggle">
-                        <label class="form-check-label small fw-semibold text-light" for="flipCameraToggle">Mirror / Flip View</label>
+                        <label class="form-check-label small fw-semibold text-light" for="flipCameraToggle">
+                            <i class="bi bi-arrow-left-right"></i> Mirror View
+                        </label>
                     </div>
                 </div>
 
@@ -481,6 +486,7 @@
         const captureCanvas = document.getElementById('captureCanvas');
         const snapPhotoBtn = document.getElementById('snapPhotoBtn');
         const flipCameraToggle = document.getElementById('flipCameraToggle');
+        const useRearCameraToggle = document.getElementById('useRearCameraToggle');
 
         let activeCameraStream = null;
         let activeCaptureTarget = null; // 'id' or 'selfie'
@@ -580,7 +586,8 @@
         openIdCameraBtn.addEventListener('click', () => {
             activeCaptureTarget = 'id';
             cameraModalTitle.innerHTML = '<i class="bi bi-camera-fill text-primary"></i> Snap Valid ID';
-            // Default ID camera to NOT flipped so text is readable forward
+            // Default ID camera to rear camera preference if available, and NOT flipped
+            useRearCameraToggle.checked = true;
             flipCameraToggle.checked = false;
             captureVideo.classList.remove('video-flipped');
             startCaptureCamera();
@@ -589,7 +596,8 @@
         openSelfieCameraBtn.addEventListener('click', () => {
             activeCaptureTarget = 'selfie';
             cameraModalTitle.innerHTML = '<i class="bi bi-camera-fill text-primary"></i> Snap Selfie Holding ID';
-            // Default selfie camera to flipped (mirror view) for comfortable framing
+            // Default selfie camera to front camera and flipped (mirror view)
+            useRearCameraToggle.checked = false;
             flipCameraToggle.checked = true;
             captureVideo.classList.add('video-flipped');
             startCaptureCamera();
@@ -604,13 +612,40 @@
             }
         });
 
+        // Toggle front/rear camera live when switch changes
+        useRearCameraToggle.addEventListener('change', () => {
+            startCaptureCamera();
+        });
+
         async function startCaptureCamera() {
             try {
-                activeCameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+                if (activeCameraStream) {
+                    activeCameraStream.getTracks().forEach(track => track.stop());
+                }
+
+                const useRear = useRearCameraToggle.checked;
+                const constraints = {
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: useRear ? { exact: "environment" } : "user"
+                    }
+                };
+
+                // Fallback gracefully if exact environment constraint fails on devices lacking a back camera
+                try {
+                    activeCameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                } catch (err) {
+                    console.warn("Exact facingMode constraint failed, trying ideal or default...", err);
+                    activeCameraStream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: 1280, height: 720, facingMode: useRear ? "environment" : "user" }
+                    });
+                }
+
                 captureVideo.srcObject = activeCameraStream;
                 cameraCaptureModal.show();
             } catch (err) {
-                alert("Camera permission is required to take photos directly.");
+                alert("Could not access the selected camera. Please check camera permissions or device support.");
             }
         }
 
@@ -631,7 +666,6 @@
             const ctx = captureCanvas.getContext('2d');
 
             ctx.save();
-            // If the video view is flipped, also flip the final saved snapshot so text remains legible
             if (flipCameraToggle.checked) {
                 ctx.translate(captureCanvas.width, 0);
                 ctx.scale(-1, 1);
@@ -680,7 +714,7 @@
             modalInstruction.className = "badge bg-warning text-dark px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
 
             try {
-                activeCameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 640 } });
+                activeCameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 640, facingMode: "user" } });
                 video.srcObject = activeCameraStream;
 
                 let step = 0;
