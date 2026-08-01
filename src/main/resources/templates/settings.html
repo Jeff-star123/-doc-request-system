@@ -63,8 +63,8 @@
                         <a class="list-group-item list-group-item-action" data-target="securitySection">
                             <i class="bi bi-shield-lock"></i> Password & Security
                         </a>
-                        <a class="list-group-item list-group-item-action text-danger" data-target="dangerSection">
-                            <i class="bi bi-exclamation-octagon"></i> Danger Zone
+                        <a class="list-group-item list-group-item-action text-warning" data-target="dangerSection">
+                            <i class="bi bi-pause-circle"></i> Deactivate Account
                         </a>
                     </div>
                 </div>
@@ -119,15 +119,15 @@
                     </button>
                 </div>
 
-                <!-- Section 3: Danger Zone (Account Deletion) -->
-                <div class="card shadow-sm border border-danger border-opacity-25 p-4 bg-danger bg-opacity-10 settings-section" id="dangerSection">
-                    <h5 class="text-danger fw-bold mb-2">
-                        <i class="bi bi-exclamation-triangle-fill"></i> Danger Zone
+                <!-- Section 3: Deactivate Account Section -->
+                <div class="card shadow-sm border border-warning border-opacity-50 p-4 bg-warning bg-opacity-10 settings-section" id="dangerSection">
+                    <h5 class="text-warning-emphasis fw-bold mb-2">
+                        <i class="bi bi-pause-circle-fill"></i> Account Deactivation
                     </h5>
-                    <p class="text-muted small mb-3">Once you delete your account, there is no going back. All your request history and records will be permanently removed.</p>
+                    <p class="text-muted small mb-3">Deactivating your account will temporarily disable portal access. All submitted requests and document records will remain safely saved for barangay admin review. You can reactivate anytime simply by logging back in.</p>
                     
-                    <button type="button" class="btn btn-danger fw-semibold px-4" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-                        <i class="bi bi-trash3-fill"></i> Delete Account
+                    <button type="button" class="btn btn-warning fw-semibold px-4" data-bs-toggle="modal" data-bs-target="#deactivateAccountModal">
+                        <i class="bi bi-person-x-fill"></i> Deactivate Account
                     </button>
                 </div>
 
@@ -187,30 +187,30 @@
         </div>
     </div>
 
-    <!-- Delete Account Confirmation Modal -->
-    <div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <!-- Deactivate Account Confirmation Modal -->
+    <div class="modal fade" id="deactivateAccountModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
-                <form th:action="@{/settings/delete-account}" method="post">
-                    <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-octagon"></i> Permanently Delete Account</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <form th:action="@{/settings/deactivate-account}" method="post">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Confirm Account Deactivation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="text-danger fw-semibold">Are you absolutely sure you want to delete your account?</p>
-                        <p class="small text-muted">Please type your current password to confirm your identity:</p>
+                        <p class="text-dark fw-semibold">Are you sure you want to deactivate your account?</p>
+                        <p class="small text-muted">Please enter your password to confirm identity:</p>
                         <div class="mb-3">
                             <div class="input-group">
-                                <input type="password" id="deleteConfirmPassword" name="confirmPassword" class="form-control" placeholder="Enter password to confirm" required>
-                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('deleteConfirmPassword', 'eyeIconDelete')">
-                                    <i id="eyeIconDelete" class="bi bi-eye"></i>
+                                <input type="password" id="deactivateConfirmPassword" name="confirmPassword" class="form-control" placeholder="Enter password to confirm" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('deactivateConfirmPassword', 'eyeIconDeactivate')">
+                                    <i id="eyeIconDeactivate" class="bi bi-eye"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer bg-light">
                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger btn-sm">Yes, Delete My Account</button>
+                        <button type="submit" class="btn btn-warning btn-sm fw-semibold">Deactivate Account</button>
                     </div>
                 </form>
             </div>
@@ -257,5 +257,30 @@
             }
         }
     </script>
+
+    <!-- Dify AI Chatbot Integration -->
+    <script>
+     window.difyChatbotConfig = {
+      token: 'tuMY58SadttfVKCz',
+      inputs: {},
+      systemVariables: {},
+      userVariables: {}
+     }
+    </script>
+    <script
+     src="https://udify.app/embed.min.js"
+     id="tuMY58SadttfVKCz"
+     defer>
+    </script>
+    <style>
+      #dify-chatbot-bubble-button {
+        background-color: #1C64F2 !important;
+      }
+      #dify-chatbot-bubble-window {
+        width: 24rem !important;
+        height: 40rem !important;
+      }
+    </style>
+
 </body>
 </html>

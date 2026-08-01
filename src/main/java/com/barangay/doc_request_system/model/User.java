@@ -30,6 +30,12 @@ public class User {
     @Column(nullable = false, length = 20)
     private String role = "STUDENT";
 
+    @Column(nullable = false)
+    private boolean enabled = true;
+
+    @Column(nullable = false, length = 30)
+    private String status = "ACTIVE";
+
     // Constructors
     public User() {}
 
@@ -38,6 +44,8 @@ public class User {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.enabled = true;
+        this.status = "ACTIVE";
     }
 
     // Getters and Setters
@@ -56,11 +64,12 @@ public class User {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
-    public String getTelegramChatId() {
-        return telegramChatId;
-    }
+    public String getTelegramChatId() { return telegramChatId; }
+    public void setTelegramChatId(String telegramChatId) { this.telegramChatId = telegramChatId; }
 
-    public void setTelegramChatId(String telegramChatId) {
-        this.telegramChatId = telegramChatId;
-    }
+    public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

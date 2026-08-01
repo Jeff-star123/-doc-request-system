@@ -13,6 +13,16 @@
         .badge-pending { background-color: #ffc107; color: #000; }
         .badge-approved { background-color: #198754; }
         .badge-rejected { background-color: #dc3545; }
+        
+        .verification-img {
+            max-height: 250px;
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
     </style>
 </head>
 <body>
@@ -35,7 +45,56 @@
     </nav>
 
     <div class="container pb-5">
-        <div class="card shadow-sm p-3 p-md-4">
+
+        <!-- Flash Message Banners -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i><span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Pending Account Reactivations Review -->
+        <div th:if="${not #lists.isEmpty(pendingReactivations)}" class="card border-warning shadow-sm mb-4">
+            <div class="card-header bg-warning bg-opacity-10 fw-bold text-dark d-flex align-items-center justify-content-between">
+                <span><i class="bi bi-person-exclamation me-2"></i> Pending Account Reactivation Requests</span>
+                <span class="badge bg-warning text-dark" th:text="${#lists.size(pendingReactivations)}">0</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>USER ID</th>
+                                <th>FULL NAME</th>
+                                <th>USERNAME</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="u : ${pendingReactivations}">
+                                <td th:text="${u.id}">1</td>
+                                <td th:text="${u.fullName}">Name</td>
+                                <td th:text="${'@' + u.username}">username</td>
+                                <td>
+                                    <form th:action="@{/admin/user/approve-reactivation/{id}(id=${u.id})}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle"></i> Approve</button>
+                                    </form>
+                                    <form th:action="@{/admin/user/reject-reactivation/{id}(id=${u.id})}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle"></i> Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Requests Section -->
+        <div class="card shadow-sm p-3 p-md-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="card-title text-dark mb-0">
                     <i class="bi bi-card-checklist text-primary"></i> Document Requests Management
@@ -52,7 +111,7 @@
                             <th>Verification</th>
                             <th>Status</th>
                             <th>Remarks</th>
-                            <th class="text-center" style="min-width: 200px;">Actions</th>
+                            <th class="text-center" style="min-width: 220px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -75,15 +134,22 @@
                             </td>
                             <td class="small text-muted" th:text="${req.remarks != null ? req.remarks : '—'}">—</td>
                             <td class="text-center">
-                                <div th:if="${req.status == 'PENDING'}" class="d-flex gap-1 justify-content-center">
-                                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" th:data-bs-target="'#approveModal' + ${req.id}">
-                                        <i class="bi bi-check-circle"></i> Approve
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" th:data-bs-target="'#rejectModal' + ${req.id}">
-                                        <i class="bi bi-x-circle"></i> Reject
-                                    </button>
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <div th:if="${req.status == 'PENDING'}" class="d-flex gap-1">
+                                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" th:data-bs-target="'#approveModal' + ${req.id}">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" th:data-bs-target="'#rejectModal' + ${req.id}">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Permanent Delete Request Action -->
+                                    <form th:action="@{/admin/request/delete/{id}(id=${req.id})}" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete this request?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Request Permanently">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
                                 </div>
-                                <span th:if="${req.status != 'PENDING'}" class="text-muted small">Processed</span>
                             </td>
 
                             <!-- View Verification Modal -->
@@ -102,21 +168,27 @@
                                             </div>
 
                                             <div class="row g-3">
-                                                <!-- Uploaded Valid ID -->
                                                 <div class="col-md-6">
-                                                    <div class="border rounded p-2 bg-light text-center h-100">
+                                                    <div class="border rounded p-3 bg-light text-center h-100 d-flex flex-column justify-content-between">
                                                         <p class="small fw-bold text-muted mb-2">Step 1: Uploaded Valid ID</p>
-                                                        <img th:if="${req.idCardImagePath != null}" th:src="${req.idCardImagePath}" class="img-fluid rounded border" alt="Uploaded Resident ID" style="max-height: 220px;" />
-                                                        <p th:if="${req.idCardImagePath == null}" class="text-muted small py-4 mb-0">No ID uploaded.</p>
+                                                        <div class="my-auto">
+                                                            <a th:if="${req.idCardImagePath != null and !#strings.isEmpty(req.idCardImagePath)}" th:href="${req.idCardImagePath}" target="_blank">
+                                                                <img th:src="${req.idCardImagePath}" class="verification-img" alt="Uploaded Resident ID" />
+                                                            </a>
+                                                            <p th:if="${req.idCardImagePath == null or #strings.isEmpty(req.idCardImagePath)}" class="text-muted small py-4 mb-0">No ID uploaded.</p>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                <!-- Selfie holding ID -->
                                                 <div class="col-md-6">
-                                                    <div class="border rounded p-2 bg-light text-center h-100">
+                                                    <div class="border rounded p-3 bg-light text-center h-100 d-flex flex-column justify-content-between">
                                                         <p class="small fw-bold text-muted mb-2">Step 2: Selfie Holding ID</p>
-                                                        <img th:if="${req.selfieImagePath != null}" th:src="${req.selfieImagePath}" class="img-fluid rounded border" alt="Selfie with ID" style="max-height: 220px;" />
-                                                        <p th:if="${req.selfieImagePath == null}" class="text-muted small py-4 mb-0">No selfie uploaded.</p>
+                                                        <div class="my-auto">
+                                                            <a th:if="${req.selfieImagePath != null and !#strings.isEmpty(req.selfieImagePath)}" th:href="${req.selfieImagePath}" target="_blank">
+                                                                <img th:src="${req.selfieImagePath}" class="verification-img" alt="Selfie with ID" />
+                                                            </a>
+                                                            <p th:if="${req.selfieImagePath == null or #strings.isEmpty(req.selfieImagePath)}" class="text-muted small py-4 mb-0">No selfie uploaded.</p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -183,6 +255,45 @@
                 </table>
             </div>
         </div>
+
+        <!-- User Accounts Management Section -->
+        <div class="card shadow-sm p-3 p-md-4">
+            <h5 class="card-title text-dark mb-3">
+                <i class="bi bi-people-fill text-primary"></i> Registered Users & Anti-Spam Control
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>FULL NAME</th>
+                            <th>USERNAME</th>
+                            <th>ROLE</th>
+                            <th>STATUS</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${allUsers}">
+                            <td th:text="${u.id}">1</td>
+                            <td th:text="${u.fullName}">Name</td>
+                            <td th:text="${'@' + u.username}">username</td>
+                            <td th:text="${u.role}">STUDENT</td>
+                            <td>
+                                <span class="badge" th:classappend="${u.status == 'ACTIVE' ? 'bg-success' : (u.status == 'REACTIVATION_PENDING' ? 'bg-warning text-dark' : 'bg-secondary')}" th:text="${u.status}">ACTIVE</span>
+                            </td>
+                            <td>
+                                <form th:if="${u.role != 'ADMIN' and u.status == 'ACTIVE'}" th:action="@{/admin/user/deactivate/{id}(id=${u.id})}" method="post" class="d-inline" onsubmit="return confirm('Deactivate this user account? They will lose access until reactivated.');">
+                                    <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-pause-circle"></i> Deactivate</button>
+                                </form>
+                                <span th:if="${u.role == 'ADMIN'}" class="text-muted small">System Admin</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

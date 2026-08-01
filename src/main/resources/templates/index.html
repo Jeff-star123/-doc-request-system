@@ -29,7 +29,7 @@
             <!-- Error Alert -->
             <div th:if="${error}" class="alert alert-danger text-center p-2 mb-3" th:text="${error}"></div>
             
-            <!-- Success Alert for successful registration -->
+            <!-- Success Alert -->
             <div th:if="${success}" class="alert alert-success text-center p-2 mb-3" th:text="${success}"></div>
 
             <form th:action="@{/login}" method="post">
@@ -53,6 +53,29 @@
 
             <div class="text-center mt-3">
                 <small class="text-muted">Don't have an account? <a th:href="@{/register}">Register here</a></small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reactivation Request Confirmation Modal -->
+    <div th:if="${showReactivatePrompt}" class="modal fade show" id="reactivateModal" tabindex="-1" style="display: block; background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <form th:action="@{/request/reactivate}" method="post">
+                    <input type="hidden" name="userId" th:value="${pendingUserId}"/>
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Account Deactivated</h5>
+                        <a href="/" class="btn-close"></a>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2">The account <strong><span th:text="${pendingUsername}"></span></strong> is currently deactivated.</p>
+                        <p class="small text-muted">Would you like to send a reactivation request to the Barangay Administrator for approval?</p>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <a href="/" class="btn btn-secondary btn-sm">Cancel</a>
+                        <button type="submit" class="btn btn-warning btn-sm fw-semibold">Send Reactivation Request</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

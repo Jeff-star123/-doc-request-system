@@ -5,15 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barangay Portal - Student Dashboard</title>
     
-    <!-- Bootstrap 5 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     
-    <!-- Google MediaPipe Face Mesh & Camera Utils -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
-
-    <!-- Tesseract.js for Client-Side OCR -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
     <style>
@@ -40,7 +36,6 @@
             background-color: #ffffff;
         }
 
-        /* Stepper Navigation Indicator */
         .stepper-wrapper {
             display: flex;
             justify-content: space-between;
@@ -107,7 +102,6 @@
         .stepper-item.active .step-name { color: #0d6efd; }
         .stepper-item.completed .step-name { color: #198754; }
 
-        /* Step Section Transitions */
         .step-section {
             display: none;
             animation: fadeIn 0.3s ease-in-out;
@@ -120,8 +114,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Immersive Biometric Modal */
-        #immersiveScanModal .modal-content {
+        #immersiveScanModal .modal-content, #cameraCaptureModal .modal-content {
             background-color: #0f172a;
             color: #fff;
             border: none;
@@ -134,18 +127,23 @@
             margin: 0 auto;
             border-radius: 50% / 60%;
             overflow: hidden;
-            box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.85);
+            /* Lowered the backdrop overlay opacity from 0.85 to 0.45 to brighten surroundings */
+            box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45);
             border: 3px solid #10b981;
         }
 
         @media (min-width: 768px) {
             .oval-guide-container { width: 340px; height: 440px; }
         }
+
+        /* Class for flipping the camera view */
+        .video-flipped {
+            transform: scaleX(-1);
+        }
     </style>
 </head>
 <body>
 
-    <!-- Header Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4 py-3">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#">
@@ -162,14 +160,11 @@
     </nav>
 
     <div class="container">
-        
-        <!-- Flash Alert -->
         <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
             <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}">Error message</span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
-        <!-- Telegram Announcement Banner -->
         <div class="alert alert-info alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
             <div class="d-flex align-items-center gap-2 mb-1">
                 <i class="bi bi-telegram fs-4 text-primary"></i>
@@ -183,8 +178,6 @@
         </div>
 
         <div class="row g-4">
-            
-            <!-- Dynamic 3-Step Request Form -->
             <div class="col-lg-6">
                 <div class="card card-custom p-4">
                     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -194,7 +187,6 @@
                         <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1">Identity Verification</span>
                     </div>
 
-                    <!-- Modern Stepper Header -->
                     <div class="stepper-wrapper">
                         <div class="stepper-item active" id="stepIndicator1">
                             <div class="step-counter" id="num1">1</div>
@@ -211,8 +203,6 @@
                     </div>
 
                     <form th:action="@{/request/submit}" method="post" enctype="multipart/form-data" id="requestForm">
-                        
-                        <!-- Base Document Details -->
                         <div class="mb-3">
                             <label class="form-label small fw-semibold text-muted">DOCUMENT TYPE</label>
                             <select name="documentType" class="form-select shadow-none" required>
@@ -230,7 +220,7 @@
 
                         <hr class="text-muted opacity-25 my-3">
 
-                        <!-- STEP 1: Select & Upload Valid ID -->
+                        <!-- Step 1 Section -->
                         <div class="step-section active" id="step1Section">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="fw-bold text-dark mb-0">Step 1: Select & Upload Valid ID</h6>
@@ -251,7 +241,16 @@
 
                             <div class="mb-3">
                                 <label class="form-label small text-muted">ATTACH ID IMAGE</label>
-                                <input type="file" name="idCardFile" class="form-control" accept="image/*" id="idCardInput" disabled required>
+                                <div class="input-group mb-2">
+                                    <input type="file" name="idCardFile" class="form-control" accept="image/*" id="idCardInput" disabled required>
+                                    <button type="button" class="btn btn-outline-secondary" id="openIdCameraBtn" disabled>
+                                        <i class="bi bi-camera-fill"></i> Use Camera
+                                    </button>
+                                </div>
+                                <div id="idPreviewContainer" class="d-none mt-2 text-center">
+                                    <img id="idPreviewImg" src="" alt="ID Preview" class="img-thumbnail rounded" style="max-height: 150px;">
+                                    <p class="small text-success mb-0 mt-1"><i class="bi bi-check-circle-fill"></i> ID Captured Successfully</p>
+                                </div>
                             </div>
 
                             <div id="ocrFeedback" class="p-3 rounded-3 small d-none mb-3">
@@ -262,16 +261,25 @@
                             </div>
                         </div>
 
-                        <!-- STEP 2: Selfie Holding ID (Hidden until Step 1 validated) -->
+                        <!-- Step 2 Section -->
                         <div class="step-section" id="step2Section">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="fw-bold text-dark mb-0">Step 2: Selfie Holding Your ID</h6>
                                 <span class="badge bg-light text-dark border">Verification</span>
                             </div>
-                            <p class="small text-muted mb-3">Please upload a photo of yourself holding the ID selected in Step 1.</p>
+                            <p class="small text-muted mb-3">Please upload or snap a photo of yourself holding the ID selected in Step 1.</p>
 
                             <div class="mb-3">
-                                <input type="file" name="selfieWithIdFile" class="form-control" accept="image/*" id="selfieInput" required>
+                                <div class="input-group mb-2">
+                                    <input type="file" name="selfieWithIdFile" class="form-control" accept="image/*" id="selfieInput" required>
+                                    <button type="button" class="btn btn-outline-secondary" id="openSelfieCameraBtn">
+                                        <i class="bi bi-camera-fill"></i> Use Camera
+                                    </button>
+                                </div>
+                                <div id="selfiePreviewContainer" class="d-none mt-2 text-center">
+                                    <img id="selfiePreviewImg" src="" alt="Selfie Preview" class="img-thumbnail rounded" style="max-height: 150px;">
+                                    <p class="small text-success mb-0 mt-1"><i class="bi bi-check-circle-fill"></i> Selfie Captured Successfully</p>
+                                </div>
                             </div>
 
                             <div id="selfieFeedback" class="alert alert-success p-2 small mb-3 d-none">
@@ -279,7 +287,7 @@
                             </div>
                         </div>
 
-                        <!-- STEP 3: Facial Liveness Scan (Hidden until Step 2 uploaded) -->
+                        <!-- Step 3 Section -->
                         <div class="step-section" id="step3Section">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="fw-bold text-dark mb-0">Step 3: Biometric Liveness Check</h6>
@@ -297,16 +305,14 @@
                             <input type="hidden" name="faceVerified" id="faceVerifiedInput" value="false">
                         </div>
 
-                        <!-- Final Submission Button -->
                         <button type="submit" id="submitBtn" class="btn btn-primary w-100 py-2 fw-semibold mt-2" disabled>
                             <i class="bi bi-send-fill me-1"></i> Submit Request for Verification
                         </button>
-
                     </form>
                 </div>
             </div>
 
-            <!-- Request History View -->
+            <!-- Request History Panel -->
             <div class="col-lg-6">
                 <div class="card card-custom p-4">
                     <h5 class="fw-bold mb-3 text-dark">
@@ -354,22 +360,24 @@
         </div>
     </div>
 
-    <!-- Fullscreen Biometric Liveness Modal -->
+    <!-- Immersive Facial Scan Modal -->
     <div class="modal fade" id="immersiveScanModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content d-flex flex-column justify-content-between p-4">
                 <div class="d-flex justify-content-between align-items-center w-100 max-w-lg mx-auto">
                     <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-shield-check text-success fs-4"></i>
-                        <h5 class="mb-0 fw-bold">Identity Liveness Check</h5>
+                        <i class="bi bi-shield-check text-info fs-3"></i>
+                        <h4 class="mb-0 fw-bold text-white tracking-wide">Identity Liveness Check</h4>
                     </div>
-                    <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" id="cancelScanBtn">Cancel</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold shadow-sm" id="cancelScanBtn">
+                        <i class="bi bi-x-lg me-1"></i> Cancel Scan
+                    </button>
                 </div>
 
                 <div class="text-center my-auto">
-                    <div class="mb-3">
-                        <span id="modalInstruction" class="badge bg-warning text-dark px-4 py-2 fs-6 rounded-pill shadow-sm">
-                            Fit your face inside the oval guide
+                    <div class="mb-4">
+                        <span id="modalInstruction" class="badge bg-warning text-dark px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold">
+                            📌 Step 1: Look straight ahead
                         </span>
                     </div>
 
@@ -377,13 +385,48 @@
                         <video id="webcam" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
                     </div>
 
-                    <div class="progress w-50 mx-auto mt-4 bg-secondary bg-opacity-50" style="height: 8px;">
-                        <div id="livenessProgress" class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width: 0%;"></div>
+                    <div class="progress w-50 mx-auto mt-4 bg-secondary shadow-sm" style="height: 12px; border-radius: 6px;">
+                        <div id="livenessProgress" class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width: 0%; border-radius: 6px;"></div>
                     </div>
                 </div>
 
-                <div class="text-center text-muted small">
+                <div class="text-center text-light small opacity-75">
                     <p class="mb-0"><i class="bi bi-lock-fill text-success"></i> Encrypted client-side facial landmark detection</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- General Camera Capture Modal (For ID and Selfie Snapshots with Flip Option) -->
+    <div class="modal fade" id="cameraCaptureModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="modal-title fw-bold" id="cameraModalTitle"><i class="bi bi-camera-fill text-primary"></i> Take Photo</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Camera Options Bar (Flip Toggle) -->
+                <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                    <span class="small text-muted"><i class="bi bi-info-circle"></i> If ID text looks mirrored/reversed, toggle mirror view.</span>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="flipCameraToggle">
+                        <label class="form-check-label small fw-semibold text-light" for="flipCameraToggle">Mirror / Flip View</label>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <div class="position-relative d-inline-block w-100 overflow-hidden rounded bg-black" style="max-height: 400px;">
+                        <video id="captureVideo" autoplay playsinline muted style="width: 100%; max-height: 400px; object-fit: contain;"></video>
+                        <canvas id="captureCanvas" class="d-none"></canvas>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 justify-content-center mt-3">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary px-5 rounded-pill fw-semibold" id="snapPhotoBtn">
+                        <i class="bi bi-circle-fill text-danger me-1"></i> Capture Photo
+                    </button>
                 </div>
             </div>
         </div>
@@ -394,6 +437,10 @@
     <script>
         const idTypeSelect = document.getElementById('idTypeSelect');
         const idCardInput = document.getElementById('idCardInput');
+        const openIdCameraBtn = document.getElementById('openIdCameraBtn');
+        const idPreviewContainer = document.getElementById('idPreviewContainer');
+        const idPreviewImg = document.getElementById('idPreviewImg');
+
         const ocrFeedback = document.getElementById('ocrFeedback');
         const ocrSpinner = document.getElementById('ocrSpinner');
         const ocrStatusText = document.getElementById('ocrStatusText');
@@ -410,6 +457,9 @@
         const num3 = document.getElementById('num3');
 
         const selfieInput = document.getElementById('selfieInput');
+        const openSelfieCameraBtn = document.getElementById('openSelfieCameraBtn');
+        const selfiePreviewContainer = document.getElementById('selfiePreviewContainer');
+        const selfiePreviewImg = document.getElementById('selfiePreviewImg');
         const selfieFeedback = document.getElementById('selfieFeedback');
 
         const startScanBtn = document.getElementById('startScanBtn');
@@ -424,26 +474,31 @@
         const livenessProgress = document.getElementById('livenessProgress');
         const cancelScanBtn = document.getElementById('cancelScanBtn');
 
+        // Camera Snapshot Modal Elements
+        const cameraCaptureModal = new bootstrap.Modal(document.getElementById('cameraCaptureModal'));
+        const cameraModalTitle = document.getElementById('cameraModalTitle');
+        const captureVideo = document.getElementById('captureVideo');
+        const captureCanvas = document.getElementById('captureCanvas');
+        const snapPhotoBtn = document.getElementById('snapPhotoBtn');
+        const flipCameraToggle = document.getElementById('flipCameraToggle');
+
         let activeCameraStream = null;
+        let activeCaptureTarget = null; // 'id' or 'selfie'
         let isScanFinished = false;
 
         idTypeSelect.addEventListener('change', () => {
             if (idTypeSelect.value) {
                 idCardInput.disabled = false;
+                openIdCameraBtn.disabled = false;
             }
         });
 
-        // STEP 1: OCR Verification & Progressive Reveal
-        idCardInput.addEventListener('change', async () => {
-            const file = idCardInput.files[0];
-            if (!file) return;
-
-            const selectedType = idTypeSelect.value;
-
+        // Helper function to process and analyze files/blobs through OCR
+        async function processFileForOCR(file, selectedType) {
             ocrFeedback.classList.remove('d-none', 'alert-danger', 'alert-success', 'alert-info');
             ocrFeedback.classList.add('alert', 'alert-info');
             ocrSpinner.classList.remove('d-none');
-            ocrStatusText.innerText = `Analyzing uploaded document for ${selectedType}...`;
+            ocrStatusText.innerText = `Analyzing document for ${selectedType}...`;
 
             try {
                 const result = await Tesseract.recognize(file, 'eng');
@@ -451,7 +506,7 @@
 
                 const keywordsMap = {
                     "National ID": ["PHILIPPINES", "PILIPINAS", "PHILSYS", "PAMBANSANG", "IDENTITY"],
-                    "School ID": ["STUDENT", "COLLEGE", "UNIVERSITY", "SCHOOL", "CAMPUS", "STUDENT NO"],
+                    "School ID": ["PHINMA", "EDUCATION", "ID NO.", "MAKING LIVES BETTER.", "STUDENT", "COLLEGE", "UNIVERSITY", "SCHOOL", "CAMPUS", "STUDENT NO"],
                     "Driver's License": ["DRIVER", "LICENSE", "LTO", "TRANSPORTATION"],
                     "UMID / SSS": ["SOCIAL SECURITY", "UMID", "SSS", "CRN"],
                     "Barangay ID": ["BARANGAY", "OFFICE", "RESIDENT"]
@@ -477,7 +532,7 @@
 
                 } else {
                     ocrFeedback.className = "alert alert-danger p-3 rounded-3 small mb-3";
-                    ocrStatusText.innerHTML = `<strong><i class="bi bi-x-circle-fill"></i> Document Mismatch:</strong> The image uploaded does not match <b>${selectedType}</b>. Please attach a clear, valid ID to proceed.`;
+                    ocrStatusText.innerHTML = `<strong><i class="bi bi-x-circle-fill"></i> Document Mismatch:</strong> The image does not match <b>${selectedType}</b>. Please attach a clear, valid ID.`;
                     
                     step2Section.classList.remove('active');
                     step3Section.classList.remove('active');
@@ -485,20 +540,31 @@
                     stepIndicator3.classList.remove('active', 'completed');
                     submitBtn.disabled = true;
                 }
-
             } catch (error) {
                 console.error("OCR Error:", error);
                 ocrSpinner.classList.add('d-none');
                 ocrFeedback.className = "alert alert-danger p-3 rounded-3 small mb-3";
-                ocrStatusText.innerHTML = `<strong><i class="bi bi-exclamation-triangle-fill"></i> Error:</strong> Could not read image text clearly. Please upload a clearer photo.`;
+                ocrStatusText.innerHTML = `<strong><i class="bi bi-exclamation-triangle-fill"></i> Error:</strong> Could not read image text clearly. Please try again.`;
             }
+        }
+
+        idCardInput.addEventListener('change', async () => {
+            const file = idCardInput.files[0];
+            if (!file) return;
+
+            idPreviewImg.src = URL.createObjectURL(file);
+            idPreviewContainer.classList.remove('d-none');
+
+            await processFileForOCR(file, idTypeSelect.value);
         });
 
-        // STEP 2: Selfie Upload Unlocks Step 3
         selfieInput.addEventListener('change', () => {
             if (selfieInput.files.length > 0) {
-                selfieFeedback.classList.remove('d-none');
+                const file = selfieInput.files[0];
+                selfiePreviewImg.src = URL.createObjectURL(file);
+                selfiePreviewContainer.classList.remove('d-none');
 
+                selfieFeedback.classList.remove('d-none');
                 stepIndicator2.classList.remove('active');
                 stepIndicator2.classList.add('completed');
                 num2.innerHTML = '<i class="bi bi-check-lg"></i>';
@@ -510,12 +576,108 @@
             }
         });
 
-        // STEP 3: Biometric Liveness Check
+        // Trigger Camera Capture Modal
+        openIdCameraBtn.addEventListener('click', () => {
+            activeCaptureTarget = 'id';
+            cameraModalTitle.innerHTML = '<i class="bi bi-camera-fill text-primary"></i> Snap Valid ID';
+            // Default ID camera to NOT flipped so text is readable forward
+            flipCameraToggle.checked = false;
+            captureVideo.classList.remove('video-flipped');
+            startCaptureCamera();
+        });
+
+        openSelfieCameraBtn.addEventListener('click', () => {
+            activeCaptureTarget = 'selfie';
+            cameraModalTitle.innerHTML = '<i class="bi bi-camera-fill text-primary"></i> Snap Selfie Holding ID';
+            // Default selfie camera to flipped (mirror view) for comfortable framing
+            flipCameraToggle.checked = true;
+            captureVideo.classList.add('video-flipped');
+            startCaptureCamera();
+        });
+
+        // Toggle mirror / flip style live
+        flipCameraToggle.addEventListener('change', () => {
+            if (flipCameraToggle.checked) {
+                captureVideo.classList.add('video-flipped');
+            } else {
+                captureVideo.classList.remove('video-flipped');
+            }
+        });
+
+        async function startCaptureCamera() {
+            try {
+                activeCameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+                captureVideo.srcObject = activeCameraStream;
+                cameraCaptureModal.show();
+            } catch (err) {
+                alert("Camera permission is required to take photos directly.");
+            }
+        }
+
+        // Stop camera stream when capture modal is closed
+        document.getElementById('cameraCaptureModal').addEventListener('hidden.bs.modal', () => {
+            if (activeCameraStream) {
+                activeCameraStream.getTracks().forEach(track => track.stop());
+                activeCameraStream = null;
+            }
+        });
+
+        // Take snapshot from video stream (respecting the flip transformation if active)
+        snapPhotoBtn.addEventListener('click', async () => {
+            if (!activeCameraStream) return;
+
+            captureCanvas.width = captureVideo.videoWidth || 1280;
+            captureCanvas.height = captureVideo.videoHeight || 720;
+            const ctx = captureCanvas.getContext('2d');
+
+            ctx.save();
+            // If the video view is flipped, also flip the final saved snapshot so text remains legible
+            if (flipCameraToggle.checked) {
+                ctx.translate(captureCanvas.width, 0);
+                ctx.scale(-1, 1);
+            }
+
+            ctx.drawImage(captureVideo, 0, 0, captureCanvas.width, captureCanvas.height);
+            ctx.restore();
+
+            captureCanvas.toBlob(async (blob) => {
+                const fileName = activeCaptureTarget === 'id' ? 'captured-id.jpg' : 'captured-selfie.jpg';
+                const capturedFile = new File([blob], fileName, { type: 'image/jpeg' });
+
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(capturedFile);
+
+                if (activeCaptureTarget === 'id') {
+                    idCardInput.files = dataTransfer.files;
+                    idPreviewImg.src = URL.createObjectURL(blob);
+                    idPreviewContainer.classList.remove('d-none');
+                    cameraCaptureModal.hide();
+                    await processFileForOCR(capturedFile, idTypeSelect.value);
+                } else if (activeCaptureTarget === 'selfie') {
+                    selfieInput.files = dataTransfer.files;
+                    selfiePreviewImg.src = URL.createObjectURL(blob);
+                    selfiePreviewContainer.classList.remove('d-none');
+                    cameraCaptureModal.hide();
+
+                    selfieFeedback.classList.remove('d-none');
+                    stepIndicator2.classList.remove('active');
+                    stepIndicator2.classList.add('completed');
+                    num2.innerHTML = '<i class="bi bi-check-lg"></i>';
+
+                    setTimeout(() => {
+                        step3Section.classList.add('active');
+                        stepIndicator3.classList.add('active');
+                    }, 300);
+                }
+            }, 'image/jpeg', 0.90);
+        });
+
+        // Biometric Liveness Scan Code
         startScanBtn.addEventListener('click', async () => {
             immersiveModal.show();
             livenessProgress.style.width = '0%';
-            modalInstruction.innerText = "Fit your face inside the oval guide";
-            modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 rounded-pill shadow-sm";
+            modalInstruction.innerText = "📌 Step 1: Look straight ahead";
+            modalInstruction.className = "badge bg-warning text-dark px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
 
             try {
                 activeCameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 640 } });
@@ -540,7 +702,7 @@
 
                     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
                         modalInstruction.innerText = "⚠️ Position face inside oval frame";
-                        modalInstruction.className = "badge bg-danger text-white px-4 py-2 fs-6 rounded-pill shadow-sm";
+                        modalInstruction.className = "badge bg-danger text-white px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
                         return;
                     }
 
@@ -553,7 +715,7 @@
 
                     if (step === 0) {
                         modalInstruction.innerText = "📌 Step 1: Look straight ahead";
-                        modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 rounded-pill shadow-sm";
+                        modalInstruction.className = "badge bg-warning text-dark px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
                         if (balance > 0.35 && balance < 0.65) {
                             progress += 3;
                             livenessProgress.style.width = progress + '%';
@@ -561,7 +723,7 @@
                         }
                     } else if (step === 1) {
                         modalInstruction.innerText = "⬅️ Step 2: Slowly turn your head LEFT";
-                        modalInstruction.className = "badge bg-info text-dark px-4 py-2 fs-6 rounded-pill shadow-sm";
+                        modalInstruction.className = "badge bg-info text-dark px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
                         if (balance < 0.32) {
                             progress += 3;
                             livenessProgress.style.width = progress + '%';
@@ -569,7 +731,7 @@
                         }
                     } else if (step === 2) {
                         modalInstruction.innerText = "➡️ Step 3: Turn your head RIGHT";
-                        modalInstruction.className = "badge bg-warning text-dark px-4 py-2 fs-6 rounded-pill shadow-sm";
+                        modalInstruction.className = "badge bg-warning text-dark px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
                         if (balance > 0.68) {
                             progress += 4;
                             livenessProgress.style.width = progress + '%';
@@ -578,7 +740,7 @@
                                 isScanFinished = true;
                                 livenessProgress.style.width = '100%';
                                 modalInstruction.innerText = "✅ Biometric Liveness Passed!";
-                                modalInstruction.className = "badge bg-success text-white px-4 py-2 fs-6 rounded-pill shadow-sm";
+                                modalInstruction.className = "badge bg-success text-white px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
                                 
                                 faceVerifiedInput.value = "true";
                                 submitBtn.disabled = false;
@@ -628,5 +790,30 @@
             immersiveModal.hide();
         });
     </script>
+
+    <!-- Dify AI Chatbot Integration -->
+    <script>
+     window.difyChatbotConfig = {
+      token: 'tuMY58SadttfVKCz',
+      inputs: {},
+      systemVariables: {},
+      userVariables: {}
+     }
+    </script>
+    <script
+     src="https://udify.app/embed.min.js"
+     id="tuMY58SadttfVKCz"
+     defer>
+    </script>
+    <style>
+      #dify-chatbot-bubble-button {
+        background-color: #1C64F2 !important;
+      }
+      #dify-chatbot-bubble-window {
+        width: 24rem !important;
+        height: 40rem !important;
+      }
+    </style>
+
 </body>
 </html>

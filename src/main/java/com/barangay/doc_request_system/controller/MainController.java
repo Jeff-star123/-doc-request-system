@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.barangay.doc_request_system.model.ArchivedUser;
 import com.barangay.doc_request_system.model.DocumentRequest;
 import com.barangay.doc_request_system.model.User;
+import com.barangay.doc_request_system.repository.ArchivedUserRepository;
 import com.barangay.doc_request_system.repository.DocumentRequestRepository;
 import com.barangay.doc_request_system.repository.UserRepository;
 import com.barangay.doc_request_system.service.TelegramService;
@@ -30,6 +32,9 @@ public class MainController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ArchivedUserRepository archivedUserRepository;
 
     @Autowired
     private DocumentRequestRepository requestRepository;
@@ -55,6 +60,19 @@ public class MainController {
         User user = userRepository.findByUsername(username).orElse(null);
         
         if (user != null && user.getPassword().equals(password)) {
+
+            if ("DEACTIVATED".equalsIgnoreCase(user.getStatus())) {
+                model.addAttribute("showReactivatePrompt", true);
+                model.addAttribute("pendingUserId", user.getId());
+                model.addAttribute("pendingUsername", user.getUsername());
+                return "index";
+            }
+
+            if ("REACTIVATION_PENDING".equalsIgnoreCase(user.getStatus())) {
+                model.addAttribute("error", "Your account reactivation request is currently pending Admin approval.");
+                return "index";
+            }
+
             session.setAttribute("loggedInUser", user);
             if ("ADMIN".equals(user.getRole())) {
                 return "redirect:/admin";
@@ -64,6 +82,23 @@ public class MainController {
         
         model.addAttribute("error", "Invalid username or password!");
         return "index";
+    }
+
+    @PostMapping("/request/reactivate")
+    public String requestReactivate(@RequestParam Long userId, RedirectAttributes redirectAttributes) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null && "DEACTIVATED".equalsIgnoreCase(user.getStatus())) {
+            user.setStatus("REACTIVATION_PENDING");
+            userRepository.save(user);
+
+            if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
+                telegramService.sendNotification(user.getTelegramChatId(),
+                    "⏳ Account Reactivation Requested!\n\nYour request has been submitted to the Barangay Admin for review.");
+            }
+
+            redirectAttributes.addFlashAttribute("success", "Reactivation request submitted! Please await Admin decision.");
+        }
+        return "redirect:/";
     }
 
     @GetMapping("/dashboard")
@@ -99,7 +134,6 @@ public class MainController {
                 Files.createDirectories(uploadPath);
             }
 
-            // Save ID Card File
             if (idCardFile != null && !idCardFile.isEmpty()) {
                 String originalFilename = Paths.get(idCardFile.getOriginalFilename()).getFileName().toString();
                 String fileName = System.currentTimeMillis() + "_id_" + originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
@@ -108,7 +142,6 @@ public class MainController {
                 docRequest.setIdCardImagePath("/uploads/" + fileName);
             }
 
-            // Save Selfie with ID File
             if (selfieWithIdFile != null && !selfieWithIdFile.isEmpty()) {
                 String originalFilename = Paths.get(selfieWithIdFile.getOriginalFilename()).getFileName().toString();
                 String fileName = System.currentTimeMillis() + "_selfie_" + originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
@@ -154,6 +187,8 @@ public class MainController {
 
         model.addAttribute("adminUser", user);
         model.addAttribute("requests", requestRepository.findAll());
+        model.addAttribute("allUsers", userRepository.findAll());
+        model.addAttribute("pendingReactivations", userRepository.findByStatus("REACTIVATION_PENDING"));
         return "admin";
     }
 
@@ -192,6 +227,74 @@ public class MainController {
                                  "Reason/Remarks: " + docRequest.getRemarks();
                 telegramService.sendNotification(user.getTelegramChatId(), message);
             }
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/request/delete/{id}")
+    public String deleteRequestPermanently(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            requestRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", "Request permanently deleted.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Failed to delete request.");
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/user/deactivate/{id}")
+    public String adminDeactivateUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null && !"ADMIN".equals(user.getRole())) {
+            ArchivedUser archivedUser = new ArchivedUser(user);
+            archivedUserRepository.save(archivedUser);
+
+            user.setStatus("DEACTIVATED");
+            userRepository.save(user);
+
+            if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
+                telegramService.sendNotification(user.getTelegramChatId(),
+                    "⚠️ Your account has been deactivated by the Barangay Administrator.");
+            }
+            redirectAttributes.addFlashAttribute("success", "User account deactivated successfully.");
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/user/approve-reactivation/{id}")
+    public String approveReactivation(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            Optional<ArchivedUser> archiveOpt = archivedUserRepository.findByOriginalUserId(user.getId());
+            archiveOpt.ifPresent(archivedUser -> archivedUserRepository.delete(archivedUser));
+
+            user.setStatus("ACTIVE");
+            userRepository.save(user);
+
+            if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
+                telegramService.sendNotification(user.getTelegramChatId(),
+                    "🎉 Account Reactivated!\n\nYour account has been reactivated by the Barangay Admin. You can now log in.");
+            }
+
+            redirectAttributes.addFlashAttribute("success", "User account reactivated successfully.");
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/user/reject-reactivation/{id}")
+    public String rejectReactivation(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            user.setStatus("DEACTIVATED");
+            userRepository.save(user);
+
+            if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
+                telegramService.sendNotification(user.getTelegramChatId(),
+                    "❌ Account Reactivation Request Rejected.\n\nPlease visit the Barangay Office for assistance.");
+            }
+
+            redirectAttributes.addFlashAttribute("success", "Reactivation request rejected.");
         }
         return "redirect:/admin";
     }
@@ -308,28 +411,32 @@ public class MainController {
         return "redirect:/settings";
     }
 
-    @PostMapping("/settings/delete-account")
-    public String deleteAccount(@RequestParam String confirmPassword,
+    @PostMapping("/settings/deactivate-account")
+    public String deactivateAccount(@RequestParam String confirmPassword,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
         User user = getAuthenticatedUser(session);
         if (user == null) return "redirect:/";
 
         if (!user.getPassword().equals(confirmPassword)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Incorrect password confirmation. Account deletion cancelled.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Incorrect password confirmation. Account deactivation cancelled.");
             return "redirect:/settings";
         }
 
         try {
-            requestRepository.deleteByUser(user);
-            userRepository.delete(user);
+            ArchivedUser archivedUser = new ArchivedUser(user);
+            archivedUserRepository.save(archivedUser);
+
+            user.setStatus("DEACTIVATED");
+            userRepository.save(user);
+
             session.invalidate();
 
-            redirectAttributes.addFlashAttribute("success", "Your account has been permanently deleted.");
+            redirectAttributes.addFlashAttribute("success", "Your account has been deactivated.");
             return "redirect:/";
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to delete account due to a server error.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to deactivate account due to a server error.");
             return "redirect:/settings";
         }
     }
