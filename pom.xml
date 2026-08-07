@@ -5,8 +5,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.0</version> <!-- Fixed to a valid, stable Spring Boot version -->
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>3.3.0</version>
+        <relativePath/> 
     </parent>
     <groupId>com.barangay</groupId>
     <artifactId>doc-request-system</artifactId>
@@ -27,10 +27,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
-        <!-- Corrected from webmvc to web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- ADDED: Spring Security Crypto for BCrypt Password Hashing -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
         <!-- Cloudinary SDK -->
@@ -46,7 +51,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Corrected test starters to standard Spring Boot test artifacts -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

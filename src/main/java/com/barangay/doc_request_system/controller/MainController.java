@@ -8,6 +8,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // ADDED
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,6 +43,9 @@ public class MainController {
     @Autowired
     private TelegramService telegramService;
 
+    // ADDED: BCrypt Encoder tool for hashing and matching passwords
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     private User getAuthenticatedUser(HttpSession session) {
         return (User) session.getAttribute("loggedInUser");
     }
@@ -59,7 +63,8 @@ public class MainController {
         
         User user = userRepository.findByUsername(username).orElse(null);
         
-        if (user != null && user.getPassword().equals(password)) {
+        // UPDATED: Use passwordEncoder.matches() instead of .equals()
+        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
 
             if ("DEACTIVATED".equalsIgnoreCase(user.getStatus())) {
                 model.addAttribute("showReactivatePrompt", true);
@@ -330,7 +335,10 @@ public class MainController {
             return "register";
         }
 
-        User newUser = new User(fullName, username, password, "STUDENT");
+        // UPDATED: Hash the password using passwordEncoder.encode() before saving
+        String hashedPassword = passwordEncoder.encode(password);
+        User newUser = new User(fullName, username, hashedPassword, "STUDENT");
+        
         if (telegramChatId != null && !telegramChatId.trim().isEmpty()) {
             newUser.setTelegramChatId(telegramChatId.trim());
         }
@@ -393,7 +401,8 @@ public class MainController {
         User user = getAuthenticatedUser(session);
         if (user == null) return "redirect:/";
 
-        if (!user.getPassword().equals(currentPassword)) {
+        // UPDATED: Check current password using passwordEncoder.matches()
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Incorrect current password entered!");
             return "redirect:/settings";
         }
@@ -403,7 +412,8 @@ public class MainController {
             return "redirect:/settings";
         }
 
-        user.setPassword(newPassword);
+        // UPDATED: Hash the new password before saving
+        user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         session.setAttribute("loggedInUser", user);
 
@@ -418,7 +428,8 @@ public class MainController {
         User user = getAuthenticatedUser(session);
         if (user == null) return "redirect:/";
 
-        if (!user.getPassword().equals(confirmPassword)) {
+        // UPDATED: Check confirmation password using passwordEncoder.matches()
+        if (!passwordEncoder.matches(confirmPassword, user.getPassword())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Incorrect password confirmation. Account deactivation cancelled.");
             return "redirect:/settings";
         }
