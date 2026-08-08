@@ -32,7 +32,6 @@ public class RequestApiController {
     private UserRepository userRepository;
 
     // Test endpoint to verify your Telegram Bot
-    // URL: http://localhost:8080/api/requests/test-telegram
     @GetMapping("/test-telegram")
     public String testTelegram() {
         String myChatId = "8329704146"; 
@@ -55,12 +54,15 @@ public class RequestApiController {
     @PostMapping("/submit")
     public DocumentRequest submitRequest(@RequestBody DocumentRequest newRequest) {
         User student = userRepository.findByUsername("student").orElse(null);
+        if (student != null && "BANNED".equalsIgnoreCase(student.getStatus())) {
+            throw new RuntimeException("Account is banned. Cannot submit requests.");
+        }
+        
         newRequest.setUser(student);
         newRequest.setStatus("PENDING");
 
         DocumentRequest savedRequest = requestRepository.save(newRequest);
 
-        // Send confirmation notification if user has a Telegram Chat ID linked
         if (student != null && student.getTelegramChatId() != null) {
             String message = "📄 **Barangay Document Portal Confirmation**\n\n" +
                              "Your request for **" + savedRequest.getDocumentType() + "** has been received!\n" +

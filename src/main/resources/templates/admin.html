@@ -4,15 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barangay Portal - Admin Panel</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
-        body { background-color: #f8f9fa; }
-        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
-        .card { border: none; border-radius: 10px; }
+        :root {
+            --bs-primary-rgb: 13, 110, 253;
+            --primary-accent: #1e3a8a;
+            --primary-hover: #1e40af;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #0f172a;
+            position: relative;
+            background: linear-gradient(rgba(248, 250, 252, 0.65), rgba(226, 232, 240, 0.75)), 
+                        url('https://www.shutterstock.com/shutterstock/videos/3572559887/thumb/10.jpg?ip=x480') no-repeat center center fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark Mode Overrides */
+        [data-bs-theme="dark"] body {
+            color: #f8fafc;
+            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.92)), 
+                        url('https://www.shutterstock.com/shutterstock/videos/3572559887/thumb/10.jpg?ip=x480') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        [data-bs-theme="dark"] .card-custom {
+            background: rgba(30, 41, 59, 0.85) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .card-custom h5,
+        [data-bs-theme="dark"] .card-custom .text-dark {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .table {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .table-light {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+
+        [data-bs-theme="dark"] .table-light th {
+            background-color: #1e293b !important;
+            color: #cbd5e1 !important;
+        }
+
+        [data-bs-theme="dark"] .form-control, 
+        [data-bs-theme="dark"] .form-select {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .modal-content {
+            background: #1e293b !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .border-light, [data-bs-theme="dark"] .bg-light {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        .navbar {
+            background-color: #1e293b !important;
+            border-bottom: 1px solid #334155;
+        }
+
+        /* Circular Logo Styling */
+        .logo-wrapper-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #d97706;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            background: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .logo-img-sm {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        /* Glassmorphism Card Style */
+        .card-custom {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12), 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            border-radius: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .card-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 50px rgba(15, 23, 42, 0.16);
+        }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 12px;
+            color: #0f172a;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: #ffffff;
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 0.25rem rgba(30, 58, 138, 0.18);
+            color: #0f172a;
+        }
+
         .badge-pending { background-color: #ffc107; color: #000; }
-        .badge-approved { background-color: #198754; }
-        .badge-rejected { background-color: #dc3545; }
+        .badge-approved { background-color: #198754; color: #fff; }
+        .badge-rejected { background-color: #dc3545; color: #fff; }
         
         .verification-img {
             max-height: 250px;
@@ -23,21 +152,60 @@
             border: 1px solid #dee2e6;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
+
+        /* Responsive Draggable GIF Floating Container */
+        .floating-gif-container {
+            position: fixed;
+            width: 130px;
+            z-index: 1090;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            cursor: grab;
+        }
+
+        .floating-gif-container:active {
+            cursor: grabbing;
+        }
+
+        .dancing-gif {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.25));
+            pointer-events: none;
+        }
+
+        @media (max-width: 576px) {
+            .floating-gif-container {
+                width: 85px;
+            }
+        }
     </style>
 </head>
 <body>
 
     <!-- Header Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4 py-3">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-                <i class="bi bi-shield-lock-fill text-warning"></i> Barangay Admin Console
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#">
+                <div class="logo-wrapper-sm">
+                    <img src="https://cdn.phototourl.com/free/2026-08-08-4120abee-3ef2-4435-963d-1f1075db6535.jpg" 
+                         alt="Logo" 
+                         class="logo-img-sm" 
+                         onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/1041/1041883.png';">
+                </div>
+                Barangay Admin Console
             </a>
             <div class="d-flex align-items-center gap-3">
-                <span class="navbar-text text-white d-none d-sm-inline">
+                <!-- Creative Navbar Dark Mode Toggle Button -->
+                <button class="btn btn-outline-light btn-sm px-2 py-1 d-inline-flex align-items-center gap-1" id="themeToggleBtn" title="Toggle Theme">
+                    <i id="themeIcon" class="bi bi-moon-fill"></i> <span class="d-none d-md-inline small">Theme</span>
+                </button>
+                <span class="navbar-text text-light d-none d-sm-inline small">
                     <i class="bi bi-person-badge"></i> <strong th:text="${adminUser.fullName}">Administrator</strong>
                 </span>
-                <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">
+                <a th:href="@{/logout}" class="btn btn-outline-light btn-sm px-3">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </div>
@@ -46,20 +214,32 @@
 
     <div class="container pb-5">
 
-        <!-- Flash Message Banners -->
-        <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i><span th:text="${success}"></span>
+        <!-- Enhanced UI Flash Message Banners -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm mb-4 rounded-3 border-0" role="alert" style="background: rgba(25, 135, 84, 0.15); backdrop-filter: blur(10px);">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill fs-4 text-success"></i>
+                <div>
+                    <h6 class="alert-heading mb-0 fw-bold text-success">Success!</h6>
+                    <span class="small" th:text="${success}"></span>
+                </div>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}"></span>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm mb-4 rounded-3 border-0" role="alert" style="background: rgba(220, 53, 69, 0.15); backdrop-filter: blur(10px);">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-4 text-danger"></i>
+                <div>
+                    <h6 class="alert-heading mb-0 fw-bold text-danger">Error!</h6>
+                    <span class="small" th:text="${error}"></span>
+                </div>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
         <!-- Pending Account Reactivations Review -->
-        <div th:if="${not #lists.isEmpty(pendingReactivations)}" class="card border-warning shadow-sm mb-4">
-            <div class="card-header bg-warning bg-opacity-10 fw-bold text-dark d-flex align-items-center justify-content-between">
-                <span><i class="bi bi-person-exclamation me-2"></i> Pending Account Reactivation Requests</span>
+        <div th:if="${not #lists.isEmpty(pendingReactivations)}" class="card card-custom border-warning shadow-sm mb-4">
+            <div class="card-header bg-warning bg-opacity-10 fw-bold text-dark d-flex align-items-center justify-content-between rounded-top-4 border-0 py-3">
+                <span class="text-dark"><i class="bi bi-person-exclamation me-2"></i> Pending Account Reactivation Requests</span>
                 <span class="badge bg-warning text-dark" th:text="${#lists.size(pendingReactivations)}">0</span>
             </div>
             <div class="card-body p-0">
@@ -79,12 +259,13 @@
                                 <td th:text="${u.fullName}">Name</td>
                                 <td th:text="${'@' + u.username}">username</td>
                                 <td>
-                                    <form th:action="@{/admin/user/approve-reactivation/{id}(id=${u.id})}" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle"></i> Approve</button>
-                                    </form>
-                                    <form th:action="@{/admin/user/reject-reactivation/{id}(id=${u.id})}" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle"></i> Reject</button>
-                                    </form>
+                                    <!-- Confirmation Buttons Triggering Modals -->
+                                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" th:data-bs-target="'#approveReactivationModal' + ${u.id}">
+                                        <i class="bi bi-check-circle"></i> Approve
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" th:data-bs-target="'#rejectReactivationModal' + ${u.id}">
+                                        <i class="bi bi-x-circle"></i> Reject
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
@@ -94,10 +275,10 @@
         </div>
 
         <!-- Document Requests Section -->
-        <div class="card shadow-sm p-3 p-md-4 mb-4">
+        <div class="card card-custom shadow-sm p-3 p-md-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="card-title text-dark mb-0">
-                    <i class="bi bi-card-checklist text-primary"></i> Document Requests Management
+                <h5 class="card-title text-dark mb-0 fw-bold">
+                    <i class="bi bi-card-checklist text-primary me-1"></i> Document Requests Management
                 </h5>
             </div>
 
@@ -151,102 +332,6 @@
                                     </form>
                                 </div>
                             </td>
-
-                            <!-- View Verification Modal -->
-                            <div class="modal fade" th:id="'idModal' + ${req.id}" tabindex="-1">
-                                <div class="modal-dialog modal-lg modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title"><i class="bi bi-shield-check text-primary"></i> Verification Details</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="text-center mb-3">
-                                                <strong>Biometric Liveness Scan Status:</strong> 
-                                                <span th:if="${req.faceVerified}" class="badge bg-success">PASSED</span>
-                                                <span th:if="${!req.faceVerified}" class="badge bg-danger">NOT COMPLETED</span>
-                                            </div>
-
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <div class="border rounded p-3 bg-light text-center h-100 d-flex flex-column justify-content-between">
-                                                        <p class="small fw-bold text-muted mb-2">Step 1: Uploaded Valid ID</p>
-                                                        <div class="my-auto">
-                                                            <a th:if="${req.idCardImagePath != null and !#strings.isEmpty(req.idCardImagePath)}" th:href="${req.idCardImagePath}" target="_blank">
-                                                                <img th:src="${req.idCardImagePath}" class="verification-img" alt="Uploaded Resident ID" />
-                                                            </a>
-                                                            <p th:if="${req.idCardImagePath == null or #strings.isEmpty(req.idCardImagePath)}" class="text-muted small py-4 mb-0">No ID uploaded.</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-6">
-                                                    <div class="border rounded p-3 bg-light text-center h-100 d-flex flex-column justify-content-between">
-                                                        <p class="small fw-bold text-muted mb-2">Step 2: Selfie Holding ID</p>
-                                                        <div class="my-auto">
-                                                            <a th:if="${req.selfieImagePath != null and !#strings.isEmpty(req.selfieImagePath)}" th:href="${req.selfieImagePath}" target="_blank">
-                                                                <img th:src="${req.selfieImagePath}" class="verification-img" alt="Selfie with ID" />
-                                                            </a>
-                                                            <p th:if="${req.selfieImagePath == null or #strings.isEmpty(req.selfieImagePath)}" class="text-muted small py-4 mb-0">No selfie uploaded.</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Approve Modal -->
-                            <div class="modal fade" th:id="'approveModal' + ${req.id}" tabindex="-1">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <form th:action="@{/admin/approve/{id}(id=${req.id})}" method="post">
-                                            <div class="modal-header bg-success text-white">
-                                                <h5 class="modal-title">Approve Request</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body text-start">
-                                                <p>Are you sure you want to approve this request for <strong th:text="${req.documentType}"></strong>?</p>
-                                                <div class="mb-3">
-                                                    <label class="form-label fw-bold">Remarks (Optional)</label>
-                                                    <input type="text" name="remarks" class="form-control" placeholder="e.g. Approved by Barangay Captain" value="Approved by Admin" />
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="submit" class="btn btn-success">Confirm Approval</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Reject Modal -->
-                            <div class="modal fade" th:id="'rejectModal' + ${req.id}" tabindex="-1">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <form th:action="@{/admin/reject/{id}(id=${req.id})}" method="post">
-                                            <div class="modal-header bg-danger text-white">
-                                                <h5 class="modal-title">Reject Request</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body text-start">
-                                                <p>Are you sure you want to reject this request for <strong th:text="${req.documentType}"></strong>?</p>
-                                                <div class="mb-3">
-                                                    <label class="form-label fw-bold">Reason for Rejection</label>
-                                                    <input type="text" name="remarks" class="form-control" placeholder="e.g. Incomplete requirements" required />
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="submit" class="btn btn-danger">Confirm Rejection</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
                         </tr>
                         <tr th:if="${#lists.isEmpty(requests)}">
                             <td colspan="7" class="text-center text-muted py-4">No document requests found.</td>
@@ -256,10 +341,153 @@
             </div>
         </div>
 
+        <!-- RENDER MODALS OUTSIDE THE TABLES -->
+        <div th:each="u : ${pendingReactivations}">
+            <!-- Approve Reactivation Confirmation Modal -->
+            <div class="modal fade" th:id="'approveReactivationModal' + ${u.id}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form th:action="@{/admin/user/approve-reactivation/{id}(id=${u.id})}" method="post">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title"><i class="bi bi-person-check-fill me-1"></i> Confirm Account Activation</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <p>Are you sure you want to approve and reactivate the account for <strong th:text="${u.fullName}"></strong> (<span th:text="${'@' + u.username}"></span>)?</p>
+                                <p class="small text-muted mb-0">This will restore the user's access to the portal.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-success">Confirm Activation</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reject Reactivation Confirmation Modal -->
+            <div class="modal fade" th:id="'rejectReactivationModal' + ${u.id}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form th:action="@{/admin/user/reject-reactivation/{id}(id=${u.id})}" method="post">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title"><i class="bi bi-person-x-fill me-1"></i> Confirm Reactivation Rejection</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <p>Are you sure you want to reject the reactivation request for <strong th:text="${u.fullName}"></strong> (<span th:text="${'@' + u.username}"></span>)?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:each="req : ${requests}">
+            <!-- View Verification Modal -->
+            <div class="modal fade" th:id="'idModal' + ${req.id}" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="bi bi-shield-check text-primary"></i> Verification Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center mb-3">
+                                <strong>Biometric Liveness Scan Status:</strong> 
+                                <span th:if="${req.faceVerified}" class="badge bg-success">PASSED</span>
+                                <span th:if="${!req.faceVerified}" class="badge bg-danger">NOT COMPLETED</span>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 bg-light text-center h-100 d-flex flex-column justify-content-between">
+                                        <p class="small fw-bold text-muted mb-2">Step 1: Uploaded Valid ID</p>
+                                        <div class="my-auto">
+                                            <a th:if="${req.idCardImagePath != null and !#strings.isEmpty(req.idCardImagePath)}" th:href="${req.idCardImagePath}" target="_blank">
+                                                <img th:src="${req.idCardImagePath}" class="verification-img" alt="Uploaded Resident ID" />
+                                            </a>
+                                            <p th:if="${req.idCardImagePath == null or #strings.isEmpty(req.idCardImagePath)}" class="text-muted small py-4 mb-0">No ID uploaded.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 bg-light text-center h-100 d-flex flex-column justify-content-between">
+                                        <p class="small fw-bold text-muted mb-2">Step 2: Selfie Holding ID</p>
+                                        <div class="my-auto">
+                                            <a th:if="${req.selfieImagePath != null and !#strings.isEmpty(req.selfieImagePath)}" th:href="${req.selfieImagePath}" target="_blank">
+                                                <img th:src="${req.selfieImagePath}" class="verification-img" alt="Selfie with ID" />
+                                            </a>
+                                            <p th:if="${req.selfieImagePath == null or #strings.isEmpty(req.selfieImagePath)}" class="text-muted small py-4 mb-0">No selfie uploaded.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approve Modal -->
+            <div class="modal fade" th:id="'approveModal' + ${req.id}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form th:action="@{/admin/approve/{id}(id=${req.id})}" method="post">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title">Approve Request</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <p>Are you sure you want to approve this request for <strong th:text="${req.documentType}"></strong>?</p>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Remarks (Optional)</label>
+                                    <input type="text" name="remarks" class="form-control" placeholder="e.g. Approved by Barangay Captain" value="Approved by Admin" />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-success">Confirm Approval</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reject Modal -->
+            <div class="modal fade" th:id="'rejectModal' + ${req.id}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form th:action="@{/admin/reject/{id}(id=${req.id})}" method="post">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title">Reject Request</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <p>Are you sure you want to reject this request for <strong th:text="${req.documentType}"></strong>?</p>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Reason for Rejection</label>
+                                    <input type="text" name="remarks" class="form-control" placeholder="e.g. Incomplete requirements" required />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- User Accounts Management Section -->
-        <div class="card shadow-sm p-3 p-md-4">
-            <h5 class="card-title text-dark mb-3">
-                <i class="bi bi-people-fill text-primary"></i> Registered Users & Anti-Spam Control
+        <div class="card card-custom shadow-sm p-3 p-md-4">
+            <h5 class="card-title text-dark mb-3 fw-bold">
+                <i class="bi bi-people-fill text-primary me-1"></i> Registered Users & Anti-Spam Control
             </h5>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -288,15 +516,15 @@
                                 
                                 <!-- Actions for Student / Regular accounts -->
                                 <div th:if="${u.role != 'ADMIN'}" class="d-flex gap-1">
-                                    <!-- Deactivate Button (Shows if ACTIVE or null) with explicit warning about admin approval -->
+                                    <!-- Deactivate Button with explicit warning -->
                                     <form th:if="${u.status == 'ACTIVE' || u.status == null}" th:action="@{/admin/user/deactivate/{id}(id=${u.id})}" method="post" class="d-inline" onsubmit="return confirm('⚠️ WARNING: Deactivating this account will lock the user out. They will require ADMIN APPROVAL to reactivate their account. Do you wish to proceed?');">
                                         <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-pause-circle"></i> Deactivate</button>
                                     </form>
 
-                                    <!-- Activate / Reactivate Button (Shows if DEACTIVATED or REACTIVATION_PENDING) -->
-                                    <form th:if="${u.status == 'DEACTIVATED' || u.status == 'REACTIVATION_PENDING'}" th:action="@{/admin/user/approve-reactivation/{id}(id=${u.id})}" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle"></i> Activate</button>
-                                    </form>
+                                    <!-- Activate / Reactivate Button triggering modal if in pending/deactivated state -->
+                                    <button th:if="${u.status == 'DEACTIVATED' || u.status == 'REACTIVATION_PENDING'}" type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" th:data-bs-target="'#approveReactivationModal' + ${u.id}">
+                                        <i class="bi bi-check-circle"></i> Activate
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -307,6 +535,139 @@
 
     </div>
 
+    <!-- Responsive Draggable GIF Floating Container with Persistent Storage & Center Spawn -->
+    <div class="floating-gif-container" id="draggableWidget">
+        <img th:src="@{/images/dancing.gif}" src="https://cdn.imageurlgenerator.com/uploads/965960cd-616e-4c39-8661-8dac55a1fb03.gif" alt="Dancing Character" class="dancing-gif" draggable="false" />
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Dark Mode Initialization & Toggle Handler
+        const htmlElement = document.documentElement;
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+
+        function setTheme(theme) {
+            htmlElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('portal_theme', theme);
+            if (theme === 'dark') {
+                themeIcon.className = 'bi bi-sun-fill text-warning';
+            } else {
+                themeIcon.className = 'bi bi-moon-fill';
+            }
+        }
+
+        const savedTheme = localStorage.getItem('portal_theme') || 'light';
+        setTheme(savedTheme);
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // Unified Desktop & Mobile Dragging Script with Center Spawn and localStorage Memory
+        (function makeDraggable() {
+            const widget = document.getElementById("draggableWidget");
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            window.addEventListener("DOMContentLoaded", () => {
+                const savedLeft = localStorage.getItem("gif_pos_left");
+                const savedTop = localStorage.getItem("gif_pos_top");
+
+                if (savedLeft !== null && savedTop !== null) {
+                    widget.style.left = savedLeft + "px";
+                    widget.style.top = savedTop + "px";
+                } else {
+                    const maxLeft = window.innerWidth - widget.offsetWidth;
+                    const maxTop = window.innerHeight - widget.offsetHeight;
+                    widget.style.left = Math.max(0, maxLeft / 2) + "px";
+                    widget.style.top = Math.max(0, maxTop / 2) + "px";
+                }
+            });
+
+            widget.addEventListener("mousedown", dragStart);
+            document.addEventListener("mousemove", dragMove);
+            document.addEventListener("mouseup", dragEnd);
+
+            widget.addEventListener("touchstart", dragStart, { passive: false });
+            document.addEventListener("touchmove", dragMove, { passive: false });
+            document.addEventListener("touchend", dragEnd);
+
+            function dragStart(e) {
+                isDragging = true;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const rect = widget.getBoundingClientRect();
+                startX = clientX;
+                startY = clientY;
+                initialLeft = rect.left;
+                initialTop = rect.top;
+
+                widget.style.bottom = "auto";
+                widget.style.right = "auto";
+                widget.style.left = initialLeft + "px";
+                widget.style.top = initialTop + "px";
+            }
+
+            function dragMove(e) {
+                if (!isDragging) return;
+                if (e.cancelable) e.preventDefault();
+
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const deltaX = clientX - startX;
+                const deltaY = clientY - startY;
+
+                let newLeft = initialLeft + deltaX;
+                let newTop = initialTop + deltaY;
+
+                const maxLeft = window.innerWidth - widget.offsetWidth;
+                const maxTop = window.innerHeight - widget.offsetHeight;
+
+                newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                newTop = Math.max(0, Math.min(newTop, maxTop));
+
+                widget.style.left = newLeft + "px";
+                widget.style.top = newTop + "px";
+            }
+
+            function dragEnd() {
+                if (isDragging) {
+                    isDragging = false;
+                    localStorage.setItem("gif_pos_left", parseInt(widget.style.left));
+                    localStorage.setItem("gif_pos_top", parseInt(widget.style.top));
+                }
+            }
+        })();
+    </script>
+
+    <!-- Dify AI Chatbot Integration -->
+    <script>
+     window.difyChatbotConfig = {
+      token: 'tuMY58SadttfVKCz',
+      inputs: {},
+      systemVariables: {},
+      userVariables: {}
+     }
+    </script>
+    <script
+     src="https://udify.app/embed.min.js"
+     id="tuMY58SadttfVKCz"
+     defer>
+    </script>
+    <style>
+      #dify-chatbot-bubble-button {
+        background-color: #1C64F2 !important;
+      }
+      #dify-chatbot-bubble-window {
+        width: 24rem !important;
+        height: 40rem !important;
+      }
+    </style>
+
 </body>
 </html>

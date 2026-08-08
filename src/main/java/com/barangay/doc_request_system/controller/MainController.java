@@ -5,15 +5,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // ADDED
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -43,11 +47,23 @@ public class MainController {
     @Autowired
     private TelegramService telegramService;
 
-    // ADDED: BCrypt Encoder tool for hashing and matching passwords
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private User getAuthenticatedUser(HttpSession session) {
         return (User) session.getAttribute("loggedInUser");
+    }
+
+    // Helper method to check if the user is banned or deactivated and redirect to spam-banned if so
+    private String checkUserAndRedirect(HttpSession session) {
+        User user = getAuthenticatedUser(session);
+        if (user == null) {
+            return "redirect:/";
+        }
+        User freshUser = userRepository.findById(user.getId()).orElse(null);
+        if (freshUser == null || "BANNED".equalsIgnoreCase(freshUser.getStatus()) || "DEACTIVATED".equalsIgnoreCase(freshUser.getStatus())) {
+            return "redirect:/spam-banned";
+        }
+        return null;
     }
 
     @GetMapping("/")
@@ -63,8 +79,12 @@ public class MainController {
         
         User user = userRepository.findByUsername(username).orElse(null);
         
-        // UPDATED: Use passwordEncoder.matches() instead of .equals()
         if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+
+            if ("BANNED".equalsIgnoreCase(user.getStatus())) {
+                model.addAttribute("error", "Your account has been permanently banned by the Barangay Administrator.");
+                return "index";
+            }
 
             if ("DEACTIVATED".equalsIgnoreCase(user.getStatus())) {
                 model.addAttribute("showReactivatePrompt", true);
@@ -79,6 +99,8 @@ public class MainController {
             }
 
             session.setAttribute("loggedInUser", user);
+            session.removeAttribute("printTimestamps"); // Reset spam tracking timestamps on login
+
             if ("ADMIN".equals(user.getRole())) {
                 return "redirect:/admin";
             }
@@ -108,9 +130,10 @@ public class MainController {
 
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
-        User user = getAuthenticatedUser(session);
-        if (user == null) return "redirect:/";
+        String statusRedirect = checkUserAndRedirect(session);
+        if (statusRedirect != null) return statusRedirect;
 
+        User user = getAuthenticatedUser(session);
         model.addAttribute("user", user);
         model.addAttribute("requests", requestRepository.findByUser(user));
         return "dashboard";
@@ -126,8 +149,10 @@ public class MainController {
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
         
+        String statusRedirect = checkUserAndRedirect(session);
+        if (statusRedirect != null) return statusRedirect;
+
         User user = getAuthenticatedUser(session);
-        if (user == null) return "redirect:/";
 
         String formattedPurpose = "[" + idType + "] " + purpose;
         DocumentRequest docRequest = new DocumentRequest(user, documentType, formattedPurpose);
@@ -267,47 +292,127 @@ public class MainController {
         return "redirect:/admin";
     }
 
-    @PostMapping("/admin/user/approve-reactivation/{id}")
+    @PostMapping("/admin/user/ban/{id}")
+    public String adminBanUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null && !"ADMIN".equals(user.getRole())) {
+            ArchivedUser archivedUser = new ArchivedUser(user);
+            archivedUserRepository.save(archivedUser);
+
+            user.setStatus("BANNED");
+            userRepository.save(user);
+
+            if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
+                telegramService.sendNotification(user.getTelegramChatId(),
+                    "🚫 Your account has been permanently banned by the Barangay Administrator.");
+            }
+            redirectAttributes.addFlashAttribute("success", "User account banned successfully.");
+        }
+        return "redirect:/admin";
+    }
+
+    @RequestMapping(value = "/admin/user/approve-reactivation/{id}", method = {RequestMethod.GET, RequestMethod.POST})
     public String approveReactivation(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user != null) {
-            Optional<ArchivedUser> archiveOpt = archivedUserRepository.findByOriginalUserId(user.getId());
-            archiveOpt.ifPresent(archivedUser -> archivedUserRepository.delete(archivedUser));
+        try {
+            User user = userRepository.findById(id).orElse(null);
+            if (user != null) {
+                try {
+                    Optional<ArchivedUser> archiveOpt = archivedUserRepository.findByOriginalUserId(user.getId());
+                    archiveOpt.ifPresent(archivedUser -> {
+                        try {
+                            archivedUserRepository.delete(archivedUser);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-            user.setStatus("ACTIVE");
-            userRepository.save(user);
+                user.setStatus("ACTIVE");
+                userRepository.save(user);
 
-            if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
-                telegramService.sendNotification(user.getTelegramChatId(),
-                    "🎉 Account Reactivated!\n\nYour account has been reactivated by the Barangay Admin. You can now log in.");
+                if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
+                    try {
+                        telegramService.sendNotification(user.getTelegramChatId(),
+                            "🎉 Account Reactivated!\n\nYour account has been reactivated by the Barangay Admin. You can now log in.");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                redirectAttributes.addFlashAttribute("success", "User account reactivated successfully.");
             }
-
-            redirectAttributes.addFlashAttribute("success", "User account reactivated successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Failed to reactivate user account.");
         }
         return "redirect:/admin";
     }
 
-    @PostMapping("/admin/user/reject-reactivation/{id}")
+    @RequestMapping(value = "/admin/user/reject-reactivation/{id}", method = {RequestMethod.GET, RequestMethod.POST})
     public String rejectReactivation(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user != null) {
-            user.setStatus("DEACTIVATED");
-            userRepository.save(user);
+        try {
+            User user = userRepository.findById(id).orElse(null);
+            if (user != null) {
+                user.setStatus("DEACTIVATED");
+                userRepository.save(user);
 
-            if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
-                telegramService.sendNotification(user.getTelegramChatId(),
-                    "❌ Account Reactivation Request Rejected.\n\nPlease visit the Barangay Office for assistance.");
+                if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
+                    try {
+                        telegramService.sendNotification(user.getTelegramChatId(),
+                            "❌ Account Reactivation Request Rejected.\n\nPlease visit the Barangay Office for assistance.");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                redirectAttributes.addFlashAttribute("success", "Reactivation request rejected.");
             }
-
-            redirectAttributes.addFlashAttribute("success", "Reactivation request rejected.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Failed to reject reactivation request.");
         }
         return "redirect:/admin";
     }
 
+    @SuppressWarnings("unchecked")
     @GetMapping("/request/print/{id}")
     public String printDocument(@PathVariable Long id, HttpSession session, Model model) {
+        String statusRedirect = checkUserAndRedirect(session);
+        if (statusRedirect != null) return statusRedirect;
+
         User user = getAuthenticatedUser(session);
-        if (user == null) return "redirect:/";
+
+        long currentTime = System.currentTimeMillis();
+        
+        // Track print timestamps in a sliding window of 10 seconds (10000 ms)
+        List<Long> printTimestamps = (List<Long>) session.getAttribute("printTimestamps");
+        if (printTimestamps == null) {
+            printTimestamps = new ArrayList<>();
+        }
+
+        printTimestamps.add(currentTime);
+        // Remove timestamps older than 10 seconds
+        printTimestamps.removeIf(timestamp -> (currentTime - timestamp) > 10000);
+        session.setAttribute("printTimestamps", printTimestamps);
+
+        // Trigger deactivation if 5 print attempts occur within 10 seconds
+        if (printTimestamps.size() >= 5) {
+            if (user != null && !"ADMIN".equals(user.getRole())) {
+                ArchivedUser archivedUser = new ArchivedUser(user);
+                archivedUserRepository.save(archivedUser);
+
+                user.setStatus("DEACTIVATED");
+                userRepository.save(user);
+
+                if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
+                    telegramService.sendNotification(user.getTelegramChatId(),
+                        "⚠️ Your account has been deactivated due to spamming print requests.");
+                }
+            }
+            return "redirect:/spam-banned";
+        }
 
         DocumentRequest docRequest = requestRepository.findById(id).orElse(null);
         if (docRequest == null || !"APPROVED".equals(docRequest.getStatus())) {
@@ -316,6 +421,11 @@ public class MainController {
 
         model.addAttribute("request", docRequest);
         return "print_template";
+    }
+
+    @GetMapping("/spam-banned")
+    public String spamBannedPage(HttpSession session) {
+        return "spam-banned";
     }
 
     @GetMapping("/register")
@@ -335,7 +445,6 @@ public class MainController {
             return "register";
         }
 
-        // UPDATED: Hash the password using passwordEncoder.encode() before saving
         String hashedPassword = passwordEncoder.encode(password);
         User newUser = new User(fullName, username, hashedPassword, "STUDENT");
         
@@ -357,9 +466,10 @@ public class MainController {
 
     @GetMapping("/settings")
     public String viewSettings(HttpSession session, Model model) {
-        User user = getAuthenticatedUser(session);
-        if (user == null) return "redirect:/";
+        String statusRedirect = checkUserAndRedirect(session);
+        if (statusRedirect != null) return statusRedirect;
 
+        User user = getAuthenticatedUser(session);
         User freshUser = userRepository.findById(user.getId()).orElse(user);
         model.addAttribute("user", freshUser);
         
@@ -372,8 +482,10 @@ public class MainController {
                                 @RequestParam(required = false) String telegramChatId,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
+        String statusRedirect = checkUserAndRedirect(session);
+        if (statusRedirect != null) return statusRedirect;
+
         User user = getAuthenticatedUser(session);
-        if (user == null) return "redirect:/";
 
         Optional<User> existingUser = userRepository.findByUsername(username);
         if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
@@ -398,10 +510,11 @@ public class MainController {
                                  @RequestParam String confirmPassword,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes) {
-        User user = getAuthenticatedUser(session);
-        if (user == null) return "redirect:/";
+        String statusRedirect = checkUserAndRedirect(session);
+        if (statusRedirect != null) return statusRedirect;
 
-        // UPDATED: Check current password using passwordEncoder.matches()
+        User user = getAuthenticatedUser(session);
+
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Incorrect current password entered!");
             return "redirect:/settings";
@@ -412,7 +525,6 @@ public class MainController {
             return "redirect:/settings";
         }
 
-        // UPDATED: Hash the new password before saving
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         session.setAttribute("loggedInUser", user);
@@ -425,10 +537,11 @@ public class MainController {
     public String deactivateAccount(@RequestParam String confirmPassword,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
-        User user = getAuthenticatedUser(session);
-        if (user == null) return "redirect:/";
+        String statusRedirect = checkUserAndRedirect(session);
+        if (statusRedirect != null) return statusRedirect;
 
-        // UPDATED: Check confirmation password using passwordEncoder.matches()
+        User user = getAuthenticatedUser(session);
+
         if (!passwordEncoder.matches(confirmPassword, user.getPassword())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Incorrect password confirmation. Account deactivation cancelled.");
             return "redirect:/settings";

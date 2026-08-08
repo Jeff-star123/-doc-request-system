@@ -4,27 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Official Barangay Clearance</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
-        body { background-color: #6c757d; display: flex; justify-content: center; padding: 20px 10px; }
+        body {
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(rgba(108, 117, 125, 0.75), rgba(73, 80, 87, 0.85)), 
+                        url('https://www.shutterstock.com/shutterstock/videos/3572559887/thumb/10.jpg?ip=x480') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 10px;
+            overflow-x: hidden;
+        }
+
         .document-page {
             background: white;
             width: 100%;
             max-width: 800px;
             min-height: 1000px;
-            padding: 30px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
             position: relative;
         }
+
         @media (min-width: 768px) {
-            .document-page { padding: 50px; }
+            .document-page { padding: 60px; }
         }
+
+        /* Circular Logo Branding */
+        .logo-wrapper-md {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #0d6efd;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .logo-img-md {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
         .header-title { font-family: 'Times New Roman', Times, serif; }
         .document-body { font-family: 'Times New Roman', Times, serif; font-size: 1.1rem; line-height: 1.8; margin-top: 30px; }
         .signature-section { margin-top: 60px; }
+
+        /* Responsive Draggable GIF Floating Container */
+        .floating-gif-container {
+            position: fixed;
+            width: 130px;
+            z-index: 1090;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            cursor: grab;
+        }
+
+        .floating-gif-container:active {
+            cursor: grabbing;
+        }
+
+        .dancing-gif {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.25));
+            pointer-events: none;
+        }
+
+        @media (max-width: 576px) {
+            .floating-gif-container {
+                width: 85px;
+            }
+        }
+
         @media print {
-            body { background: white; padding: 0; }
-            .document-page { box-shadow: none; width: 100%; max-width: 100%; padding: 0; }
+            body { 
+                background: white !important; 
+                padding: 0 !important; 
+                display: block !important; 
+            }
+            .document-page { 
+                box-shadow: none !important; 
+                width: 100% !important; 
+                max-width: 100% !important; 
+                padding: 20px !important; 
+                border-radius: 0 !important; 
+            }
             .no-print { display: none !important; }
         }
     </style>
@@ -34,11 +114,17 @@
     <div class="document-page">
         <!-- Print Trigger Button -->
         <div class="text-end mb-3 no-print">
-            <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer"></i> Print Document</button>
+            <button onclick="window.print()" class="btn btn-primary px-4 shadow-sm"><i class="bi bi-printer me-1"></i> Print Document</button>
         </div>
 
         <!-- Official Barangay Letterhead -->
         <div class="text-center header-title border-bottom pb-3 mb-4">
+            <div class="logo-wrapper-md mx-auto">
+                <img src="https://cdn.phototourl.com/free/2026-08-08-4120abee-3ef2-4435-963d-1f1075db6535.jpg" 
+                     alt="Barangay Logo" 
+                     class="logo-img-md" 
+                     onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/1041/1041883.png';">
+            </div>
             <h6 class="mb-0 text-uppercase">Republic of the Philippines</h6>
             <h5 class="mb-0 fw-bold">OFFICE OF THE BARANGAY CAPTAIN</h5>
             <h4 class="fw-bold text-primary mb-0">BARANGAY CLEARANCE PORTAL</h4>
@@ -77,6 +163,117 @@
             </div>
         </div>
     </div>
+
+    <!-- Responsive Draggable GIF Floating Container (Hidden on Print) -->
+    <div class="floating-gif-container no-print" id="draggableWidget">
+        <img th:src="@{/images/dancing.gif}" src="https://cdn.imageurlgenerator.com/uploads/965960cd-616e-4c39-8661-8dac55a1fb03.gif" alt="Dancing Character" class="dancing-gif" draggable="false" />
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Unified Desktop & Mobile Dragging Script with Center Spawn and localStorage Memory
+        (function makeDraggable() {
+            const widget = document.getElementById("draggableWidget");
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            window.addEventListener("DOMContentLoaded", () => {
+                const savedLeft = localStorage.getItem("gif_pos_left");
+                const savedTop = localStorage.getItem("gif_pos_top");
+
+                if (savedLeft !== null && savedTop !== null) {
+                    widget.style.left = savedLeft + "px";
+                    widget.style.top = savedTop + "px";
+                } else {
+                    const maxLeft = window.innerWidth - widget.offsetWidth;
+                    const maxTop = window.innerHeight - widget.offsetHeight;
+                    widget.style.left = Math.max(0, maxLeft / 2) + "px";
+                    widget.style.top = Math.max(0, maxTop / 2) + "px";
+                }
+            });
+
+            widget.addEventListener("mousedown", dragStart);
+            document.addEventListener("mousemove", dragMove);
+            document.addEventListener("mouseup", dragEnd);
+
+            widget.addEventListener("touchstart", dragStart, { passive: false });
+            document.addEventListener("touchmove", dragMove, { passive: false });
+            document.addEventListener("touchend", dragEnd);
+
+            function dragStart(e) {
+                isDragging = true;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const rect = widget.getBoundingClientRect();
+                startX = clientX;
+                startY = clientY;
+                initialLeft = rect.left;
+                initialTop = rect.top;
+
+                widget.style.bottom = "auto";
+                widget.style.right = "auto";
+                widget.style.left = initialLeft + "px";
+                widget.style.top = initialTop + "px";
+            }
+
+            function dragMove(e) {
+                if (!isDragging) return;
+                if (e.cancelable) e.preventDefault();
+
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const deltaX = clientX - startX;
+                const deltaY = clientY - startY;
+
+                let newLeft = initialLeft + deltaX;
+                let newTop = initialTop + deltaY;
+
+                const maxLeft = window.innerWidth - widget.offsetWidth;
+                const maxTop = window.innerHeight - widget.offsetHeight;
+
+                newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                newTop = Math.max(0, Math.min(newTop, maxTop));
+
+                widget.style.left = newLeft + "px";
+                widget.style.top = newTop + "px";
+            }
+
+            function dragEnd() {
+                if (isDragging) {
+                    isDragging = false;
+                    localStorage.setItem("gif_pos_left", parseInt(widget.style.left));
+                    localStorage.setItem("gif_pos_top", parseInt(widget.style.top));
+                }
+            }
+        })();
+    </script>
+
+    <!-- Dify AI Chatbot Integration (Hidden on Print) -->
+    <script>
+     window.difyChatbotConfig = {
+      token: 'tuMY58SadttfVKCz',
+      inputs: {},
+      systemVariables: {},
+      userVariables: {}
+     }
+    </script>
+    <script
+     src="https://udify.app/embed.min.js"
+     id="tuMY58SadttfVKCz"
+     defer>
+    </script>
+    <style class="no-print">
+      #dify-chatbot-bubble-button {
+        background-color: #1C64F2 !important;
+      }
+      #dify-chatbot-bubble-window {
+        width: 24rem !important;
+        height: 40rem !important;
+      }
+    </style>
 
 </body>
 </html>

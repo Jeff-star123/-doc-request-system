@@ -4,45 +4,215 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barangay Portal - Account Settings</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
-        body { background-color: #f8f9fa; padding-bottom: 80px; }
-        .navbar { background-color: #1e293b !important; }
-        .card { border: none; border-radius: 12px; }
-        .settings-nav .list-group-item { border: none; border-radius: 8px !important; margin-bottom: 5px; font-weight: 500; cursor: pointer; }
+        :root {
+            --bs-primary-rgb: 13, 110, 253;
+            --primary-accent: #1e3a8a;
+            --primary-hover: #1e40af;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #0f172a;
+            position: relative;
+            background: linear-gradient(rgba(248, 250, 252, 0.65), rgba(226, 232, 240, 0.75)), 
+                        url('https://www.shutterstock.com/shutterstock/videos/3572559887/thumb/10.jpg?ip=x480') no-repeat center center fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark Mode Overrides */
+        [data-bs-theme="dark"] body {
+            color: #f8fafc;
+            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.92)), 
+                        url('https://www.shutterstock.com/shutterstock/videos/3572559887/thumb/10.jpg?ip=x480') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        [data-bs-theme="dark"] .card-custom {
+            background: rgba(30, 41, 59, 0.85) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .card-custom h5,
+        [data-bs-theme="dark"] .card-custom h6,
+        [data-bs-theme="dark"] .card-custom .text-dark {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .settings-nav .list-group-item {
+            color: #cbd5e1 !important;
+        }
+
+        [data-bs-theme="dark"] .settings-nav .list-group-item:hover {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            color: #ffffff !important;
+        }
+
+        [data-bs-theme="dark"] .settings-nav .list-group-item.active {
+            background-color: #0d6efd !important;
+            color: #fff !important;
+        }
+
+        [data-bs-theme="dark"] .form-control, 
+        [data-bs-theme="dark"] .form-select {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .modal-content {
+            background: #1e293b !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .bg-light {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+
+        .navbar {
+            background-color: #1e293b !important;
+            border-bottom: 1px solid #334155;
+        }
+
+        /* Circular Logo Styling */
+        .logo-wrapper-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #d97706;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            background: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .logo-img-sm {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        /* Glassmorphism Card Style */
+        .card-custom {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12), 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            border-radius: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .card-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 50px rgba(15, 23, 42, 0.16);
+        }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 12px;
+            color: #0f172a;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: #ffffff;
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 0.25rem rgba(30, 58, 138, 0.18);
+            color: #0f172a;
+        }
+
+        .settings-nav .list-group-item { 
+            border: none; 
+            border-radius: 8px !important; 
+            margin-bottom: 5px; 
+            font-weight: 500; 
+            cursor: pointer; 
+            background: transparent; 
+        }
         .settings-nav .list-group-item.active { background-color: #0d6efd; color: #fff; }
         .settings-section { display: none; }
         .settings-section.active-pane { display: block; }
+
+        /* Responsive Draggable GIF Floating Container */
+        .floating-gif-container {
+            position: fixed;
+            width: 130px;
+            z-index: 1090;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            cursor: grab;
+        }
+
+        .floating-gif-container:active {
+            cursor: grabbing;
+        }
+
+        .dancing-gif {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.25));
+            pointer-events: none;
+        }
+
+        @media (max-width: 576px) {
+            .floating-gif-container {
+                width: 85px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Header Navbar matching portal UI -->
-    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4 py-3">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" th:href="@{/dashboard}">
-                <i class="bi bi-building-fill text-primary"></i> Barangay Request Portal
+                <div class="logo-wrapper-sm">
+                    <img src="https://cdn.phototourl.com/free/2026-08-08-4120abee-3ef2-4435-963d-1f1075db6535.jpg" 
+                         alt="Logo" 
+                         class="logo-img-sm" 
+                         onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/1041/1041883.png';">
+                </div>
+                Barangay Request Portal
             </a>
             <div class="d-flex align-items-center gap-3">
-                <span class="text-light d-flex align-items-center gap-1 small">
+                <button class="btn btn-outline-light btn-sm px-2 py-1 d-inline-flex align-items-center gap-1" id="themeToggleBtn" title="Toggle Theme">
+                    <i id="themeIcon" class="bi bi-moon-fill"></i> <span class="d-none d-md-inline small">Theme</span>
+                </button>
+                <span class="text-light d-flex align-items-center gap-1 small d-none d-sm-inline">
                     <i class="bi bi-person-circle"></i> <span th:text="${user.username}">jeff</span>
                 </span>
                 <a th:href="@{/settings}" class="btn btn-outline-light btn-sm">
                     <i class="bi bi-gear"></i> Settings
                 </a>
-                <form th:action="@{/logout}" method="post" class="m-0">
-                    <button type="submit" class="btn btn-outline-danger btn-sm text-light">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </button>
-                </form>
+                <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm text-light">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
             </div>
         </div>
     </nav>
 
     <div class="container py-3">
         
-        <!-- Telegram Notification Banner -->
         <div th:if="${user.telegramChatId == null or user.telegramChatId.empty}" class="alert alert-info alert-dismissible fade show border-0 shadow-sm mb-4" style="background-color: #e0f2fe; color: #0369a1;" role="alert">
             <div class="d-flex align-items-start gap-3">
                 <i class="bi bi-telegram fs-4 text-primary mt-1"></i>
@@ -58,7 +228,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
-        <!-- Flash Messages -->
         <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
             <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}">Success</span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -70,9 +239,8 @@
 
         <div class="row g-4">
             
-            <!-- Sidebar Navigation Menu -->
             <div class="col-lg-3">
-                <div class="card shadow-sm p-3">
+                <div class="card card-custom shadow-sm p-3">
                     <div class="text-center mb-3">
                         <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 70px; height: 70px; font-size: 1.8rem;">
                             <i class="bi bi-person-fill"></i>
@@ -95,11 +263,9 @@
                 </div>
             </div>
 
-            <!-- Main Content Form Area -->
             <div class="col-lg-9">
                 
-                <!-- Section 1: Profile & Telegram ID Update -->
-                <div class="card shadow-sm p-4 mb-4 settings-section active-pane" id="profileSection">
+                <div class="card card-custom shadow-sm p-4 mb-4 settings-section active-pane" id="profileSection">
                     <h5 class="text-primary fw-bold mb-3">
                         <i class="bi bi-person-lines-fill"></i> General Information & Notifications
                     </h5>
@@ -132,8 +298,7 @@
                     </form>
                 </div>
 
-                <!-- Section 2: Security & Password Change -->
-                <div class="card shadow-sm p-4 mb-4 settings-section" id="securitySection">
+                <div class="card card-custom shadow-sm p-4 mb-4 settings-section" id="securitySection">
                     <h5 class="text-primary fw-bold mb-3">
                         <i class="bi bi-shield-lock-fill"></i> Password Security
                     </h5>
@@ -144,8 +309,7 @@
                     </button>
                 </div>
 
-                <!-- Section 3: Deactivate Account Section -->
-                <div class="card shadow-sm border border-warning border-opacity-50 p-4 bg-warning bg-opacity-10 settings-section" id="dangerSection">
+                <div class="card card-custom shadow-sm border border-warning border-opacity-50 p-4 bg-warning bg-opacity-10 settings-section" id="dangerSection">
                     <h5 class="text-warning-emphasis fw-bold mb-2">
                         <i class="bi bi-pause-circle-fill"></i> Account Deactivation
                     </h5>
@@ -170,7 +334,6 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <!-- Current Password -->
                         <div class="mb-3">
                             <label class="form-label small fw-bold">CURRENT PASSWORD</label>
                             <div class="input-group">
@@ -181,7 +344,6 @@
                             </div>
                         </div>
                         
-                        <!-- New Password -->
                         <div class="mb-3">
                             <label class="form-label small fw-bold">NEW PASSWORD</label>
                             <div class="input-group">
@@ -192,7 +354,6 @@
                             </div>
                         </div>
 
-                        <!-- Confirm New Password -->
                         <div class="mb-3">
                             <label class="form-label small fw-bold">CONFIRM NEW PASSWORD</label>
                             <div class="input-group">
@@ -224,7 +385,6 @@
                     <div class="modal-body">
                         <p class="text-dark fw-semibold">Are you sure you want to deactivate your account?</p>
                         
-                        <!-- Warning Alert Box -->
                         <div class="alert alert-danger py-2 small mb-3">
                             <i class="bi bi-exclamation-circle-fill me-1"></i> <strong>Warning:</strong> You will not be able to log back in freely. Reactivation will require manual approval from a Barangay Administrator.
                         </div>
@@ -248,11 +408,35 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS Bundle -->
+    <div class="floating-gif-container" id="draggableWidget">
+        <img th:src="@{/images/dancing.gif}" src="https://cdn.imageurlgenerator.com/uploads/965960cd-616e-4c39-8661-8dac55a1fb03.gif" alt="Dancing Character" class="dancing-gif" draggable="false" />
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Tab Switching Script
+        const htmlElement = document.documentElement;
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+
+        function setTheme(theme) {
+            htmlElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('portal_theme', theme);
+            if (theme === 'dark') {
+                themeIcon.className = 'bi bi-sun-fill text-warning';
+            } else {
+                themeIcon.className = 'bi bi-moon-fill';
+            }
+        }
+
+        const savedTheme = localStorage.getItem('portal_theme') || 'light';
+        setTheme(savedTheme);
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
         const navItems = document.querySelectorAll('#settingsTabList .list-group-item');
         const sections = document.querySelectorAll('.settings-section');
 
@@ -272,7 +456,6 @@
             });
         });
 
-        // Password Visibility Toggle Function
         function togglePassword(inputId, iconId) {
             const passwordInput = document.getElementById(inputId);
             const eyeIcon = document.getElementById(iconId);
@@ -287,31 +470,83 @@
                 eyeIcon.classList.add("bi-eye");
             }
         }
-    </script>
 
-    <!-- Dify AI Chatbot Integration -->
-    <script>
-     window.difyChatbotConfig = {
-     token: 'tuMY58SadttfVKCz',
-     inputs: {},
-     systemVariables: {},
-     userVariables: {}
-     }
-    </script>
-    <script
-     src="https://udify.app/embed.min.js"
-     id="tuMY58SadttfVKCz"
-     defer>
-    </script>
-    <style>
-      #dify-chatbot-bubble-button {
-        background-color: #1C64F2 !important;
-      }
-      #dify-chatbot-bubble-window {
-        width: 24rem !important;
-        height: 40rem !important;
-      }
-    </style>
+        (function makeDraggable() {
+            const widget = document.getElementById("draggableWidget");
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
 
+            window.addEventListener("DOMContentLoaded", () => {
+                const savedLeft = localStorage.getItem("gif_pos_left");
+                const savedTop = localStorage.getItem("gif_pos_top");
+
+                if (savedLeft !== null && savedTop !== null) {
+                    widget.style.left = savedLeft + "px";
+                    widget.style.top = savedTop + "px";
+                } else {
+                    const maxLeft = window.innerWidth - widget.offsetWidth;
+                    const maxTop = window.innerHeight - widget.offsetHeight;
+                    widget.style.left = Math.max(0, maxLeft / 2) + "px";
+                    widget.style.top = Math.max(0, maxTop / 2) + "px";
+                }
+            });
+
+            widget.addEventListener("mousedown", dragStart);
+            document.addEventListener("mousemove", dragMove);
+            document.addEventListener("mouseup", dragEnd);
+
+            widget.addEventListener("touchstart", dragStart, { passive: false });
+            document.addEventListener("touchmove", dragMove, { passive: false });
+            document.addEventListener("touchend", dragEnd);
+
+            function dragStart(e) {
+                isDragging = true;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const rect = widget.getBoundingClientRect();
+                startX = clientX;
+                startY = clientY;
+                initialLeft = rect.left;
+                initialTop = rect.top;
+
+                widget.style.bottom = "auto";
+                widget.style.right = "auto";
+                widget.style.left = initialLeft + "px";
+                widget.style.top = initialTop + "px";
+            }
+
+            function dragMove(e) {
+                if (!isDragging) return;
+                if (e.cancelable) e.preventDefault();
+
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const deltaX = clientX - startX;
+                const deltaY = clientY - startY;
+
+                let newLeft = initialLeft + deltaX;
+                let newTop = initialTop + deltaY;
+
+                const maxLeft = window.innerWidth - widget.offsetWidth;
+                const maxTop = window.innerHeight - widget.offsetHeight;
+
+                newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                newTop = Math.max(0, Math.min(newTop, maxTop));
+
+                widget.style.left = newLeft + "px";
+                widget.style.top = newTop + "px";
+            }
+
+            function dragEnd() {
+                if (isDragging) {
+                    isDragging = false;
+                    localStorage.setItem("gif_pos_left", parseInt(widget.style.left));
+                    localStorage.setItem("gif_pos_top", parseInt(widget.style.top));
+                }
+            }
+        })();
+    </script>
 </body>
 </html>
