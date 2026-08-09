@@ -506,5 +506,245 @@
             }
         })();
     </script>
+
+    <!-- Enhanced Dify AI Chatbot Integration & Draggable Floating Position -->
+    <script>
+     window.difyChatbotConfig = {
+      token: 'tuMY58SadttfVKCz',
+      inputs: {},
+      systemVariables: {},
+      userVariables: {}
+     }
+    </script>
+    <script
+     src="https://udify.app/embed.min.js"
+     id="tuMY58SadttfVKCz"
+     defer>
+    </script>
+    <style>
+      /* Draggable Trigger Button Styling with Custom Logo Avatar */
+      #dify-chatbot-bubble-button {
+        background-color: #2563eb !important;
+        background-image: url('https://cdn.phototourl.com/free/2026-08-08-4120abee-3ef2-4435-963d-1f1075db6535.jpg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4), 0 0 15px rgba(37, 99, 235, 0.2) !important;
+        border: 2px solid rgba(255, 255, 255, 0.8) !important;
+        position: fixed !important;
+        z-index: 9999 !important;
+        touch-action: none !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        cursor: grab !important;
+        transition: transform 0.2s ease, filter 0.2s ease !important;
+      }
+
+      /* Hide default icon inside Dify bubble button to display custom background logo */
+      #dify-chatbot-bubble-button svg,
+      #dify-chatbot-bubble-button img {
+        display: none !important;
+      }
+
+      #dify-chatbot-bubble-button:hover {
+        transform: scale(1.08) !important;
+      }
+
+      #dify-chatbot-bubble-button:active {
+        cursor: grabbing !important;
+      }
+
+      /* Dynamically Anchored Chatbot Window Styling */
+      #dify-chatbot-bubble-window {
+        position: fixed !important;
+        width: 24rem !important;
+        height: calc(100vh - 120px) !important;
+        max-height: 38rem !important;
+        z-index: 9999 !important;
+        border-radius: 20px !important;
+        overflow: hidden !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.2) inset !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(16px) !important;
+      }
+
+      @media (max-width: 640px) {
+        #dify-chatbot-bubble-window {
+          width: calc(100vw - 32px) !important;
+        }
+      }
+    </style>
+
+    <!-- Script to Make Dify Chatbot Button Draggable & Window Dynamic Follower -->
+    <script>
+      (function makeDifyDraggable() {
+        let difyBtn = null;
+        let isDragging = false;
+        let hasDragged = false;
+        let startX, startY, initialLeft, initialTop;
+
+        function updateDifyPositions(left, top) {
+          difyBtn = document.getElementById('dify-chatbot-bubble-button');
+          if (!difyBtn) return;
+
+          const btnWidth = difyBtn.offsetWidth || 56;
+          const btnHeight = difyBtn.offsetHeight || 56;
+          const maxLeft = window.innerWidth - btnWidth;
+          const maxTop = window.innerHeight - btnHeight;
+
+          // Clamp button inside viewport bounds
+          const clampedLeft = Math.max(10, Math.min(left, maxLeft - 10));
+          const clampedTop = Math.max(10, Math.min(top, maxTop - 10));
+
+          // Set Button Inline Styling
+          difyBtn.style.setProperty('left', clampedLeft + 'px', 'important');
+          difyBtn.style.setProperty('top', clampedTop + 'px', 'important');
+          difyBtn.style.setProperty('bottom', 'auto', 'important');
+          difyBtn.style.setProperty('right', 'auto', 'important');
+
+          // Save Position to LocalStorage
+          localStorage.setItem('dify_btn_left', clampedLeft);
+          localStorage.setItem('dify_btn_top', clampedTop);
+
+          // Update Chat Box Window Position so it dynamically follows button
+          const difyWindow = document.getElementById('dify-chatbot-bubble-window');
+          if (difyWindow) {
+            const isMobile = window.innerWidth <= 640;
+            const winWidth = isMobile ? (window.innerWidth - 32) : 384; // 24rem = 384px
+            const winHeight = Math.min(608, window.innerHeight - 120);
+
+            let winLeft, winTop;
+
+            // Align horizontally relative to button
+            if (clampedLeft + winWidth > window.innerWidth - 16) {
+              winLeft = Math.max(16, clampedLeft + btnWidth - winWidth);
+            } else {
+              winLeft = Math.max(16, clampedLeft);
+            }
+
+            // Align vertically (Position above if near bottom, position below if near top)
+            if (clampedTop > winHeight + 20) {
+              winTop = clampedTop - winHeight - 12;
+            } else {
+              winTop = clampedTop + btnHeight + 12;
+            }
+
+            // Clamp Window inside viewport
+            winLeft = Math.max(10, Math.min(winLeft, window.innerWidth - winWidth - 10));
+            winTop = Math.max(10, Math.min(winTop, window.innerHeight - winHeight - 10));
+
+            difyWindow.style.setProperty('left', winLeft + 'px', 'important');
+            difyWindow.style.setProperty('top', winTop + 'px', 'important');
+            difyWindow.style.setProperty('bottom', 'auto', 'important');
+            difyWindow.style.setProperty('right', 'auto', 'important');
+          }
+        }
+
+        function initDifyDrag() {
+          difyBtn = document.getElementById('dify-chatbot-bubble-button');
+          if (!difyBtn) {
+            setTimeout(initDifyDrag, 150);
+            return;
+          }
+
+          difyBtn.style.position = 'fixed';
+          difyBtn.style.touchAction = 'none';
+
+          // Load Saved Position or Set Default (Bottom-Right)
+          const savedLeft = localStorage.getItem('dify_btn_left');
+          const savedTop = localStorage.getItem('dify_btn_top');
+
+          if (savedLeft !== null && savedTop !== null) {
+            updateDifyPositions(parseFloat(savedLeft), parseFloat(savedTop));
+          } else {
+            const defaultLeft = window.innerWidth - (difyBtn.offsetWidth || 56) - 24;
+            const defaultTop = window.innerHeight - (difyBtn.offsetHeight || 56) - 24;
+            updateDifyPositions(defaultLeft, defaultTop);
+          }
+
+          // Drag Events for Mouse & Touch
+          difyBtn.addEventListener('mousedown', dragStart);
+          document.addEventListener('mousemove', dragMove);
+          document.addEventListener('mouseup', dragEnd);
+
+          difyBtn.addEventListener('touchstart', dragStart, { passive: false });
+          document.addEventListener('touchmove', dragMove, { passive: false });
+          document.addEventListener('touchend', dragEnd);
+
+          // Prevent click action if user was dragging
+          difyBtn.addEventListener('click', (e) => {
+            if (hasDragged) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              hasDragged = false;
+            }
+          }, true);
+
+          // Monitor DOM to recalculate window position whenever chatbox is toggled open
+          const observer = new MutationObserver(() => {
+            const currentLeft = parseFloat(difyBtn.style.left) || (window.innerWidth - 80);
+            const currentTop = parseFloat(difyBtn.style.top) || (window.innerHeight - 80);
+            updateDifyPositions(currentLeft, currentTop);
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+        }
+
+        function dragStart(e) {
+          difyBtn = document.getElementById('dify-chatbot-bubble-button');
+          if (!difyBtn) return;
+
+          isDragging = true;
+          hasDragged = false;
+
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+          const rect = difyBtn.getBoundingClientRect();
+          startX = clientX;
+          startY = clientY;
+          initialLeft = rect.left;
+          initialTop = rect.top;
+        }
+
+        function dragMove(e) {
+          if (!isDragging) return;
+
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+          const deltaX = clientX - startX;
+          const deltaY = clientY - startY;
+
+          if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+            hasDragged = true;
+          }
+
+          if (e.cancelable) e.preventDefault();
+
+          updateDifyPositions(initialLeft + deltaX, initialTop + deltaY);
+        }
+
+        function dragEnd() {
+          if (isDragging) {
+            isDragging = false;
+          }
+        }
+
+        if (document.readyState === 'complete') {
+          initDifyDrag();
+        } else {
+          window.addEventListener('load', initDifyDrag);
+        }
+
+        window.addEventListener('resize', () => {
+          if (difyBtn) {
+            const currentLeft = parseFloat(difyBtn.style.left) || (window.innerWidth - 80);
+            const currentTop = parseFloat(difyBtn.style.top) || (window.innerHeight - 80);
+            updateDifyPositions(currentLeft, currentTop);
+          }
+        });
+      })();
+    </script>
 </body>
 </html>
