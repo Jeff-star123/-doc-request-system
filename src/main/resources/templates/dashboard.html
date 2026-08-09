@@ -208,6 +208,37 @@
             background: #2563eb !important;
         }
 
+        /* Side Navigation Arrows for Dev Carousel */
+        .dev-side-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 20;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(37, 99, 235, 0.9);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+
+        .dev-side-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .dev-side-btn.btn-prev { left: 8px; }
+        .dev-side-btn.btn-next { right: 8px; }
+
+        @media (min-width: 640px) {
+            .dev-side-btn.btn-prev { left: -16px; }
+            .dev-side-btn.btn-next { right: -16px; }
+        }
+
         /* Hover Enhancements for UI Elements */
         .table-hover tbody tr {
             transition: background-color 0.25s ease, transform 0.2s ease;
@@ -578,7 +609,7 @@
                             <td class="text-end">
                                 <a th:if="${req.status == 'APPROVED'}" 
                                    th:href="@{'/request/print/' + ${req.id}}" 
-                                   class="btn btn-sm btn-outline-success px-2 py-1" 
+                                   class="btn btn-sm btn-outline-success px-2 py-1 print-btn" 
                                    target="_blank">
                                     <i class="bi bi-printer-fill"></i> Print
                                 </a>
@@ -788,168 +819,190 @@
             </div>
         </div>
 
-        <!-- GROUP 1 Devs Section (Light / Dark Adaptive + Focal Card Effect) -->
-        <div class="dev-section-container p-6 shadow-xl reveal-on-scroll focal-card">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
+        <!-- GROUP 1 Devs Section (Fixed UI, Clean Mobile Layout, Side Nav Buttons) -->
+        <div class="dev-section-container p-4 sm:p-6 shadow-xl reveal-on-scroll focal-card relative">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
               <span class="text-blue-500 font-mono text-lg">&lt;/&gt;</span>
-              <h2 class="font-bold text-lg dev-text-title">GROUP 1 Devs</h2>
+              <h2 class="font-bold text-lg dev-text-title mb-0">Developers</h2>
               <span class="bg-blue-600/20 text-blue-500 text-xs px-2 py-0.5 rounded font-semibold">BSIT Team</span>
             </div>
             
-            <!-- Controls & Counter -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center">
               <span class="text-xs dev-text-sub font-mono" id="devCounter">Dev 1 of 7</span>
-              <div class="flex items-center gap-1">
-                <button onclick="scrollDevs(-1)" class="p-2 dev-btn-nav hover:bg-blue-600 hover:text-white rounded-lg transition-all text-xs flex items-center justify-center w-8 h-8 shadow">
-                  <i class="bi bi-chevron-left"></i>
-                </button>
-                <button onclick="scrollDevs(1)" class="p-2 dev-btn-nav hover:bg-blue-600 hover:text-white rounded-lg transition-all text-xs flex items-center justify-center w-8 h-8 shadow">
-                  <i class="bi bi-chevron-right"></i>
-                </button>
-              </div>
             </div>
           </div>
 
-          <!-- Single Item Carousel Container (1 Dev Per Scroll) -->
-          <div id="devCarousel" class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-0 no-scrollbar rounded-xl dev-carousel-box">
-            
-            <!-- Developer 1 -->
-            <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
-              <div class="relative w-full md:w-1/2 h-72 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png', 'Jeffrey M. Serrano Jr.')">
-                <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">★ Lead Dev</span>
-                <img src="https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png" alt="Jeffrey M. Serrano Jr." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
-                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
-                  Click to expand
+          <!-- Carousel Container with Side Navigation Buttons -->
+          <div class="relative w-full">
+            <button onclick="scrollDevs(-1)" class="dev-side-btn btn-prev" title="Previous Developer">
+              <i class="bi bi-chevron-left fs-6"></i>
+            </button>
+
+            <!-- Single Item Carousel Container (1 Dev Per Scroll) -->
+            <div id="devCarousel" class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-0 no-scrollbar rounded-xl dev-carousel-box w-full">
+              
+              <!-- Developer 1 -->
+              <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+                <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png', 'Jeffrey M. Serrano Jr.')">
+                  <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">★ Lead Dev</span>
+                  <img src="https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png" alt="Jeffrey M. Serrano Jr." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                  <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                    Click to expand
+                  </div>
+                </div>
+                <div class="w-full md:w-1/2 text-center md:text-left">
+                  <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 01</span>
+                  <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Jeffrey M. Serrano Jr.</h3>
+                  <p class="text-sm text-blue-500 font-semibold mt-1">Lead Dev</p>
+                  <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                    Head developer in charge of architecture, core logic design, liveness detection logic, and overall system implementation.
+                  </p>
                 </div>
               </div>
-              <div class="w-full md:w-1/2 text-center md:text-left">
-                <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 01</span>
-                <h3 class="font-bold text-2xl dev-text-title mt-1">Jeffrey M. Serrano Jr.</h3>
-                <p class="text-sm text-blue-500 font-semibold mt-1">Lead Dev</p>
-                <p class="text-xs dev-text-sub mt-3 leading-relaxed">
-                  Head developer in charge of architecture, core logic design, liveness detection logic, and overall system implementation.
-                </p>
-              </div>
-            </div>
 
-            <!-- Developer 2 -->
-            <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
-              <div class="relative w-full md:w-1/2 h-72 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-177e81e4-3ffb-4138-99e8-69ee1278c9b6.jpg', 'Jalayahay, Jessa Mae P.')">
-                <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Assistant Dev</span>
-                <img src="https://cdn.phototourl.com/free/2026-08-09-177e81e4-3ffb-4138-99e8-69ee1278c9b6.jpg" alt="Jalayahay, Jessa Mae P." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
-                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
-                  Click to expand
+              <!-- Developer 2 -->
+              <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+                <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-177e81e4-3ffb-4138-99e8-69ee1278c9b6.jpg', 'Jalayahay, Jessa Mae P.')">
+                  <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Assistant Dev</span>
+                  <img src="https://cdn.phototourl.com/free/2026-08-09-177e81e4-3ffb-4138-99e8-69ee1278c9b6.jpg" alt="Jalayahay, Jessa Mae P." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                  <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                    Click to expand
+                  </div>
+                </div>
+                <div class="w-full md:w-1/2 text-center md:text-left">
+                  <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 02</span>
+                  <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Jalayahay, Jessa Mae P.</h3>
+                  <p class="text-sm text-blue-500 font-semibold mt-1">Assistant Dev</p>
+                  <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                    Assists with development workflows, UI refinements, and feature integration.
+                  </p>
                 </div>
               </div>
-              <div class="w-full md:w-1/2 text-center md:text-left">
-                <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 02</span>
-                <h3 class="font-bold text-2xl dev-text-title mt-1">Jalayahay, Jessa Mae P.</h3>
-                <p class="text-sm text-blue-500 font-semibold mt-1">Assistant Dev</p>
-                <p class="text-xs dev-text-sub mt-3 leading-relaxed">
-                  Assists with development workflows, UI refinements, and feature integration.
-                </p>
-              </div>
-            </div>
 
-            <!-- Developer 3 -->
-            <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
-              <div class="relative w-full md:w-1/2 h-72 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-5739fb3b-103b-46e2-a083-dacf4189b199.jpg', 'Mines, Manzor M.')">
-                <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Presentor</span>
-                <img src="https://cdn.phototourl.com/free/2026-08-09-5739fb3b-103b-46e2-a083-dacf4189b199.jpg" alt="Mines, Manzor M." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
-                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
-                  Click to expand
+              <!-- Developer 3 -->
+              <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+                <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-5739fb3b-103b-46e2-a083-dacf4189b199.jpg', 'Mines, Manzor M.')">
+                  <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Presentor</span>
+                  <img src="https://cdn.phototourl.com/free/2026-08-09-5739fb3b-103b-46e2-a083-dacf4189b199.jpg" alt="Mines, Manzor M." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                  <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                    Click to expand
+                  </div>
+                </div>
+                <div class="w-full md:w-1/2 text-center md:text-left">
+                  <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 03</span>
+                  <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Mines, Manzor M.</h3>
+                  <p class="text-sm text-blue-500 font-semibold mt-1">Presentor</p>
+                  <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                    Leads system demonstrations, academic project pitch presentation, and technical showcase.
+                  </p>
                 </div>
               </div>
-              <div class="w-full md:w-1/2 text-center md:text-left">
-                <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 03</span>
-                <h3 class="font-bold text-2xl dev-text-title mt-1">Mines, Manzor M.</h3>
-                <p class="text-sm text-blue-500 font-semibold mt-1">Presentor</p>
-                <p class="text-xs dev-text-sub mt-3 leading-relaxed">
-                  Leads system demonstrations, academic project pitch presentation, and technical showcase.
-                </p>
-              </div>
-            </div>
 
-            <!-- Developer 4 -->
-            <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
-              <div class="relative w-full md:w-1/2 h-72 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-1f1dd251-d61d-40b3-9969-e12b6db7e10d.jpg', 'Gutierrez, Rovil B.')">
-                <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
-                <img src="https://cdn.phototourl.com/free/2026-08-09-1f1dd251-d61d-40b3-9969-e12b6db7e10d.jpg" alt="Gutierrez, Rovil B." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
-                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
-                  Click to expand
+              <!-- Developer 4 -->
+              <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+                <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-1f1dd251-d61d-40b3-9969-e12b6db7e10d.jpg', 'Gutierrez, Rovil B.')">
+                  <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
+                  <img src="https://cdn.phototourl.com/free/2026-08-09-1f1dd251-d61d-40b3-9969-e12b6db7e10d.jpg" alt="Gutierrez, Rovil B." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                  <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                    Click to expand
+                  </div>
+                </div>
+                <div class="w-full md:w-1/2 text-center md:text-left">
+                  <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 04</span>
+                  <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Gutierrez, Rovil B.</h3>
+                  <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
+                  <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                    Responsible for preparing project technical documentation, system specifications, and compliance records.
+                  </p>
                 </div>
               </div>
-              <div class="w-full md:w-1/2 text-center md:text-left">
-                <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 04</span>
-                <h3 class="font-bold text-2xl dev-text-title mt-1">Gutierrez, Rovil B.</h3>
-                <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
-                <p class="text-xs dev-text-sub mt-3 leading-relaxed">
-                  Responsible for preparing project technical documentation, system specifications, and compliance records.
-                </p>
-              </div>
-            </div>
 
-            <!-- Developer 5 -->
-            <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
-              <div class="relative w-full md:w-1/2 h-72 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-9e4f218c-64ac-4a91-9c67-4353e6527b17.jpg', 'Prescillas, Ej Y.')">
-                <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
-                <img src="https://cdn.phototourl.com/free/2026-08-09-9e4f218c-64ac-4a91-9c67-4353e6527b17.jpg" alt="Prescillas, Ej Y." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
-                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
-                  Click to expand
+              <!-- Developer 5 -->
+              <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+                <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-9e4f218c-64ac-4a91-9c67-4353e6527b17.jpg', 'Prescillas, Ej Y.')">
+                  <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
+                  <img src="https://cdn.phototourl.com/free/2026-08-09-9e4f218c-64ac-4a91-9c67-4353e6527b17.jpg" alt="Prescillas, Ej Y." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                  <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                    Click to expand
+                  </div>
+                </div>
+                <div class="w-full md:w-1/2 text-center md:text-left">
+                  <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 05</span>
+                  <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Prescillas, Ej Y.</h3>
+                  <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
+                  <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                    Manages project reporting, system requirements writing, and process workflow charts.
+                  </p>
                 </div>
               </div>
-              <div class="w-full md:w-1/2 text-center md:text-left">
-                <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 05</span>
-                <h3 class="font-bold text-2xl dev-text-title mt-1">Prescillas, Ej Y.</h3>
-                <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
-                <p class="text-xs dev-text-sub mt-3 leading-relaxed">
-                  Manages project reporting, system requirements writing, and process workflow charts.
-                </p>
-              </div>
-            </div>
 
-            <!-- Developer 6 -->
-            <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
-              <div class="relative w-full md:w-1/2 h-72 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-8e0595e4-015c-452c-b33e-6cdd247f82d7.jpg', 'Kurt Bactat Russel')">
-                <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
-                <img src="https://cdn.phototourl.com/free/2026-08-09-8e0595e4-015c-452c-b33e-6cdd247f82d7.jpg" alt="Kurt Bactat Russel" class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
-                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
-                  Click to expand
+              <!-- Developer 6 -->
+              <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+                <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-8e0595e4-015c-452c-b33e-6cdd247f82d7.jpg', 'Kurt Bactat Russel')">
+                  <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
+                  <img src="https://cdn.phototourl.com/free/2026-08-09-8e0595e4-015c-452c-b33e-6cdd247f82d7.jpg" alt="Kurt Bactat Russel" class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                  <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                    Click to expand
+                  </div>
+                </div>
+                <div class="w-full md:w-1/2 text-center md:text-left">
+                  <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 06</span>
+                  <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Kurt Bactat Russel</h3>
+                  <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
+                  <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                    Assists with software user manual development, academic case studies, and compliance checks.
+                  </p>
                 </div>
               </div>
-              <div class="w-full md:w-1/2 text-center md:text-left">
-                <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 06</span>
-                <h3 class="font-bold text-2xl dev-text-title mt-1">Kurt Bactat Russel</h3>
-                <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
-                <p class="text-xs dev-text-sub mt-3 leading-relaxed">
-                  Assists with software user manual development, academic case studies, and compliance checks.
-                </p>
-              </div>
-            </div>
 
-            <!-- Developer 7 -->
-            <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
-              <div class="relative w-full md:w-1/2 h-72 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-3b99cbe0-e745-453f-9156-29fb8d4cea10.jpg', 'Kurt Bactat Russel')">
-                <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
-                <img src="https://cdn.phototourl.com/free/2026-08-09-3b99cbe0-e745-453f-9156-29fb8d4cea10.jpg" alt="Kurt Bactat Russel" class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
-                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
-                  Click to expand
+              <!-- Developer 7 -->
+              <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+                <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-3b99cbe0-e745-453f-9156-29fb8d4cea10.jpg', 'Kurt Bactat Russel')">
+                  <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
+                  <img src="https://cdn.phototourl.com/free/2026-08-09-3b99cbe0-e745-453f-9156-29fb8d4cea10.jpg" alt="Kurt Bactat Russel" class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                  <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                    Click to expand
+                  </div>
+                </div>
+                <div class="w-full md:w-1/2 text-center md:text-left">
+                  <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 07</span>
+                  <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Tyrone James Oribiada</h3>
+                  <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
+                  <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                    Maintains visual assets, final project formatting, and documentation archives.
+                  </p>
                 </div>
               </div>
-              <div class="w-full md:w-1/2 text-center md:text-left">
-                <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 07</span>
-                <h3 class="font-bold text-2xl dev-text-title mt-1">Tyrone James Oribiada</h3>
-                <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
-                <p class="text-xs dev-text-sub mt-3 leading-relaxed">
-                  Maintains visual assets, final project formatting, and documentation archives.
-                </p>
-              </div>
+
             </div>
 
+            <button onclick="scrollDevs(1)" class="dev-side-btn btn-next" title="Next Developer">
+              <i class="bi bi-chevron-right fs-6"></i>
+            </button>
           </div>
+
         </div>
 
+    </div>
+
+    <!-- Anti-Spam Print Warning Modal -->
+    <div class="modal fade" id="spamWarningModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger text-center p-4">
+          <div class="text-danger mb-2">
+            <i class="bi bi-exclamation-triangle-fill display-3"></i>
+          </div>
+          <h4 class="fw-bold text-danger">Spam Warning Notice</h4>
+          <p class="fs-6 mt-2 text-dark" id="spamWarningText">
+            Please wait <span id="spamCountdown" class="fw-bold text-danger fs-5">10</span> seconds before pressing. Ignore this warning and you will be banned!
+          </p>
+          <div class="mt-3">
+            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">I Understand</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Responsive Draggable GIF Floating Container -->
@@ -973,7 +1026,7 @@
 
                 <div class="text-center my-auto">
                     <div class="mb-4">
-                        <span id="modalInstruction" class="badge bg-warning text-dark px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold">
+                        <span id="modalInstruction" class="badge bg-warning text-dark px-3 py-2 px-md-4 py-md-3 fs-6 fs-md-4 rounded-pill shadow-lg border border-2 border-white fw-bold text-wrap" style="max-width: 90vw; line-height: 1.4;">
                             📌 Step 1: Look straight ahead
                         </span>
                     </div>
@@ -1393,12 +1446,13 @@
             }, 'image/jpeg', 0.90);
         });
 
-        // Face Liveness Scan Logic
+        // Face Liveness Scan Logic (VOICE OVER COMPLETELY REMOVED)
         startScanBtn.addEventListener('click', async () => {
             immersiveModal.show();
             livenessProgress.style.width = '0%';
+
             modalInstruction.innerText = "📌 Step 1: Look straight ahead";
-            modalInstruction.className = "badge bg-warning text-dark px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
+            modalInstruction.className = "badge bg-warning text-dark px-3 py-2 px-md-4 py-md-3 fs-6 fs-md-4 rounded-pill shadow-lg border border-2 border-white fw-bold text-wrap";
 
             try {
                 activeCameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 640, facingMode: "user" } });
@@ -1414,16 +1468,16 @@
                 faceMesh.setOptions({
                     maxNumFaces: 1,
                     refineLandmarks: true,
-                    minDetectionConfidence: 0.6,
-                    minTrackingConfidence: 0.6
+                    minDetectionConfidence: 0.9,
+                    minTrackingConfidence: 0.9
                 });
 
                 faceMesh.onResults((results) => {
                     if (isScanFinished || step >= 3) return;
 
                     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-                        modalInstruction.innerText = "⚠️ Position face inside oval frame";
-                        modalInstruction.className = "badge bg-danger text-white px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
+                        modalInstruction.innerText = "⚠️ Face not detected. Remove mask, cap, or glasses.";
+                        modalInstruction.className = "badge bg-danger text-white px-3 py-2 px-md-4 py-md-3 fs-6 fs-md-4 rounded-pill shadow-lg border border-2 border-white fw-bold text-wrap";
                         return;
                     }
 
@@ -1436,7 +1490,7 @@
 
                     if (step === 0) {
                         modalInstruction.innerText = "📌 Step 1: Look straight ahead";
-                        modalInstruction.className = "badge bg-warning text-dark px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
+                        modalInstruction.className = "badge bg-warning text-dark px-3 py-2 px-md-4 py-md-3 fs-6 fs-md-4 rounded-pill shadow-lg border border-2 border-white fw-bold text-wrap";
                         if (balance > 0.35 && balance < 0.65) {
                             progress += 3;
                             livenessProgress.style.width = progress + '%';
@@ -1444,7 +1498,7 @@
                         }
                     } else if (step === 1) {
                         modalInstruction.innerText = "⬅️ Step 2: Slowly turn your head LEFT";
-                        modalInstruction.className = "badge bg-info text-dark px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
+                        modalInstruction.className = "badge bg-info text-dark px-3 py-2 px-md-4 py-md-3 fs-6 fs-md-4 rounded-pill shadow-lg border border-2 border-white fw-bold text-wrap";
                         if (balance < 0.32) {
                             progress += 3;
                             livenessProgress.style.width = progress + '%';
@@ -1452,7 +1506,7 @@
                         }
                     } else if (step === 2) {
                         modalInstruction.innerText = "➡️ Step 3: Turn your head RIGHT";
-                        modalInstruction.className = "badge bg-warning text-dark px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
+                        modalInstruction.className = "badge bg-warning text-dark px-3 py-2 px-md-4 py-md-3 fs-6 fs-md-4 rounded-pill shadow-lg border border-2 border-white fw-bold text-wrap";
                         if (balance > 0.68) {
                             progress += 4;
                             livenessProgress.style.width = progress + '%';
@@ -1461,7 +1515,7 @@
                                 isScanFinished = true;
                                 livenessProgress.style.width = '100%';
                                 modalInstruction.innerText = "✅ Biometric Liveness Passed!";
-                                modalInstruction.className = "badge bg-success text-white px-4 py-3 fs-4 rounded-pill shadow-lg border border-2 border-white fw-bold";
+                                modalInstruction.className = "badge bg-success text-white px-3 py-2 px-md-4 py-md-3 fs-6 fs-md-4 rounded-pill shadow-lg border border-2 border-white fw-bold text-wrap";
                                 
                                 faceVerifiedInput.value = "true";
                                 submitBtn.disabled = false;
@@ -1510,6 +1564,48 @@
             }
             immersiveModal.hide();
         });
+
+        // Anti-Spam Print Warning Logic
+        (function initAntiSpamPrint() {
+            let printClicks = [];
+            let countdownInterval = null;
+            const warningModal = new bootstrap.Modal(document.getElementById('spamWarningModal'));
+            const countdownEl = document.getElementById('spamCountdown');
+
+            document.addEventListener('click', function (e) {
+                const printBtn = e.target.closest('.print-btn');
+                if (!printBtn) return;
+
+                const now = Date.now();
+                // Filter click timestamps that occurred within the last 10 seconds
+                printClicks = printClicks.filter(timestamp => now - timestamp < 10000);
+                printClicks.push(now);
+
+                if (printClicks.length >= 5) {
+                    e.preventDefault();
+                    // Route to the view controller endpoint, preventing the Whitelabel Error Page
+                    window.location.href = '/spam-banned';
+                } else if (printClicks.length === 4) {
+                    e.preventDefault();
+                    let remainingSeconds = 10;
+                    countdownEl.innerText = remainingSeconds;
+                    
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    
+                    countdownInterval = setInterval(() => {
+                        remainingSeconds--;
+                        if (remainingSeconds > 0) {
+                            countdownEl.innerText = remainingSeconds;
+                        } else {
+                            clearInterval(countdownInterval);
+                            warningModal.hide();
+                        }
+                    }, 1000);
+
+                    warningModal.show();
+                }
+            });
+        })();
 
         // Draggable Floating GIF Widget Logic
         (function makeDraggable() {
@@ -1711,26 +1807,23 @@
           const difyWindow = document.getElementById('dify-chatbot-bubble-window');
           if (difyWindow) {
             const isMobile = window.innerWidth <= 640;
-            const winWidth = isMobile ? (window.innerWidth - 32) : 384; // 24rem = 384px
+            const winWidth = isMobile ? (window.innerWidth - 32) : 384;
             const winHeight = Math.min(608, window.innerHeight - 120);
 
             let winLeft, winTop;
 
-            // Align horizontally relative to button
             if (clampedLeft + winWidth > window.innerWidth - 16) {
               winLeft = Math.max(16, clampedLeft + btnWidth - winWidth);
             } else {
               winLeft = Math.max(16, clampedLeft);
             }
 
-            // Align vertically (Position above if near bottom, position below if near top)
             if (clampedTop > winHeight + 20) {
               winTop = clampedTop - winHeight - 12;
             } else {
               winTop = clampedTop + btnHeight + 12;
             }
 
-            // Clamp Window inside viewport
             winLeft = Math.max(10, Math.min(winLeft, window.innerWidth - winWidth - 10));
             winTop = Math.max(10, Math.min(winTop, window.innerHeight - winHeight - 10));
 
@@ -1751,7 +1844,6 @@
           difyBtn.style.position = 'fixed';
           difyBtn.style.touchAction = 'none';
 
-          // Load Saved Position or Set Default (Bottom-Right)
           const savedLeft = localStorage.getItem('dify_btn_left');
           const savedTop = localStorage.getItem('dify_btn_top');
 
@@ -1763,7 +1855,6 @@
             updateDifyPositions(defaultLeft, defaultTop);
           }
 
-          // Drag Events for Mouse & Touch
           difyBtn.addEventListener('mousedown', dragStart);
           document.addEventListener('mousemove', dragMove);
           document.addEventListener('mouseup', dragEnd);
@@ -1772,7 +1863,6 @@
           document.addEventListener('touchmove', dragMove, { passive: false });
           document.addEventListener('touchend', dragEnd);
 
-          // Prevent click action if user was dragging
           difyBtn.addEventListener('click', (e) => {
             if (hasDragged) {
               e.preventDefault();
@@ -1782,7 +1872,6 @@
             }
           }, true);
 
-          // Monitor DOM to recalculate window position whenever chatbox is toggled open
           const observer = new MutationObserver(() => {
             const currentLeft = parseFloat(difyBtn.style.left) || (window.innerWidth - 80);
             const currentTop = parseFloat(difyBtn.style.top) || (window.innerHeight - 80);

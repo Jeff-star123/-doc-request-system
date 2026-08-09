@@ -129,14 +129,22 @@ public class MainController {
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(HttpSession session, Model model) {
-        String statusRedirect = checkUserAndRedirect(session);
-        if (statusRedirect != null) return statusRedirect;
-
+    public String viewDashboard(HttpSession session, Model model) {
+        // 1. Check if the user is banned or deactivated
+        String redirectUrl = checkUserAndRedirect(session);
+        if (redirectUrl != null) {
+            return redirectUrl; // Redirects them to /spam-banned or / if not logged in
+        }
+        
+        // 2. Proceed with loading the dashboard for valid users
         User user = getAuthenticatedUser(session);
         model.addAttribute("user", user);
-        model.addAttribute("requests", requestRepository.findByUser(user));
-        return "dashboard";
+        
+        // Fetch user requests to populate the history table
+        List<DocumentRequest> requests = requestRepository.findByUser(user);
+        model.addAttribute("requests", requests);
+        
+        return "dashboard"; // Renders your dashboard.html
     }
 
     @PostMapping("/request/submit")
@@ -424,7 +432,30 @@ public class MainController {
     }
 
     @GetMapping("/spam-banned")
-    public String spamBannedPage(HttpSession session) {
+    public String handleSpamBan(HttpSession session) {
+        User currentUser = getAuthenticatedUser(session);
+        
+        if (currentUser != null) {
+            // Fetch the fresh user from the database to ensure we update the latest record
+            User freshUser = userRepository.findById(currentUser.getId()).orElse(null);
+            
+            if (freshUser != null && !"DEACTIVATED".equalsIgnoreCase(freshUser.getStatus())) {
+                // 1. Lock the account
+                freshUser.setStatus("DEACTIVATED");
+                userRepository.save(freshUser);
+                
+                // 2. Notify via Telegram (since you have telegramService injected)
+                if (freshUser.getTelegramChatId() != null && !freshUser.getTelegramChatId().trim().isEmpty()) {
+                    telegramService.sendNotification(freshUser.getTelegramChatId(),
+                        "🚨 ALERT: Your account has been DEACTIVATED due to continuous spamming of the print request system. Admin approval is required to restore access."
+                    );
+                }
+            }
+            // 3. Clear the session so they are effectively logged out and cannot bypass the block
+            session.invalidate();
+        }
+        
+        // Render the spam-banned.html template with the jump scare
         return "spam-banned";
     }
 

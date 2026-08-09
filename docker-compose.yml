@@ -33,6 +33,17 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
     volumes:
       - ./uploads:/app/uploads
+    develop:
+      watch:
+        # Syncs static files, templates (HTML), and properties instantly without rebuilding
+        - action: sync
+          path: ./src/main/resources
+          target: /app/BOOT-INF/classes
+        # Triggers a full project rebuild when Java files or pom.xml change
+        - action: rebuild
+          path: ./src/main/java
+        - action: rebuild
+          path: pom.xml
 
 volumes:
   mysql_data:
