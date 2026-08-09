@@ -339,13 +339,15 @@
                                 <td th:text="${u.id}">1</td>
                                 <td th:text="${u.fullName}">Name</td>
                                 <td th:text="${'@' + u.username}">username</td>
-                                <td>
-                                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" th:data-bs-target="'#approveReactivationModal' + ${u.id}">
-                                        <i class="bi bi-check-circle"></i> Approve
-                                    </button>
-                                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" th:data-bs-target="'#rejectReactivationModal' + ${u.id}">
-                                        <i class="bi bi-x-circle"></i> Reject
-                                    </button>
+                                <td class="text-nowrap">
+                                    <div class="d-flex flex-column flex-sm-row gap-2">
+                                        <button type="button" class="btn btn-success btn-sm w-100" data-bs-toggle="modal" th:data-bs-target="'#approveReactivationModal' + ${u.id}">
+                                            <i class="bi bi-check-circle"></i> Approve
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm w-100" data-bs-toggle="modal" th:data-bs-target="'#rejectReactivationModal' + ${u.id}">
+                                            <i class="bi bi-x-circle"></i> Reject
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -370,6 +372,7 @@
                             <th>ID</th>
                             <th>Resident Name</th>
                             <th>Document Type</th>
+                            <th>Purpose</th>
                             <th>Verification</th>
                             <th>Status</th>
                             <th>Remarks</th>
@@ -381,6 +384,9 @@
                             <td class="fw-bold" th:text="'#' + ${req.id}">#1</td>
                             <td class="fw-bold text-primary" th:text="${req.user != null ? req.user.fullName : 'N/A'}">Juan Dela Cruz</td>
                             <td th:text="${req.documentType}">Clearance</td>
+
+                            <!-- ADD THIS LINE TO SHOW THE PURPOSE -->
+                            <td class="small text-muted" th:text="${req.purpose != null ? req.purpose : '—'}">Purpose</td>
                             
                             <td>
                                 <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" th:data-bs-target="'#idModal' + ${req.id}">
@@ -472,7 +478,7 @@
     </div>
 
     <!-- MODALS SECTION -->
-    <div th:each="u : ${pendingReactivations}">
+    <div th:each="u : ${allUsers}">
         <!-- Approve Reactivation Modal -->
         <div class="modal fade" th:id="'approveReactivationModal' + ${u.id}" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
