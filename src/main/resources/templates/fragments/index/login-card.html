@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="loginCard" class="portal-card p-3 p-md-4 w-100">
+        <!-- Circular Logo Section -->
+        <div class="text-center mb-3">
+            <div class="logo-wrapper mb-2">
+                <img src="https://cdn.phototourl.com/free/2026-08-08-4120abee-3ef2-4435-963d-1f1075db6535.jpg" 
+                     alt="Barangay Logo" 
+                     class="logo-img" 
+                     onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/1041/1041883.png';">
+            </div>
+            <h4 class="fw-bold mb-1 card-title-text">Barangay Bulsa-korapot</h4>
+            <p class="fw-medium small mb-0 card-subtitle-text">Serbisyong May Sukli</p>
+        </div>
+
+        <!-- Error Alert -->
+        <div th:if="${error}" class="alert alert-danger text-center p-2 mb-3 small" th:text="${error}"></div>
+        
+        <!-- Success Alert -->
+        <div th:if="${success}" class="alert alert-success text-center p-2 mb-3 small" th:text="${success}"></div>
+
+        <!-- Login Form -->
+        <form th:action="@{/login}" method="post">
+            <div class="mb-3 text-start">
+                <label class="form-label fw-bold text-uppercase">Username</label>
+                <input type="text" name="username" class="form-control shadow-none" placeholder="Enter your username" required />
+            </div>
+            
+            <div class="mb-4 text-start">
+                <label class="form-label fw-bold text-uppercase">Password</label>
+                <div class="input-group">
+                    <input type="password" id="loginPassword" name="password" class="form-control shadow-none border-end-0" placeholder="Enter your password" required />
+                    <button class="btn input-group-text-btn" type="button" onclick="togglePassword('loginPassword', 'loginEyeIcon')">
+                        <i id="loginEyeIcon" class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary-custom w-100">Login to Portal</button>
+        </form>
+    </div>
+</body>
+</html>

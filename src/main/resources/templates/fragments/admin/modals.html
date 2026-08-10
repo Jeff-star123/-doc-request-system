@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="adminModals">
+        <!-- User Reactivation Modals -->
+        <div th:each="u : ${allUsers}">
+            <!-- Approve Reactivation Modal -->
+            <div class="modal fade" th:id="'approveReactivationModal' + ${u.id}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form th:action="@{/admin/user/approve-reactivation/{id}(id=${u.id})}" method="post">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title"><i class="bi bi-person-check-fill me-1"></i> Confirm Account Activation</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <p>Are you sure you want to approve and reactivate the account for <strong th:text="${u.fullName}"></strong> (<span th:text="${'@' + u.username}"></span>)?</p>
+                                <p class="small text-muted mb-0">This will restore the user's access to the portal.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-success">Confirm Activation</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reject Reactivation Modal -->
+            <div class="modal fade" th:id="'rejectReactivationModal' + ${u.id}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form th:action="@{/admin/user/reject-reactivation/{id}(id=${u.id})}" method="post">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title"><i class="bi bi-person-x-fill me-1"></i> Confirm Reactivation Rejection</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <p>Are you sure you want to reject the reactivation request for <strong th:text="${u.fullName}"></strong> (<span th:text="${'@' + u.username}"></span>)?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Request Verification & Approval Modals -->
+        <div th:each="req : ${requests}">
+            <!-- View Verification Modal -->
+            <div class="modal fade" th:id="'idModal' + ${req.id}" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="bi bi-shield-check text-primary me-1"></i> Verification Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center mb-3">
+                                <strong>Biometric Liveness Scan Status:</strong> 
+                                <span th:if="${req.faceVerified}" class="badge bg-success">PASSED</span>
+                                <span th:if="${!req.faceVerified}" class="badge bg-danger">NOT COMPLETED</span>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 bg-light text-center h-100 d-flex flex-column justify-content-between">
+                                        <p class="small fw-bold text-muted mb-2">Step 1: Uploaded Valid ID</p>
+                                        <div class="my-auto">
+                                            <a th:if="${req.idCardImagePath != null and !#strings.isEmpty(req.idCardImagePath)}" th:href="${req.idCardImagePath}" target="_blank">
+                                                <img th:src="${req.idCardImagePath}" class="verification-img" alt="Uploaded Resident ID" />
+                                            </a>
+                                            <p th:if="${req.idCardImagePath == null or #strings.isEmpty(req.idCardImagePath)}" class="text-muted small py-4 mb-0">No ID uploaded.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 bg-light text-center h-100 d-flex flex-column justify-content-between">
+                                        <p class="small fw-bold text-muted mb-2">Step 2: Selfie Holding ID</p>
+                                        <div class="my-auto">
+                                            <a th:if="${req.selfieImagePath != null and !#strings.isEmpty(req.selfieImagePath)}" th:href="${req.selfieImagePath}" target="_blank">
+                                                <img th:src="${req.selfieImagePath}" class="verification-img" alt="Selfie with ID" />
+                                            </a>
+                                            <p th:if="${req.selfieImagePath == null or #strings.isEmpty(req.selfieImagePath)}" class="text-muted small py-4 mb-0">No selfie uploaded.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approve Modal -->
+            <div class="modal fade" th:id="'approveModal' + ${req.id}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form th:action="@{/admin/approve/{id}(id=${req.id})}" method="post">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title"><i class="bi bi-check-circle me-1"></i> Approve Request</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <p>Are you sure you want to approve this request for <strong th:text="${req.documentType}"></strong>?</p>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Remarks (Optional)</label>
+                                    <input type="text" name="remarks" class="form-control" placeholder="e.g. Approved by Barangay Captain" value="Approved by Admin" />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-success">Confirm Approval</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reject Modal -->
+            <div class="modal fade" th:id="'rejectModal' + ${req.id}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form th:action="@{/admin/reject/{id}(id=${req.id})}" method="post">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title"><i class="bi bi-x-circle me-1"></i> Reject Request</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <p>Are you sure you want to reject this request for <strong th:text="${req.documentType}"></strong>?</p>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Reason for Rejection</label>
+                                    <input type="text" name="remarks" class="form-control" placeholder="e.g. Incomplete requirements" required />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Draggable Dancing GIF Widget -->
+        <div class="floating-gif-container" id="draggableWidget">
+            <img th:src="@{/images/dancing.gif}" src="https://cdn.imageurlgenerator.com/uploads/965960cd-616e-4c39-8661-8dac55a1fb03.gif" alt="Dancing Character" class="dancing-gif" draggable="false" />
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="certificate">
+        <!-- Document Title -->
+        <div class="text-center my-4">
+            <h2 class="fw-bold text-uppercase text-decoration-underline" th:text="${request.documentType}">BARANGAY CLEARANCE</h2>
+        </div>
+
+        <!-- Certificate Body -->
+        <div class="document-body">
+            <p><strong>TO WHOM IT MAY CONCERN:</strong></p>
+            
+            <p class="text-indent">
+                This is to certify that <strong><u th:text="${request.user.fullName}">JUAN DELA CRUZ</u></strong>, of legal age, is a bona fide resident of this Barangay and is known to be a person of good moral character with no derogatory record on file.
+            </p>
+
+            <p class="text-indent">
+                This certification is being issued upon the request of the above-named individual for the following purpose: 
+                <strong><u th:text="${request.purpose}">EMPLOYMENT APPLICATION</u></strong>.
+            </p>
+
+            <p class="text-indent">
+                Issued this <strong th:text="${#temporals.format(#temporals.createNow(), 'dd MMMM yyyy')}">31 July 2026</strong> at the Office of the Barangay Captain.
+            </p>
+        </div>
+
+        <!-- Official Signature Section -->
+        <div class="row signature-section">
+            <div class="col-6 offset-6 text-center">
+                <div class="border-bottom border-dark mb-1 pb-4"></div>
+                <strong class="d-block text-uppercase">HON. BARANGAY CAPTAIN</strong>
+                <span class="small text-muted">Punong Barangay</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="overlay">
+        <!-- Full-Screen Jump Scare Overlay -->
+        <div id="jumpScareOverlay">
+            <video id="jumpscareVideo" class="jumpscare-video" loop muted playsinline>
+                <source src="https://www.image2url.com/r2/default/videos/1786333720294-b9fe943c-f84a-4c19-8e75-858a603ff59d.mp4" type="video/mp4">
+            </video>
+            
+            <!-- Non-intrusive Floating Header Notification -->
+            <div class="jumpscare-content">
+                <div class="jumpscare-text">
+                    <h2 class="text-warning fw-bold">🚨 BUDOTS OVERLOAD! 🕺</h2>
+                    <p class="text-light opacity-75">Account locked due to print request spamming.</p>
+                </div>
+                <a th:href="@{/}" class="btn btn-danger btn-sm rounded-pill px-3 py-1 fw-bold text-nowrap shadow-sm">
+                    <i class="bi bi-box-arrow-left me-1"></i> Return to Login
+                </a>
+            </div>
+        </div>
+
+        <!-- Voice-over Audio -->
+        <audio id="voiceOverAudio">
+            <source src="https://www.image2url.com/r2/default/audio/1786220786484-fe21e581-e144-43bd-a4b0-a8e2686e6d18.mp3" type="audio/mpeg">
+        </audio>
+
+        <!-- Budots Background Music Audio -->
+        <audio id="budotsAudio" loop>
+            <source src="https://www.image2url.com/r2/default/audio/1786220306298-714d0fb6-9ebf-4572-ba8b-97d84e8b5283.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+</body>
+</html>

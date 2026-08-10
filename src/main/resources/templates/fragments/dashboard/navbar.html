@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4 py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#">
+                <div class="logo-wrapper-sm">
+                    <img src="https://cdn.phototourl.com/free/2026-08-08-4120abee-3ef2-4435-963d-1f1075db6535.jpg" 
+                         alt="Logo" 
+                         class="logo-img-sm" 
+                         onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/1041/1041883.png';">
+                </div>
+                Barangay Request Portal
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-light btn-sm px-2 py-1 d-inline-flex align-items-center gap-1 me-2" id="themeToggleBtn" title="Toggle Theme">
+                    <i id="themeIcon" class="bi bi-moon-fill"></i> <span class="d-none d-md-inline small">Theme</span>
+                </button>
+                <span class="navbar-text text-light d-none d-sm-inline me-3 small">
+                    <i class="bi bi-person-circle"></i> <strong th:text="${user.fullName}">User</strong>
+                </span>
+                <a th:href="@{/settings}" class="btn btn-outline-light btn-sm px-3"><i class="bi bi-gear"></i> Settings</a>
+                <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm px-3"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+</body>
+</html>

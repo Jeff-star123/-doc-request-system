@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="documentForm" class="card card-custom request-form-card p-4 reveal-on-scroll focal-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-file-earmark-plus-fill text-primary me-2"></i> Document Application
+            </h5>
+            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1">Identity Verification</span>
+        </div>
+
+        <div class="stepper-wrapper">
+            <div class="stepper-item active" id="stepIndicator1">
+                <div class="step-counter" id="num1">1</div>
+                <div class="step-name">ID Upload</div>
+            </div>
+            <div class="stepper-item" id="stepIndicator2">
+                <div class="step-counter" id="num2">2</div>
+                <div class="step-name">Selfie Proof</div>
+            </div>
+            <div class="stepper-item" id="stepIndicator3">
+                <div class="step-counter" id="num3">3</div>
+                <div class="step-name">Face Scan</div>
+            </div>
+        </div>
+
+        <form th:action="@{/request/submit}" method="post" enctype="multipart/form-data" id="requestForm">
+            <div class="row g-3">
+                <div class="col-md-6 mb-2">
+                    <label class="form-label small fw-bold text-secondary">DOCUMENT TYPE</label>
+                    <select name="documentType" class="form-select shadow-none" required>
+                        <option value="" disabled selected>Select document...</option>
+                        <option value="Barangay Clearance">Barangay Clearance</option>
+                        <option value="Certificate of Residency">Certificate of Residency</option>
+                        <option value="Certificate of Indigency">Certificate of Indigency</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="form-label small fw-bold text-secondary">PURPOSE OF REQUEST</label>
+                    <textarea name="purpose" class="form-control shadow-none" rows="1" required placeholder="e.g. School Requirement / Employment Application"></textarea>
+                </div>
+            </div>
+
+            <hr class="text-muted opacity-25 my-3">
+
+            <!-- Step 1 Section -->
+            <div class="step-section active" id="step1Section">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="fw-bold text-dark mb-0">Step 1: Select & Upload Valid ID</h6>
+                    <span class="badge bg-light text-dark border">Required</span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small text-secondary">SELECT ID TYPE</label>
+                        <select id="idTypeSelect" name="idType" class="form-select shadow-none" required>
+                            <option value="" disabled selected>Choose ID type...</option>
+                            <option value="National ID">Philippine National ID (PhilSys)</option>
+                            <option value="School ID">Student / School ID</option>
+                            <option value="Driver's License">Driver's License</option>
+                            <option value="UMID / SSS">UMID / SSS ID</option>
+                            <option value="Barangay ID">Barangay ID</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small text-secondary">ATTACH ID IMAGE</label>
+                        <div class="input-group mb-2">
+                            <input type="file" name="idCardFile" class="form-control shadow-none" accept="image/*" id="idCardInput" disabled required>
+                            <button type="button" class="btn btn-outline-secondary" id="openIdCameraBtn" disabled>
+                                <i class="bi bi-camera-fill"></i> Use Camera
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="idPreviewContainer" class="d-none mt-2 text-center mb-3">
+                    <img id="idPreviewImg" src="" alt="ID Preview" class="img-thumbnail rounded" style="max-height: 150px;">
+                    <p class="small text-success mb-0 mt-1"><i class="bi bi-check-circle-fill"></i> ID Captured Successfully</p>
+                </div>
+
+                <div id="ocrFeedback" class="p-3 rounded-3 small d-none mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="spinner-border spinner-border-sm text-primary d-none" id="ocrSpinner" role="status"></div>
+                        <span id="ocrStatusText">Analyzing uploaded ID document...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2 Section -->
+            <div class="step-section" id="step2Section">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="fw-bold text-dark mb-0">Step 2: Selfie Holding Your ID</h6>
+                    <span class="badge bg-light text-dark border">Verification</span>
+                </div>
+                <p class="small text-muted mb-3">Please upload or snap a photo holding the ID selected in Step 1.</p>
+
+                <div class="mb-3">
+                    <div class="input-group mb-2">
+                        <input type="file" name="selfieWithIdFile" class="form-control shadow-none" accept="image/*" id="selfieInput" required>
+                        <button type="button" class="btn btn-outline-secondary" id="openSelfieCameraBtn">
+                            <i class="bi bi-camera-fill"></i> Use Camera
+                        </button>
+                    </div>
+                    <div id="selfiePreviewContainer" class="d-none mt-2 text-center">
+                        <img id="selfiePreviewImg" src="" alt="Selfie Preview" class="img-thumbnail rounded" style="max-height: 150px;">
+                        <p class="small text-success mb-0 mt-1"><i class="bi bi-check-circle-fill"></i> Selfie Captured Successfully</p>
+                    </div>
+                </div>
+
+                <div id="selfieFeedback" class="alert alert-success p-2 small mb-3 d-none">
+                    <i class="bi bi-check-circle-fill me-1"></i> Selfie attached. Unlocking Step 3.
+                </div>
+            </div>
+
+            <!-- Step 3 Section -->
+            <div class="step-section" id="step3Section">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="fw-bold text-dark mb-0">Step 3: Biometric Liveness Check</h6>
+                    <span class="badge bg-light text-dark border">Final Step</span>
+                </div>
+
+                <div id="scanStatusBox" class="p-3 bg-light border rounded-3 text-center mb-3">
+                    <i class="bi bi-person-bounding-box fs-2 text-muted"></i>
+                    <p class="small text-muted mb-0 mt-1" id="scanStatusText">Perform a face scan to complete identity verification.</p>
+                </div>
+
+                <button type="button" id="startScanBtn" class="btn btn-outline-primary w-100 fw-semibold mb-3 py-2 shadow-sm">
+                    <i class="bi bi-camera-fill me-1"></i> Launch Face Liveness Scan
+                </button>
+                <input type="hidden" name="faceVerified" id="faceVerifiedInput" value="false">
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn btn-primary w-100 py-2 fw-semibold mt-2 text-white" disabled>
+                <i class="bi bi-send-fill me-1"></i> Submit Request for Verification
+            </button>
+        </form>
+    </div>
+</body>
+</html>

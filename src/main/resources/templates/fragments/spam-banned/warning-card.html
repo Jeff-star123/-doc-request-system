@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="warningCard" class="banned-container" id="initialWarningContainer">
+        <div class="card banned-card border-0">
+            <div class="card-body p-0">
+                <div class="mb-3">
+                    <i class="bi bi-shield-fill-x warning-icon"></i>
+                </div>
+                <h3 class="fw-bold text-white mb-3">Account Deactivated!</h3>
+                <p class="mb-3 text-white-50" style="font-size: 0.95rem;">
+                    <strong class="text-danger">Reason:</strong> Continuous spamming of print requests detected.
+                </p>
+                <p class="small text-secondary mb-0 px-2" style="font-size: 0.85rem; line-height: 1.5;">
+                    Check your Telegram messages for details. Admin approval is required to restore access.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

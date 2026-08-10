@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="indexModals">
+        <!-- Responsive Draggable GIF Floating Container -->
+        <div class="floating-gif-container" id="draggableWidget">
+            <img th:src="@{/images/dancing.gif}" src="https://cdn.imageurlgenerator.com/uploads/965960cd-616e-4c39-8661-8dac55a1fb03.gif" alt="Dancing Character" class="dancing-gif" draggable="false" />
+        </div>
+
+        <!-- Reactivation Request Confirmation Modal -->
+        <div th:if="${showReactivatePrompt}" class="modal fade show" id="reactivateModal" tabindex="-1" style="display: block; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                    <form th:action="@{/request/reactivate}" method="post">
+                        <input type="hidden" name="userId" th:value="${pendingUserId}"/>
+                        <div class="modal-header bg-warning text-dark px-4 py-3">
+                            <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Account Deactivated</h5>
+                            <a href="/" class="btn-close"></a>
+                        </div>
+                        <div class="modal-body p-4">
+                            <p class="mb-2">The account <strong><span th:text="${pendingUsername}"></span></strong> is currently deactivated.</p>
+                            <p class="small text-muted mb-0">Would you like to send a reactivation request to the Barangay Administrator for approval?</p>
+                        </div>
+                        <div class="modal-footer px-4 py-3 border-top">
+                            <a href="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Cancel</a>
+                            <button type="submit" class="btn btn-warning btn-sm fw-semibold rounded-pill px-4">Send Reactivation Request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

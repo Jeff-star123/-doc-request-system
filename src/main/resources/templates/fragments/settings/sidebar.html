@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="sidebar" class="card card-custom focal-card shadow-sm p-4">
+        <div class="text-center mb-3">
+            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-lg" style="width: 75px; height: 75px; font-size: 2rem;">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            <h6 class="fw-bold mt-3 mb-0 text-dark" th:text="${user.fullName}">User Name</h6>
+            <small class="text-muted" th:text="'@' + ${user.username}">username</small>
+        </div>
+        <hr class="my-3 opacity-25">
+        <div class="list-group settings-nav" id="settingsTabList">
+            <a class="list-group-item list-group-item-action active d-flex align-items-center gap-2" data-target="profileSection">
+                <i class="bi bi-person-gear fs-5"></i> Profile & Telegram
+            </a>
+            <a class="list-group-item list-group-item-action d-flex align-items-center gap-2" data-target="securitySection">
+                <i class="bi bi-shield-lock fs-5"></i> Password & Security
+            </a>
+            <a class="list-group-item list-group-item-action text-warning d-flex align-items-center gap-2" data-target="dangerSection">
+                <i class="bi bi-pause-circle fs-5"></i> Deactivate Account
+            </a>
+        </div>
+    </div>
+</body>
+</html>

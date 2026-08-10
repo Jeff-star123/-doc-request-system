@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="modals">
+        <!-- Anti-Spam Print Warning Modal -->
+        <div class="modal fade" id="spamWarningModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger text-center p-4">
+              <div class="text-danger mb-2">
+                <i class="bi bi-exclamation-triangle-fill display-3"></i>
+              </div>
+              <h4 class="fw-bold text-danger">Spam Warning Notice</h4>
+              <p class="fs-6 mt-2" id="spamWarningText">
+                Please wait <span id="spamCountdown" class="fw-bold text-danger fs-5">10</span> seconds before pressing. Ignore this warning and you will be banned!
+              </p>
+              <div class="mt-3">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">I Understand</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Responsive Draggable GIF Floating Container -->
+        <div class="floating-gif-container" id="draggableWidget">
+            <img th:src="@{/images/dancing.gif}" src="https://cdn.imageurlgenerator.com/uploads/965960cd-616e-4c39-8661-8dac55a1fb03.gif" alt="Dancing Character" class="dancing-gif" draggable="false" />
+        </div>
+
+        <!-- Immersive Facial Scan Modal -->
+        <div class="modal fade" id="immersiveScanModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content d-flex flex-column justify-content-between p-4">
+                    <div class="d-flex justify-content-between align-items-center w-100 max-w-lg mx-auto">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-check text-info fs-3"></i>
+                            <h4 class="mb-0 fw-bold text-white tracking-wide">Identity Liveness Check</h4>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold shadow-sm" id="cancelScanBtn">
+                            <i class="bi bi-x-lg me-1"></i> Cancel Scan
+                        </button>
+                    </div>
+
+                    <div class="text-center my-auto">
+                        <div class="mb-4">
+                            <span id="modalInstruction" class="badge bg-warning text-dark px-3 py-2 px-md-4 py-md-3 fs-6 fs-md-4 rounded-pill shadow-lg border border-2 border-white fw-bold text-wrap" style="max-width: 90vw; line-height: 1.4;">
+                                📌 Step 1: Look straight ahead
+                            </span>
+                        </div>
+
+                        <div class="oval-guide-container">
+                            <video id="webcam" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                        </div>
+
+                        <div class="progress w-50 mx-auto mt-4 bg-secondary shadow-sm" style="height: 12px; border-radius: 6px;">
+                            <div id="livenessProgress" class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width: 0%; border-radius: 6px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-center text-light small opacity-75">
+                        <p class="mb-0"><i class="bi bi-lock-fill text-success"></i> Encrypted client-side facial landmark detection</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- General Camera Capture Modal -->
+        <div class="modal fade" id="cameraCaptureModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content p-4 shadow">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="modal-title fw-bold" id="cameraModalTitle"><i class="bi bi-camera-fill text-primary"></i> Take Photo</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 px-1 bg-dark bg-opacity-50 p-2 rounded border border-secondary border-opacity-25">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="useRearCameraToggle">
+                            <label class="form-check-label small fw-semibold text-light" for="useRearCameraToggle">
+                                <i class="bi bi-phone-flip"></i> Use Rear Camera (Back)
+                            </label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="flipCameraToggle">
+                            <label class="form-check-label small fw-semibold text-light" for="flipCameraToggle">
+                                <i class="bi bi-arrow-left-right"></i> Mirror View
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="position-relative d-inline-block w-100 overflow-hidden rounded bg-black" style="max-height: 400px;">
+                            <video id="captureVideo" autoplay playsinline muted style="width: 100%; max-height: 400px; object-fit: contain;"></video>
+                            <canvas id="captureCanvas" class="d-none"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-0 justify-content-center mt-3">
+                        <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary px-5 rounded-pill fw-semibold text-white" id="snapPhotoBtn">
+                            <i class="bi bi-circle-fill text-danger me-1"></i> Capture Photo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Photo Lightbox Modal -->
+        <div id="imageModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4" onclick="closeImageModal()">
+          <div class="relative max-w-4xl max-h-[90vh] bg-[#111827] border border-slate-700 rounded-2xl p-4 shadow-2xl flex flex-col items-center" onclick="event.stopPropagation()">
+            <button onclick="closeImageModal()" class="absolute top-3 right-3 text-slate-400 hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-800 transition-all">
+              &times;
+            </button>
+            <h3 id="modalTitle" class="text-white font-bold mb-3 text-lg"></h3>
+            <div class="w-full max-h-[75vh] flex justify-center items-center overflow-hidden rounded-lg bg-black/40">
+              <img id="modalImage" src="" alt="Full view" class="max-h-[75vh] w-auto max-w-full object-contain" />
+            </div>
+          </div>
+        </div>
+    </div>
+</body>
+</html>

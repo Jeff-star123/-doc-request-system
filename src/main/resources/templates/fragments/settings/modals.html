@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="settingsModals">
+        <!-- Change Password Modal -->
+        <div class="modal fade" id="changePasswordModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <form th:action="@{/settings/change-password}" method="post">
+                        <div class="modal-header bg-light">
+                            <h5 class="modal-title fw-bold text-dark"><i class="bi bi-key text-primary me-2"></i> Change Your Password</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">CURRENT PASSWORD</label>
+                                <div class="input-group">
+                                    <input type="password" id="currentPassword" name="currentPassword" class="form-control" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('currentPassword', 'eyeIconCurrent')">
+                                        <i id="eyeIconCurrent" class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">NEW PASSWORD</label>
+                                <div class="input-group">
+                                    <input type="password" id="newPassword" name="newPassword" class="form-control" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('newPassword', 'eyeIconNew')">
+                                        <i id="eyeIconNew" class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">CONFIRM NEW PASSWORD</label>
+                                <div class="input-group">
+                                    <input type="password" id="confirmNewPassword" name="confirmPassword" class="form-control" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmNewPassword', 'eyeIconConfirm')">
+                                        <i id="eyeIconConfirm" class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 text-white">Update Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deactivate Account Confirmation Modal -->
+        <div class="modal fade" id="deactivateAccountModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <form th:action="@{/settings/deactivate-account}" method="post">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Account Deactivation</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <p class="text-dark fw-semibold mb-3">Are you sure you want to deactivate your account?</p>
+                            
+                            <div class="alert alert-danger py-2 small mb-3 rounded-3">
+                                <i class="bi bi-exclamation-circle-fill me-1"></i> <strong>Warning:</strong> You will not be able to log back in freely. Reactivation will require manual approval from a Barangay Administrator.
+                            </div>
+
+                            <p class="small text-muted mb-2">Please enter your password to confirm identity:</p>
+                            <div class="mb-3">
+                                <div class="input-group">
+                                    <input type="password" id="deactivateConfirmPassword" name="confirmPassword" class="form-control" placeholder="Enter password to confirm" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('deactivateConfirmPassword', 'eyeIconDeactivate')">
+                                        <i id="eyeIconDeactivate" class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning btn-sm fw-semibold rounded-pill px-4">Deactivate Account</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Draggable GIF Widget -->
+        <div class="floating-gif-container" id="draggableWidget">
+            <img th:src="@{/images/dancing.gif}" src="https://cdn.imageurlgenerator.com/uploads/965960cd-616e-4c39-8661-8dac55a1fb03.gif" alt="Dancing Character" class="dancing-gif" draggable="false" />
+        </div>
+    </div>
+</body>
+</html>

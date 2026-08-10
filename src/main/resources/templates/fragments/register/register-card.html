@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="registerCard" class="portal-card p-2 p-md-3 w-100">
+        <!-- Circular Logo Section -->
+        <div class="text-center mb-3">
+            <div class="logo-wrapper mb-2">
+                <img src="https://cdn.phototourl.com/free/2026-08-08-4120abee-3ef2-4435-963d-1f1075db6535.jpg" 
+                     alt="Barangay Logo" 
+                     class="logo-img" 
+                     onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/1041/1041883.png';">
+            </div>
+            <h4 class="fw-bold mb-1 card-title-text">Create Account</h4>
+            <p class="fw-medium small mb-0 card-subtitle-text">District 3 Barangay Request Portal</p>
+        </div>
+
+        <!-- Telegram Bot Announcement Banner -->
+        <div class="alert telegram-banner alert-dismissible fade show p-2 px-3 ps-4 d-flex align-items-center justify-content-between gap-3 mb-2" role="alert">
+            <div class="d-flex align-items-center gap-2 overflow-hidden">
+                <i class="bi bi-telegram fs-4 text-primary flex-shrink-0"></i>
+                <span class="small text-truncate banner-text">
+                    <strong class="banner-title">Telegram Alerts:</strong> Get updates via <strong class="banner-bold">@BrgyDocRequestBot</strong>
+                </span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="https://t.me/BrgyDocRequestBot" target="_blank" class="btn telegram-btn btn-sm fw-semibold rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1 fs-7">
+                    Open Bot <i class="bi bi-box-arrow-up-right small"></i>
+                </a>
+                <button type="button" class="btn-close position-static p-2 ms-1" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+
+        <!-- Modern Floating Toast Notification -->
+        <div id="customToast" class="alert fade d-none border-0 shadow-lg p-3 rounded-4 mb-2" role="alert" style="backdrop-filter: blur(12px); transition: all 0.3s ease-in-out;">
+            <div class="d-flex align-items-center gap-2">
+                <i id="customToastIcon" class="bi fs-4"></i>
+                <div>
+                    <h6 id="customToastTitle" class="alert-heading mb-0 fw-bold">Notification</h6>
+                    <span id="customToastMessage" class="small"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backend Error Alerts -->
+        <div th:if="${error}" class="alert alert-danger text-center p-2 mb-2 small" th:text="${error}"></div>
+
+        <form th:action="@{/register}" method="post" onsubmit="return validateForm()">
+            <div class="mb-2 text-start">
+                <label class="form-label fw-bold text-uppercase mb-1">Full Name</label>
+                <input type="text" name="fullName" class="form-control shadow-none" placeholder="e.g. Juan Dela Cruz" required />
+            </div>
+
+            <div class="mb-2 text-start">
+                <label class="form-label fw-bold text-uppercase mb-1">Username</label>
+                <input type="text" name="username" class="form-control shadow-none" placeholder="Choose a username" required />
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-2 text-start">
+                <label class="form-label fw-bold text-uppercase mb-1">Password</label>
+                <div class="input-group">
+                    <input type="password" id="regPassword" name="password" class="form-control shadow-none border-end-0" placeholder="Choose a password" required />
+                    <button class="btn input-group-text-btn" type="button" onclick="togglePassword('regPassword', 'eyeIcon1')">
+                        <i id="eyeIcon1" class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="mb-2 text-start">
+                <label class="form-label fw-bold text-uppercase mb-1">Confirm Password</label>
+                <div class="input-group">
+                    <input type="password" id="confirmPassword" class="form-control shadow-none border-end-0" placeholder="Re-enter password" required />
+                    <button class="btn input-group-text-btn" type="button" onclick="togglePassword('confirmPassword', 'eyeIcon2')">
+                        <i id="eyeIcon2" class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mandatory Telegram Chat ID & Instant Free Telegram OTP System -->
+            <div class="mb-3 text-start">
+                <label class="form-label fw-bold text-uppercase mb-1">Telegram Chat ID <span class="text-danger">*</span></label>
+                <div class="input-group mb-2">
+                    <input type="text" id="telegramChatId" name="telegramChatId" class="form-control shadow-none" placeholder="e.g. 8329704146" required />
+                    <button type="button" id="btnSendTelegramOtp" class="btn btn-primary fw-semibold px-3" onclick="requestTelegramOtp()">
+                        Send OTP
+                    </button>
+                </div>
+
+                <!-- Hidden OTP Input Field Container -->
+                <div id="telegramOtpContainer" class="input-group mb-2 d-none">
+                    <input type="text" id="telegramOtpInput" class="form-control shadow-none border-success" placeholder="Enter 6-digit OTP from Telegram" maxlength="6" />
+                    <button type="button" class="btn btn-success fw-semibold px-3" onclick="verifyTelegramOtp()">Verify OTP</button>
+                </div>
+                <input type="hidden" id="telegramVerified" value="false" />
+
+                <div class="form-text mt-1 help-guide-text" style="font-size: 0.72rem;">
+                    💡 <b>How to get your mandatory Chat ID:</b><br>
+                    1. Open <a href="https://t.me/userinfobot" target="_blank" class="fw-semibold text-accent-link">@userinfobot <i class="bi bi-box-arrow-up-right"></i></a> on Telegram.<br>
+                    2. Tap <b>Start</b> to get your numerical Chat ID.<br>
+                    3. Open <a href="https://t.me/BrgyDocRequestBot" target="_blank" class="fw-semibold text-accent-link">@BrgyDocRequestBot <i class="bi bi-box-arrow-up-right"></i></a> and tap <b>Start</b> so it can send your registration OTP code!
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary-custom w-100 py-2">Sign Up</button>
+        </form>
+    </div>
+</body>
+</html>

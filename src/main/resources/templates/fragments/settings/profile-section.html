@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="profileSection" class="card card-custom focal-card shadow-sm p-4 mb-4 settings-section active-pane" id="profileSection">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="text-primary fw-bold mb-0">
+                <i class="bi bi-person-lines-fill me-2"></i> General Information & Notifications
+            </h5>
+            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1">Account Info</span>
+        </div>
+
+        <form th:action="@{/settings/update-profile}" method="post">
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-muted">FULL NAME</label>
+                <input type="text" name="fullName" class="form-control" th:value="${user.fullName}" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-muted">USERNAME</label>
+                <input type="text" name="username" class="form-control" th:value="${user.username}" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-muted">TELEGRAM CHAT ID</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-telegram text-primary"></i></span>
+                    <input type="text" name="telegramChatId" class="form-control" th:value="${user.telegramChatId}" placeholder="e.g. 123456789">
+                </div>
+                <div class="form-text small mt-2 text-muted">
+                    Need your ID? Start <a href="https://t.me/userinfobot" target="_blank" class="fw-semibold text-decoration-underline text-primary">@userinfobot <i class="bi bi-box-arrow-up-right"></i></a> on Telegram to copy your numerical ID.
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary fw-semibold px-4 text-white">
+                <i class="bi bi-save-fill me-1"></i> Save Changes
+            </button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="devSection" class="dev-section-container p-4 sm:p-6 shadow-xl reveal-on-scroll focal-card relative">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-blue-500 font-mono text-lg">&lt;/&gt;</span>
+          <h2 class="font-bold text-lg dev-text-title mb-0">Developers</h2>
+          <span class="bg-blue-600/20 text-blue-500 text-xs px-2 py-0.5 rounded font-semibold">BSIT Team</span>
+        </div>
+        
+        <div class="flex items-center">
+          <span class="text-xs dev-text-sub font-mono" id="devCounter">Dev 1 of 7</span>
+        </div>
+      </div>
+
+      <!-- Carousel Container with Side Navigation Buttons -->
+      <div class="relative w-full">
+        <button onclick="scrollDevs(-1)" class="dev-side-btn btn-prev" title="Previous Developer">
+          <i class="bi bi-chevron-left fs-6"></i>
+        </button>
+
+        <!-- Single Item Carousel Container -->
+        <div id="devCarousel" class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-0 no-scrollbar rounded-xl dev-carousel-box w-full">
+          
+          <!-- Developer 1 -->
+          <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+            <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png', 'Jeffrey M. Serrano Jr.')">
+              <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">★ Lead Dev</span>
+              <img src="https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png" alt="Jeffrey M. Serrano Jr." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                Click to expand
+              </div>
+            </div>
+            <div class="w-full md:w-1/2 text-center md:text-left">
+              <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 01</span>
+              <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Jeffrey M. Serrano Jr.</h3>
+              <p class="text-sm text-blue-500 font-semibold mt-1">Lead Dev</p>
+              <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                Head developer in charge of architecture, core logic design, liveness detection logic, and overall system implementation.
+              </p>
+            </div>
+          </div>
+
+          <!-- Developer 2 -->
+          <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+            <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-177e81e4-3ffb-4138-99e8-69ee1278c9b6.jpg', 'Jalayahay, Jessa Mae P.')">
+              <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Assistant Dev</span>
+              <img src="https://cdn.phototourl.com/free/2026-08-09-177e81e4-3ffb-4138-99e8-69ee1278c9b6.jpg" alt="Jalayahay, Jessa Mae P." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                Click to expand
+              </div>
+            </div>
+            <div class="w-full md:w-1/2 text-center md:text-left">
+              <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 02</span>
+              <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Jalayahay, Jessa Mae P.</h3>
+              <p class="text-sm text-blue-500 font-semibold mt-1">Assistant Dev</p>
+              <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                Assists with development workflows, UI refinements, and feature integration.
+              </p>
+            </div>
+          </div>
+
+          <!-- Developer 3 -->
+          <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+            <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-5739fb3b-103b-46e2-a083-dacf4189b199.jpg', 'Mines, Manzor M.')">
+              <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Presentor</span>
+              <img src="https://cdn.phototourl.com/free/2026-08-09-5739fb3b-103b-46e2-a083-dacf4189b199.jpg" alt="Mines, Manzor M." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                Click to expand
+              </div>
+            </div>
+            <div class="w-full md:w-1/2 text-center md:text-left">
+              <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 03</span>
+              <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Mines, Manzor M.</h3>
+              <p class="text-sm text-blue-500 font-semibold mt-1">Presentor</p>
+              <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                Leads system demonstrations, academic project pitch presentation, and technical showcase.
+              </p>
+            </div>
+          </div>
+
+          <!-- Developer 4 -->
+          <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+            <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-1f1dd251-d61d-40b3-9969-e12b6db7e10d.jpg', 'Gutierrez, Rovil B.')">
+              <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
+              <img src="https://cdn.phototourl.com/free/2026-08-09-1f1dd251-d61d-40b3-9969-e12b6db7e10d.jpg" alt="Gutierrez, Rovil B." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                Click to expand
+              </div>
+            </div>
+            <div class="w-full md:w-1/2 text-center md:text-left">
+              <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 04</span>
+              <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Gutierrez, Rovil B.</h3>
+              <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
+              <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                Responsible for preparing project technical documentation, system specifications, and compliance records.
+              </p>
+            </div>
+          </div>
+
+          <!-- Developer 5 -->
+          <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+            <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-9e4f218c-64ac-4a91-9c67-4353e6527b17.jpg', 'Prescillas, Ej Y.')">
+              <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
+              <img src="https://cdn.phototourl.com/free/2026-08-09-9e4f218c-64ac-4a91-9c67-4353e6527b17.jpg" alt="Prescillas, Ej Y." class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                Click to expand
+              </div>
+            </div>
+            <div class="w-full md:w-1/2 text-center md:text-left">
+              <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 05</span>
+              <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Prescillas, Ej Y.</h3>
+              <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
+              <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                Manages project reporting, system requirements writing, and process workflow charts.
+              </p>
+            </div>
+          </div>
+
+          <!-- Developer 6 -->
+          <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+            <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-8e0595e4-015c-452c-b33e-6cdd247f82d7.jpg', 'Kurt Bactat Russel')">
+              <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
+              <img src="https://cdn.phototourl.com/free/2026-08-09-8e0595e4-015c-452c-b33e-6cdd247f82d7.jpg" alt="Kurt Bactat Russel" class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                Click to expand
+              </div>
+            </div>
+            <div class="w-full md:w-1/2 text-center md:text-left">
+              <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 06</span>
+              <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Kurt Bactat Russel</h3>
+              <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
+              <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                Assists with software user manual development, academic case studies, and compliance checks.
+              </p>
+            </div>
+          </div>
+
+          <!-- Developer 7 -->
+          <div class="w-full flex-shrink-0 snap-center p-4 sm:p-6 flex flex-col md:flex-row items-center gap-6">
+            <div class="relative w-full md:w-1/2 h-64 sm:h-80 bg-white rounded-xl overflow-hidden cursor-pointer group flex items-center justify-center shadow-md border border-slate-200" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-3b99cbe0-e745-453f-9156-29fb8d4cea10.jpg', 'Tyrone James Oribiada')">
+              <span class="absolute top-3 right-3 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Documentation</span>
+              <img src="https://cdn.phototourl.com/free/2026-08-09-3b99cbe0-e745-453f-9156-29fb8d4cea10.jpg" alt="Tyrone James Oribiada" class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm text-white font-medium">
+                Click to expand
+              </div>
+            </div>
+            <div class="w-full md:w-1/2 text-center md:text-left">
+              <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Developer 07</span>
+              <h3 class="font-bold text-xl sm:text-2xl dev-text-title mt-1">Tyrone James Oribiada</h3>
+              <p class="text-sm text-blue-500 font-semibold mt-1">Documentation</p>
+              <p class="text-xs dev-text-sub mt-3 leading-relaxed">
+                Maintains visual assets, final project formatting, and documentation archives.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <button onclick="scrollDevs(1)" class="dev-side-btn btn-next" title="Next Developer">
+          <i class="bi bi-chevron-right fs-6"></i>
+        </button>
+      </div>
+
+    </div>
+</body>
+</html>
