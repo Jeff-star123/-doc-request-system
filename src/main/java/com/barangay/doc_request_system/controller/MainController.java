@@ -162,7 +162,7 @@ public class MainController {
 
         User user = getAuthenticatedUser(session);
 
-        String formattedPurpose = "[" + idType + "] " + purpose;
+        String formattedPurpose = purpose;
         DocumentRequest docRequest = new DocumentRequest(user, documentType, formattedPurpose);
         docRequest.setFaceVerified(faceVerified);
 
