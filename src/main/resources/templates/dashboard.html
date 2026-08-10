@@ -3,29 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay Portal - Student Dashboard</title>
+    <title>Barangay Request Portal - Student Dashboard</title>
     
-    <!-- External Frameworks -->
+    <!-- Framework Styles -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- MediaPipe & Tesseract AI Libraries -->
+    <!-- AI & Verification CDN Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-    <!-- Custom Extracted Dashboard CSS -->
+    <!-- Custom Dashboard CSS -->
     <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
 </head>
-<body>
+<body class="dashboard-body">
 
-    <!-- 1. Header Navigation Fragment -->
-    <div th:replace="~{fragments/dashboard/navbar :: navbar}"></div>
+    <!-- TOP NAVIGATION BAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark dashboard-navbar sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#">
+                <div class="logo-wrapper-sm">
+                    <img src="https://cdn.phototourl.com/free/2026-08-08-4120abee-3ef2-4435-963d-1f1075db6535.jpg" 
+                         alt="Logo" 
+                         class="logo-img-sm" 
+                         onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/1041/1041883.png';">
+                </div>
+                Barangay Request Portal
+            </a>
 
-    <div class="container d-flex flex-column gap-4">
-        
-        <!-- Notifications Banner -->
+            <!-- Navigation Pills Bar -->
+            <div class="d-none d-lg-flex align-items-center gap-2 nav-pills-bar mx-auto">
+                <button class="nav-pill-item active" id="pillHome"><i class="bi bi-house-door-fill me-1"></i> Dashboard</button>
+                <button class="nav-pill-item" id="pillForm" data-bs-toggle="modal" data-bs-target="#overlayFormModal"><i class="bi bi-file-earmark-plus-fill me-1"></i> Document Application</button>
+                <button class="nav-pill-item" id="pillHistory" data-bs-toggle="modal" data-bs-target="#overlayHistoryModal"><i class="bi bi-clock-history me-1"></i> History</button>
+                <button class="nav-pill-item" id="pillAbout" data-bs-toggle="modal" data-bs-target="#overlayAboutModal"><i class="bi bi-info-circle-fill me-1"></i> About System</button>
+                <button class="nav-pill-item" id="pillDevs" data-bs-toggle="modal" data-bs-target="#overlayDevsModal"><i class="bi bi-code-slash me-1"></i> Developers</button>
+            </div>
+
+            <!-- Right User Controls -->
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-outline-light btn-sm px-2 py-1 rounded-pill" id="themeToggleBtn" title="Toggle Theme">
+                    <i id="themeIcon" class="bi bi-moon-fill"></i> <span class="d-none d-md-inline small ms-1">Theme</span>
+                </button>
+                <span class="navbar-text text-light d-none d-sm-inline small">
+                    <i class="bi bi-person-circle text-info"></i> <strong th:text="${user.fullName}">User</strong>
+                </span>
+                <a th:href="@{/settings}" class="btn btn-outline-light btn-sm px-3"><i class="bi bi-gear"></i> Settings</a>
+                <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm px-3"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN DASHBOARD CONTENT AREA -->
+    <div class="container py-4 d-flex flex-column gap-4">
+
+        <!-- Flash Messages & Telegram Alert Banners -->
         <div class="reveal-on-scroll">
             <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm mb-3 rounded-3 border-0" role="alert" style="background: rgba(25, 135, 84, 0.15); backdrop-filter: blur(10px);">
                 <div class="d-flex align-items-center gap-2">
@@ -35,7 +69,7 @@
                         <span class="small" th:text="${success}">Request submitted successfully</span>
                     </div>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
             <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm mb-3 rounded-3 border-0" role="alert" style="background: rgba(220, 53, 69, 0.15); backdrop-filter: blur(10px);">
@@ -46,55 +80,259 @@
                         <span class="small" th:text="${error}">Error message</span>
                     </div>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <div class="alert alert-info alert-dismissible fade show border-0 mb-0 rounded-3 shadow-sm" role="alert" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+            <div class="alert alert-info alert-dismissible fade show border-0 mb-0 rounded-3 shadow-sm card-custom" role="alert">
                 <div class="d-flex align-items-center gap-2 mb-1">
                     <i class="bi bi-telegram fs-4 text-primary"></i>
-                    <h6 class="alert-heading mb-0 fw-bold">Get Instant Request Updates on Telegram!</h6>
+                    <h6 class="alert-heading mb-0 fw-bold text-dark">Get Instant Request Updates on Telegram!</h6>
                 </div>
                 <p class="mb-1 small text-secondary">
                     To receive automated status notifications when your document is processed, open 
                     <a href="https://t.me/BrgyDocRequestBot" target="_blank" class="badge bg-primary fs-6 text-decoration-none">@BrgyDocRequestBot <i class="bi bi-box-arrow-up-right"></i></a> and tap <b>START</b>.
                 </p>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </div>
 
-        <!-- 2. Request History Component -->
-        <div th:replace="~{fragments/dashboard/history-table :: historyTable}"></div>
+        <!-- HERO WELCOME & DIRECT EMBEDDED AI ASSISTANT SECTION -->
+        <div class="row g-4 reveal-on-scroll">
+            
+            <!-- Central Direct AI Assistant Card -->
+            <div class="col-lg-8">
+                <div class="card card-custom ai-hero-card p-4 p-md-5 h-100 d-flex flex-column justify-content-between focal-card">
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-30 rounded-pill px-3 py-1 fw-bold">
+                                <i class="bi bi-stars me-1"></i> AI Powered Assistant
+                            </span>
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-30 rounded-pill px-3 py-1 fw-bold">
+                                <i class="bi bi-shield-check me-1"></i> Verified Session
+                            </span>
+                        </div>
+                        <h2 class="display-6 fw-bold text-dark mb-2">
+                            Welcome Back, <span class="gradient-text" th:text="${user.fullName}">User</span>! 👋
+                        </h2>
+                        <p class="text-secondary fs-6 mb-0">
+                            Ask our AI Assistant anything about clearances, requirements, liveness checks, or bot notifications.
+                        </p>
+                    </div>
 
-        <!-- 3. Document Application Form Component -->
-        <div th:replace="~{fragments/dashboard/document-form :: documentForm}"></div>
+                    <!-- Direct AI Response Container (Renders Answers Directly on Dashboard) -->
+                    <div id="aiResponseContainer" class="ai-response-box p-3 rounded-4 mb-3 d-none">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="ai-avatar-icon text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+                                <i class="bi bi-robot fs-5"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <strong class="small fw-bold text-primary">Barangay AI Assistant</strong>
+                                    <button type="button" class="btn btn-sm btn-link p-0 text-muted text-decoration-none small" id="btnClearAiChat" title="Clear Chat">
+                                        <i class="bi bi-x-circle me-1"></i> Clear
+                                    </button>
+                                </div>
+                                <p class="small mb-1 text-muted fw-semibold" id="aiUserQuestionText"></p>
+                                <hr class="my-2 opacity-25">
+                                <div id="aiAnswerText" class="small text-dark leading-relaxed">
+                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                    <span>Analyzing query...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-        <!-- 4. About System Component -->
-        <div th:replace="~{fragments/dashboard/about-section :: aboutSection}"></div>
+                    <!-- AI Query Input Box -->
+                    <div class="ai-query-container mb-3">
+                        <div class="input-group input-group-lg">
+                            <input type="text" id="aiStudioInput" class="form-control ai-input shadow-none" placeholder="Type query e.g. 'What are the requirements for Barangay Clearance?'">
+                            <button class="btn btn-primary px-4 fw-bold text-white rounded-end-3" type="button" id="btnSendAiQuery">
+                                <i class="bi bi-send-fill me-1"></i> Ask AI
+                            </button>
+                        </div>
+                    </div>
 
-        <!-- 5. Developers Carousel Component -->
-        <div th:replace="~{fragments/dashboard/dev-section :: devSection}"></div>
+                    <!-- Quick Prompt Chips -->
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="prompt-chip" onclick="fillAiQuery('What are the requirements for Barangay Clearance?')">
+                            💡 Requirements for Clearance
+                        </span>
+                        <span class="prompt-chip" onclick="fillAiQuery('How do I set up Telegram notification alerts?')">
+                            📲 Telegram Bot Setup
+                        </span>
+                        <span class="prompt-chip" onclick="fillAiQuery('How does the Biometric Liveness Face Scan work?')">
+                            🛡️ Biometric Scan Info
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Quick Stats & Telegram Card -->
+            <div class="col-lg-4">
+                <div class="card card-custom p-4 h-100 d-flex flex-column justify-content-between focal-card">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-activity text-primary me-2"></i> Live Quick Status</h6>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2">Real-time</span>
+                        </div>
+                        
+                        <div class="stat-mini-box mb-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <small class="stat-label d-block uppercase mb-1">MY REQUESTS</small>
+                                    <h4 class="stat-value mb-0" th:text="${#lists.size(requests)}">0</h4>
+                                </div>
+                                <i class="bi bi-folder-check fs-1 text-primary opacity-50"></i>
+                            </div>
+                        </div>
+
+                        <div class="stat-mini-box mb-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <small class="stat-label d-block uppercase mb-1">SECURITY STATUS</small>
+                                    <h6 class="fw-bold text-success mb-0"><i class="bi bi-check-circle-fill me-1"></i> Biometric Active</h6>
+                                </div>
+                                <i class="bi bi-person-bounding-box fs-2 text-success opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Telegram Bot Quick Button -->
+                    <div class="p-3 bg-primary bg-opacity-10 border border-primary border-opacity-30 rounded-3 text-center">
+                        <small class="text-primary fw-bold d-block mb-1"><i class="bi bi-telegram me-1"></i> Telegram Notifications</small>
+                        <a href="https://t.me/BrgyDocRequestBot" target="_blank" class="btn btn-primary btn-sm rounded-3 w-100 fw-bold text-white">
+                            Open @BrgyDocRequestBot <i class="bi bi-box-arrow-up-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FLOATING ACTION CARDS GRID -->
+        <div class="row g-4 reveal-on-scroll">
+            
+            <!-- Card 1: Apply Document -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card card-custom floating-action-card p-4 focal-card" data-bs-toggle="modal" data-bs-target="#overlayFormModal">
+                    <div class="action-card-icon bg-primary bg-opacity-10 text-primary mb-3">
+                        <i class="bi bi-file-earmark-plus-fill fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">Apply Document</h5>
+                    <p class="small text-secondary mb-3">Submit Barangay Clearance or Certificate application online.</p>
+                    <span class="action-link-text">Launch Application <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </div>
+
+            <!-- Card 2: Track History -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card card-custom floating-action-card p-4 focal-card" data-bs-toggle="modal" data-bs-target="#overlayHistoryModal">
+                    <div class="action-card-icon bg-info bg-opacity-10 text-info mb-3">
+                        <i class="bi bi-clock-history fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">Request History</h5>
+                    <p class="small text-secondary mb-3">Review past request statuses and print approved clearances.</p>
+                    <span class="action-link-text text-info">View History <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </div>
+
+            <!-- Card 3: About System -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card card-custom floating-action-card p-4 focal-card" data-bs-toggle="modal" data-bs-target="#overlayAboutModal">
+                    <div class="action-card-icon bg-warning bg-opacity-10 text-warning mb-3">
+                        <i class="bi bi-shield-lock-fill fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">About Portal</h5>
+                    <p class="small text-secondary mb-3">Learn about system features, security, and BSIT project disclaimer.</p>
+                    <span class="action-link-text text-warning">System Details <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </div>
+
+            <!-- Card 4: BSIT Developers Team -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card card-custom floating-action-card p-4 focal-card" data-bs-toggle="modal" data-bs-target="#overlayDevsModal">
+                    <div class="action-card-icon bg-success bg-opacity-10 text-success mb-3">
+                        <i class="bi bi-code-slash fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">BSIT Team</h5>
+                    <p class="small text-secondary mb-3">Meet the development team and project creators.</p>
+                    <span class="action-link-text text-success">Meet Developers <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </div>
+
+        </div>
 
     </div>
 
-    <!-- 6. Modals Fragment (Camera, Lightbox, Scan & Anti-spam) -->
+    <!-- INTERACTIVE OVERLAY MODAL DRAWERS -->
+
+    <!-- 1. DOCUMENT APPLICATION FORM OVERLAY MODAL -->
+    <div class="modal fade" id="overlayFormModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content glass-drawer-modal p-2 p-md-3">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-2 p-md-3">
+                    <div th:replace="~{fragments/dashboard/document-form :: documentForm}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. REQUEST HISTORY OVERLAY MODAL -->
+    <div class="modal fade" id="overlayHistoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content glass-drawer-modal p-2 p-md-3">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-2 p-md-3">
+                    <div th:replace="~{fragments/dashboard/history-table :: historyTable}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. ABOUT SYSTEM OVERLAY MODAL -->
+    <div class="modal fade" id="overlayAboutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content glass-drawer-modal p-2 p-md-3">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-2 p-md-3">
+                    <div th:replace="~{fragments/dashboard/about-section :: aboutSection}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. BSIT DEVELOPERS OVERLAY MODAL -->
+    <div class="modal fade" id="overlayDevsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content glass-drawer-modal p-2 p-md-3">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-2 p-md-3">
+                    <div th:replace="~{fragments/dashboard/dev-section :: devSection}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals & Draggable Widget Component Fragment -->
     <div th:replace="~{fragments/dashboard/modals :: modals}"></div>
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Custom Extracted Dashboard JS -->
-    <script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
-
-    <!-- Dify AI Chatbot Integration Script -->
-    <script>
-     window.difyChatbotConfig = {
-      token: 'tuMY58SadttfVKCz',
-      inputs: {},
-      systemVariables: {},
-      userVariables: {}
-     }
-    </script>
-    <script src="https://udify.app/embed.min.js" id="tuMY58SadttfVKCz" defer></script>
-
+    <!-- Modularized Dashboard JS Scripts -->
+    <script th:src="@{/js/dashboard/ui-effects.js}" src="/js/dashboard/ui-effects.js"></script>
+    <script th:src="@{/js/dashboard/ai-assistant.js}" src="/js/dashboard/ai-assistant.js"></script>
+    <script th:src="@{/js/dashboard/verification-ocr.js}" src="/js/dashboard/verification-ocr.js"></script>
+    <script th:src="@{/js/dashboard/widgets.js}" src="/js/dashboard/widgets.js"></script>
+    
 </body>
 </html>

@@ -62,7 +62,7 @@
                     <!-- "What is this?" Feature Link -->
                     <div class="mt-4 pt-2">
                         <button type="button" class="btn btn-link text-white-50 text-decoration-none small fw-semibold" data-bs-toggle="modal" data-bs-target="#aboutSystemModal">
-                            <i class="bi bi-question-circle-fill text-warning me-1"></i> About?
+                            <i class="bi bi-question-circle-fill text-warning me-1"></i> What is this system?
                         </button>
                     </div>
                 </div>
@@ -88,7 +88,7 @@
 
     </div>
 
-    <!-- What is This? Information Modal -->
+    <!-- "WHAT IS THIS?" INFORMATION MODAL (6-Feature System Capability Grid) -->
     <div class="modal fade" id="aboutSystemModal" tabindex="-1" aria-labelledby="aboutSystemModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content glass-modal border-0 shadow-2xl rounded-4">
@@ -103,51 +103,73 @@
                         The <strong>Barangay Bulsa-Korapot Document Request System</strong> is a digital platform designed to automate the process of requesting local documents like Barangay Clearances and Certificates of Residency without the need for in-person queuing. Crucially, this system was developed strictly as a school project requirement and presentation prototype for our BSIT program, and it is not an officially deployed government application.
                     </p>
                     <div class="row g-3 small">
+                        
+                        <!-- 1. Remote Document Application -->
                         <div class="col-md-6 col-lg-4">
                             <div class="p-3 about-card h-100 rounded-3">
                                 <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                                    <i class="bi bi-shield-lock fs-5"></i>
-                                    <span>Secure Online Portal</span>
+                                    <i class="bi bi-file-earmark-text fs-5 text-primary"></i>
+                                    <span>Online Document Application</span>
                                 </div>
-                                <div class="text-secondary">Provides residents with a remote way to request necessary barangay documents, eliminating physical lines at the barangay hall.</div>
+                                <div class="text-secondary">Enables residents to request Barangay Clearances, Certificates of Residency, and Indigency remotely without physical queuing.</div>
                             </div>
                         </div>
+
+                        <!-- 2. Automated Tesseract OCR -->
                         <div class="col-md-6 col-lg-4">
                             <div class="p-3 about-card h-100 rounded-3">
                                 <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                                    <i class="bi bi-person-check fs-5"></i>
-                                    <span>Advanced Verification</span>
+                                    <i class="bi bi-card-text fs-5 text-info"></i>
+                                    <span>Automated Tesseract OCR</span>
                                 </div>
-                                <div class="text-secondary">Features a multi-step security process, including ID submission and biometric liveness face scanning alongside account restrictions for misuse.</div>
+                                <div class="text-secondary">Integrates Tesseract.js to automatically analyze uploaded IDs (PhilSys, School ID, Driver's License, UMID) for validity verification.</div>
                             </div>
                         </div>
+
+                        <!-- 3. Biometric Liveness Verification -->
                         <div class="col-md-6 col-lg-4">
                             <div class="p-3 about-card h-100 rounded-3">
                                 <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                                    <i class="bi bi-robot fs-5"></i>
-                                    <span>Automated Communication</span>
+                                    <i class="bi bi-person-bounding-box fs-5 text-success"></i>
+                                    <span>Biometric Liveness Scan</span>
                                 </div>
-                                <div class="text-secondary">Integrates automated Telegram alerts for status updates and features a Dify-powered AI chatbot to handle user inquiries.</div>
+                                <div class="text-secondary">Powered by MediaPipe FaceMesh for 3-step real-time head landmark tracking to prevent proxy and fraudulent submissions.</div>
                             </div>
                         </div>
-                        <div class="col-md-6 col-lg-6">
+
+                        <!-- 4. Telegram Alerts & OTP Bot -->
+                        <div class="col-md-6 col-lg-4">
                             <div class="p-3 about-card h-100 rounded-3">
                                 <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                                    <i class="bi bi-sliders fs-5"></i>
-                                    <span>Administrative Controls</span>
+                                    <i class="bi bi-telegram fs-5 text-primary"></i>
+                                    <span>Telegram Alerts & OTP Bot</span>
                                 </div>
-                                <div class="text-secondary">Equips barangay officials with tools to manage incoming document requests, track transaction histories, and update user statuses.</div>
+                                <div class="text-secondary">Dispatches instant request approval/rejection alerts and 6-digit registration OTP codes directly via <b>@BrgyDocRequestBot</b>.</div>
                             </div>
                         </div>
-                        <div class="col-md-6 col-lg-6">
+
+                        <!-- 5. Embedded AI Assistant -->
+                        <div class="col-md-6 col-lg-4">
                             <div class="p-3 about-card h-100 rounded-3">
                                 <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                                    <i class="bi bi-moon-stars fs-5"></i>
-                                    <span>Modern UI</span>
+                                    <i class="bi bi-robot fs-5 text-warning"></i>
+                                    <span>Embedded AI Assistant</span>
                                 </div>
-                                <div class="text-secondary">Utilizes a dark-mode interface designed for improved accessibility, smoothness, and intuitive user experience.</div>
+                                <div class="text-secondary">Features a bilingual (Tagalog/English) AI engine to answer queries regarding clearances, requirements, and portal navigation.</div>
                             </div>
                         </div>
+
+                        <!-- 6. Admin Controls & Anti-Spam -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="p-3 about-card h-100 rounded-3">
+                                <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
+                                    <i class="bi bi-sliders fs-5 text-danger"></i>
+                                    <span>Admin & Anti-Spam Controls</span>
+                                </div>
+                                <div class="text-secondary">Equips barangay officials with verification review tools, user account controls, and automated anti-spam click protection.</div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
                 <div class="modal-footer border-top p-3">
@@ -165,17 +187,6 @@
     
     <!-- Custom Index JS -->
     <script th:src="@{/js/index.js}" src="/js/index.js"></script>
-
-    <!-- Dify AI Chatbot Script -->
-    <script>
-     window.difyChatbotConfig = {
-      token: 'tuMY58SadttfVKCz',
-      inputs: {},
-      systemVariables: {},
-      userVariables: {}
-     }
-    </script>
-    <script src="https://udify.app/embed.min.js" id="tuMY58SadttfVKCz" defer></script>
 
 </body>
 </html>
