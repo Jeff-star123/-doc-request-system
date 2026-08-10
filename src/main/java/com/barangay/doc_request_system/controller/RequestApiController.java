@@ -1,6 +1,8 @@
 package com.barangay.doc_request_system.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,7 +21,7 @@ import com.barangay.doc_request_system.service.TelegramService;
 
 @RestController
 @RequestMapping("/api/requests")
-@CrossOrigin(origins = "*") // Allows Vercel frontend to fetch data from Spring Boot
+@CrossOrigin(origins = "*") // Allows your frontend (e.g., Vercel) to fetch data smoothly
 public class RequestApiController {
 
     @Autowired
@@ -31,45 +33,103 @@ public class RequestApiController {
     @Autowired
     private UserRepository userRepository;
 
-    // Test endpoint to verify your Telegram Bot
+    // Test endpoint to verify your Telegram Bot connection
     @GetMapping("/test-telegram")
     public String testTelegram() {
         String myChatId = "8329704146"; 
-        
         String message = "📢 Barangay Document Portal Notification Test!\n\n" +
                          "Hello! Your Telegram notification integration is working successfully!";
 
         telegramService.sendNotification(myChatId, message);
-        
         return "Telegram test message sent! Check your phone.";
     }
 
-    // 1. Fetch all requests for the frontend table
+    // 1. Send Telegram OTP Endpoint (Supports Query Parameters or JSON Body)
+    @PostMapping("/telegram/send-otp")
+    public Map<String, Object> sendTelegramOtp(
+            @RequestParam(required = false) String chatId,
+            @RequestBody(required = false) Map<String, String> body) {
+        
+        String targetChatId = chatId;
+        if ((targetChatId == null || targetChatId.trim().isEmpty()) && body != null) {
+            targetChatId = body.get("chatId");
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        boolean success = telegramService.sendOtp(targetChatId);
+        response.put("success", success);
+        response.put("message", success ? "OTP sent to Telegram!" : "Failed to send OTP. Ensure you have started the bot on Telegram first.");
+        return response;
+    }
+
+    // 2. Verify Telegram OTP Endpoint (Supports Query Parameters or JSON Body)
+    @PostMapping("/telegram/verify-otp")
+    public Map<String, Object> verifyTelegramOtp(
+            @RequestParam(required = false) String chatId,
+            @RequestParam(required = false) String otp,
+            @RequestBody(required = false) Map<String, String> body) {
+        
+        String targetChatId = chatId;
+        String targetOtp = otp;
+
+        if (body != null) {
+            if (targetChatId == null || targetChatId.trim().isEmpty()) {
+                targetChatId = body.get("chatId");
+            }
+            if (targetOtp == null || targetOtp.trim().isEmpty()) {
+                targetOtp = body.get("otp");
+            }
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        boolean verified = telegramService.verifyOtp(targetChatId, targetOtp);
+        response.put("success", verified);
+        response.put("message", verified ? "OTP verified successfully!" : "Invalid or expired OTP.");
+        return response;
+    }
+
+    // 3. Fetch all requests for the frontend table
     @GetMapping
     public List<DocumentRequest> getAllRequests() {
         return requestRepository.findAll();
     }
 
-    // 2. Accept a new document request from Vercel
+    // 4. Accept a new document request from frontend/Vercel
     @PostMapping("/submit")
     public DocumentRequest submitRequest(@RequestBody DocumentRequest newRequest) {
-        User student = userRepository.findByUsername("student").orElse(null);
-        if (student != null && "BANNED".equalsIgnoreCase(student.getStatus())) {
+        User user = null;
+
+        // Dynamically resolve user from the payload (fixes the hardcoded "student" bug)
+        if (newRequest.getUser() != null) {
+            if (newRequest.getUser().getId() != null) {
+                user = userRepository.findById(newRequest.getUser().getId()).orElse(null);
+            } else if (newRequest.getUser().getUsername() != null) {
+                user = userRepository.findByUsername(newRequest.getUser().getUsername()).orElse(null);
+            }
+        }
+
+        // Fallback to "student" if no identifier is provided
+        if (user == null) {
+            user = userRepository.findByUsername("student").orElse(null);
+        }
+
+        if (user != null && "BANNED".equalsIgnoreCase(user.getStatus())) {
             throw new RuntimeException("Account is banned. Cannot submit requests.");
         }
         
-        newRequest.setUser(student);
+        newRequest.setUser(user);
         newRequest.setStatus("PENDING");
 
         DocumentRequest savedRequest = requestRepository.save(newRequest);
 
-        if (student != null && student.getTelegramChatId() != null) {
+        // Safe Telegram notification dispatch
+        if (user != null && user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
             String message = "📄 **Barangay Document Portal Confirmation**\n\n" +
                              "Your request for **" + savedRequest.getDocumentType() + "** has been received!\n" +
                              "📌 **Status:** PENDING\n\n" +
                              "We will notify you here once your document status changes.";
                              
-            telegramService.sendNotification(student.getTelegramChatId(), message);
+            telegramService.sendNotification(user.getTelegramChatId(), message);
         }
 
         return savedRequest;
@@ -85,7 +145,7 @@ public class RequestApiController {
             requestRepository.save(request);
 
             User user = request.getUser();
-            if (user != null && user.getTelegramChatId() != null) {
+            if (user != null && user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
                 String message = "🔔 **Barangay Document Status Update**\n\n" +
                                  "📄 **Document:** " + request.getDocumentType() + "\n" +
                                  "📌 **New Status:** " + request.getStatus() + "\n\n" +
@@ -98,7 +158,7 @@ public class RequestApiController {
         return request;
     }
 
-    // Endpoint for Dify Chatbot Tool
+    // Endpoint for Chatbot Tool integration
     @GetMapping("/status")
     public List<DocumentRequest> getStatusForChatbot(@RequestParam(defaultValue = "student") String username) {
         return requestRepository.getStatusByUsername(username);

@@ -468,6 +468,8 @@ public class MainController {
     public String registerUser(@RequestParam String fullName,
                                @RequestParam String username,
                                @RequestParam String password,
+                               @RequestParam(required = false) String district,
+                               @RequestParam(required = false) String barangay,
                                @RequestParam(required = false) String telegramChatId,
                                Model model) {
 
@@ -479,6 +481,14 @@ public class MainController {
         String hashedPassword = passwordEncoder.encode(password);
         User newUser = new User(fullName, username, hashedPassword, "STUDENT");
         
+        if (district != null && !district.trim().isEmpty()) {
+            newUser.setDistrict(district.trim());
+        }
+
+        if (barangay != null && !barangay.trim().isEmpty()) {
+            newUser.setBarangay(barangay.trim());
+        }
+
         if (telegramChatId != null && !telegramChatId.trim().isEmpty()) {
             newUser.setTelegramChatId(telegramChatId.trim());
         }

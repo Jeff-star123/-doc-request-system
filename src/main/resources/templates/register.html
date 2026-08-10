@@ -28,7 +28,7 @@
             transition: background 0.3s ease, color 0.3s ease;
         }
 
-        /* Dark Mode Overrides (Synchronized with Login, Dashboard & Settings) */
+        /* Dark Mode Overrides */
         [data-bs-theme="dark"] body {
             color: #f8fafc;
             background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), 
@@ -58,7 +58,8 @@
             color: #94a3b8 !important;
         }
 
-        [data-bs-theme="dark"] .form-control {
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-select {
             background: rgba(15, 23, 42, 0.9) !important;
             border: 1px solid #334155 !important;
             color: #f8fafc !important;
@@ -68,14 +69,16 @@
             color: #64748b !important;
         }
 
-        [data-bs-theme="dark"] .form-control:focus {
+        [data-bs-theme="dark"] .form-control:focus,
+        [data-bs-theme="dark"] .form-select:focus {
             background: #0f172a !important;
             border-color: #3b82f6 !important;
             color: #f8fafc !important;
             box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
         }
 
-        [data-bs-theme="dark"] .input-group-text-btn {
+        [data-bs-theme="dark"] .input-group-text-btn,
+        [data-bs-theme="dark"] .input-group-text {
             background: rgba(15, 23, 42, 0.9) !important;
             border: 1px solid #334155 !important;
             color: #94a3b8 !important;
@@ -167,7 +170,7 @@
             color: #334155;
         }
 
-        .form-control {
+        .form-control, .form-select {
             background: rgba(255, 255, 255, 0.9);
             border: 1px solid #cbd5e1;
             border-radius: 10px;
@@ -180,7 +183,7 @@
             color: #94a3b8;
         }
 
-        .form-control:focus {
+        .form-control:focus, .form-select:focus {
             background: #ffffff;
             border-color: var(--primary-accent);
             box-shadow: 0 0 0 0.25rem rgba(30, 58, 138, 0.18);
@@ -309,7 +312,7 @@
     <!-- Register Container -->
     <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100 py-4">
         
-        <div class="portal-card p-4 p-md-5 w-100" style="max-width: 480px;">
+        <div class="portal-card p-4 p-md-5 w-100" style="max-width: 520px;">
             
             <!-- Circular Logo Section -->
             <div class="text-center mb-4">
@@ -320,7 +323,7 @@
                          onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/1041/1041883.png';">
                 </div>
                 <h4 class="fw-bold text-dark mb-1">Create Account</h4>
-                <p class="fw-medium small mb-0" style="color: #64748b;">Barangay Bulsa-korapot Portal</p>
+                <p class="fw-medium small mb-0" style="color: #64748b;">District 3 Barangay Request Portal</p>
             </div>
 
             <!-- Telegram Bot Announcement Banner -->
@@ -339,11 +342,19 @@
                 </div>
             </div>
 
-            <!-- Error Alerts -->
-            <div th:if="${error}" class="alert alert-danger text-center p-2 mb-3 small" th:text="${error}"></div>
-            <div id="passwordMismatchAlert" class="alert alert-danger text-center p-2 mb-3 d-none small">
-                Passwords do not match!
+            <!-- Modern Floating Toast Notification -->
+            <div id="customToast" class="alert fade d-none border-0 shadow-lg p-3 rounded-4 mb-3" role="alert" style="backdrop-filter: blur(12px); transition: all 0.3s ease-in-out;">
+                <div class="d-flex align-items-center gap-2">
+                    <i id="customToastIcon" class="bi fs-4"></i>
+                    <div>
+                        <h6 id="customToastTitle" class="alert-heading mb-0 fw-bold">Notification</h6>
+                        <span id="customToastMessage" class="small"></span>
+                    </div>
+                </div>
             </div>
+
+            <!-- Backend Error Alerts -->
+            <div th:if="${error}" class="alert alert-danger text-center p-2 mb-3 small" th:text="${error}"></div>
 
             <form th:action="@{/register}" method="post" onsubmit="return validateForm()">
                 <div class="mb-3">
@@ -378,15 +389,28 @@
                     </div>
                 </div>
 
-                <!-- Telegram Chat ID -->
+                <!-- Mandatory Telegram Chat ID & Instant Free Telegram OTP System -->
                 <div class="mb-4">
-                    <label class="form-label fw-bold text-uppercase">Telegram Chat ID <span class="text-muted fw-normal lowercase">(Optional)</span></label>
-                    <input type="text" name="telegramChatId" class="form-control shadow-none" placeholder="e.g. 8329704146" />
+                    <label class="form-label fw-bold text-uppercase">Telegram Chat ID <span class="text-danger">*</span></label>
+                    <div class="input-group mb-2">
+                        <input type="text" id="telegramChatId" name="telegramChatId" class="form-control shadow-none" placeholder="e.g. 8329704146" required />
+                        <button type="button" id="btnSendTelegramOtp" class="btn btn-primary fw-semibold px-3" onclick="requestTelegramOtp()">
+                            Send OTP
+                        </button>
+                    </div>
+
+                    <!-- Hidden OTP Input Field Container -->
+                    <div id="telegramOtpContainer" class="input-group mb-2 d-none">
+                        <input type="text" id="telegramOtpInput" class="form-control shadow-none border-success" placeholder="Enter 6-digit OTP from Telegram" maxlength="6" />
+                        <button type="button" class="btn btn-success fw-semibold px-3" onclick="verifyTelegramOtp()">Verify OTP</button>
+                    </div>
+                    <input type="hidden" id="telegramVerified" value="false" />
+
                     <div class="form-text mt-2 text-muted" style="font-size: 0.75rem;">
-                        💡 <b>How to get your Chat ID:</b><br>
+                        💡 <b>How to get your mandatory Chat ID:</b><br>
                         1. Open <a href="https://t.me/userinfobot" target="_blank" class="fw-semibold text-accent-link">@userinfobot <i class="bi bi-box-arrow-up-right"></i></a> on Telegram.<br>
                         2. Tap <b>Start</b> to get your numerical Chat ID.<br>
-                        3. Open <a href="https://t.me/BrgyDocRequestBot" target="_blank" class="fw-semibold text-accent-link">@BrgyDocRequestBot <i class="bi bi-box-arrow-up-right"></i></a> and tap <b>Start</b> so it can send you updates.
+                        3. Open <a href="https://t.me/BrgyDocRequestBot" target="_blank" class="fw-semibold text-accent-link">@BrgyDocRequestBot <i class="bi bi-box-arrow-up-right"></i></a> and tap <b>Start</b> so it can send your registration OTP code!
                     </div>
                 </div>
 
@@ -406,7 +430,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Dark Mode Initialization & Toggle Handler (Synchronized with Login & Dashboard)
+        // Dark Mode Initialization & Toggle Handler
         const htmlElement = document.documentElement;
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const themeIcon = document.getElementById('themeIcon');
@@ -444,21 +468,108 @@
             }
         }
 
+        // Helper to show modern UI notifications
+        function showCustomToast(type, title, message) {
+            const toast = document.getElementById("customToast");
+            const toastIcon = document.getElementById("customToastIcon");
+            const toastTitle = document.getElementById("customToastTitle");
+            const toastMsg = document.getElementById("customToastMessage");
+
+            toast.className = "alert fade show border-0 shadow-lg p-3 rounded-4 mb-3";
+
+            if (type === "success") {
+                toast.style.background = "rgba(25, 135, 84, 0.15)";
+                toast.style.color = "#198754";
+                toastIcon.className = "bi bi-check-circle-fill fs-4 text-success";
+                toastTitle.className = "alert-heading mb-0 fw-bold text-success";
+            } else if (type === "error") {
+                toast.style.background = "rgba(220, 53, 69, 0.15)";
+                toast.style.color = "#dc3545";
+                toastIcon.className = "bi bi-exclamation-triangle-fill fs-4 text-danger";
+                toastTitle.className = "alert-heading mb-0 fw-bold text-danger";
+            } else {
+                toast.style.background = "rgba(13, 110, 253, 0.15)";
+                toast.style.color = "#0d6efd";
+                toastIcon.className = "bi bi-info-circle-fill fs-4 text-primary";
+                toastTitle.className = "alert-heading mb-0 fw-bold text-primary";
+            }
+
+            toastTitle.innerText = title;
+            toastMsg.innerText = message;
+            toast.classList.remove("d-none");
+        }
+
+        // Telegram OTP Verification Handler
+        function requestTelegramOtp() {
+            const chatId = document.getElementById("telegramChatId").value.trim();
+            if (!chatId) {
+                showCustomToast("error", "Error", "Please enter your Telegram Chat ID first!");
+                return;
+            }
+
+            fetch('/api/requests/telegram/send-otp?chatId=' + encodeURIComponent(chatId), { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("telegramOtpContainer").classList.remove("d-none");
+                    if (data.success) {
+                        showCustomToast("success", "OTP Sent!", "OTP dispatched to your Telegram via @BrgyDocRequestBot!");
+                    } else {
+                        showCustomToast("error", "Failed", data.message || "Failed to send OTP. Make sure you started the bot first!");
+                    }
+                })
+                .catch(() => {
+                    document.getElementById("telegramOtpContainer").classList.remove("d-none");
+                    showCustomToast("error", "Network Error", "Unable to reach server. Please check your network connection.");
+                });
+        }
+
+        function verifyTelegramOtp() {
+            const chatId = document.getElementById("telegramChatId").value.trim();
+            const otpCode = document.getElementById("telegramOtpInput").value.trim();
+
+            if (!otpCode) {
+                showCustomToast("error", "Validation Error", "Please enter the 6-digit OTP code.");
+                return;
+            }
+
+            fetch(`/api/requests/telegram/verify-otp?chatId=${encodeURIComponent(chatId)}&otp=${encodeURIComponent(otpCode)}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("telegramVerified").value = "true";
+                        const sendBtn = document.getElementById("btnSendTelegramOtp");
+                        sendBtn.className = "btn btn-success fw-semibold px-3 disabled";
+                        sendBtn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Verified';
+                        document.getElementById("telegramOtpContainer").classList.add("d-none");
+                        showCustomToast("success", "Verified!", "Telegram Chat ID verified successfully!");
+                    } else {
+                        showCustomToast("error", "Verification Failed", data.message || "Invalid Telegram OTP code! Please try again.");
+                    }
+                })
+                .catch(() => {
+                    showCustomToast("error", "Server Unreachable", "Unable to verify OTP. Server is unreachable.");
+                });
+        }
+
         function validateForm() {
             const password = document.getElementById("regPassword").value;
             const confirmPassword = document.getElementById("confirmPassword").value;
-            const alertBox = document.getElementById("passwordMismatchAlert");
+            const isTelegramVerified = document.getElementById("telegramVerified").value;
 
             if (password !== confirmPassword) {
-                alertBox.classList.remove("d-none");
+                showCustomToast("error", "Password Mismatch", "Passwords do not match!");
                 return false;
             }
 
-            alertBox.classList.add("d-none");
+            if (isTelegramVerified !== "true") {
+                showCustomToast("error", "Verification Required", "Please verify your Telegram Chat ID with the OTP before signing up!");
+                return false;
+            }
+
             return true;
         }
 
-        // Unified Desktop & Mobile Dragging Script with Center Spawn and localStorage Memory
+        // Draggable Floating GIF Widget Logic
         (function makeDraggable() {
             const widget = document.getElementById("draggableWidget");
             let isDragging = false;
@@ -552,7 +663,6 @@
      defer>
     </script>
     <style>
-      /* Draggable Trigger Button Styling with Custom Logo Avatar */
       #dify-chatbot-bubble-button {
         background-color: #2563eb !important;
         background-image: url('https://cdn.phototourl.com/free/2026-08-08-4120abee-3ef2-4435-963d-1f1075db6535.jpg') !important;
@@ -570,7 +680,6 @@
         transition: transform 0.2s ease, filter 0.2s ease !important;
       }
 
-      /* Hide default icon inside Dify bubble button to display custom background logo */
       #dify-chatbot-bubble-button svg,
       #dify-chatbot-bubble-button img {
         display: none !important;
@@ -584,7 +693,6 @@
         cursor: grabbing !important;
       }
 
-      /* Dynamically Anchored Chatbot Window Styling */
       #dify-chatbot-bubble-window {
         position: fixed !important;
         width: 24rem !important;
@@ -605,7 +713,6 @@
       }
     </style>
 
-    <!-- Script to Make Dify Chatbot Button Draggable & Window Dynamic Follower -->
     <script>
       (function makeDifyDraggable() {
         let difyBtn = null;
@@ -622,44 +729,37 @@
           const maxLeft = window.innerWidth - btnWidth;
           const maxTop = window.innerHeight - btnHeight;
 
-          // Clamp button inside viewport bounds
           const clampedLeft = Math.max(10, Math.min(left, maxLeft - 10));
           const clampedTop = Math.max(10, Math.min(top, maxTop - 10));
 
-          // Set Button Inline Styling
           difyBtn.style.setProperty('left', clampedLeft + 'px', 'important');
           difyBtn.style.setProperty('top', clampedTop + 'px', 'important');
           difyBtn.style.setProperty('bottom', 'auto', 'important');
           difyBtn.style.setProperty('right', 'auto', 'important');
 
-          // Save Position to LocalStorage
           localStorage.setItem('dify_btn_left', clampedLeft);
           localStorage.setItem('dify_btn_top', clampedTop);
 
-          // Update Chat Box Window Position so it dynamically follows button
           const difyWindow = document.getElementById('dify-chatbot-bubble-window');
           if (difyWindow) {
             const isMobile = window.innerWidth <= 640;
-            const winWidth = isMobile ? (window.innerWidth - 32) : 384; // 24rem = 384px
+            const winWidth = isMobile ? (window.innerWidth - 32) : 384;
             const winHeight = Math.min(608, window.innerHeight - 120);
 
             let winLeft, winTop;
 
-            // Align horizontally relative to button
             if (clampedLeft + winWidth > window.innerWidth - 16) {
               winLeft = Math.max(16, clampedLeft + btnWidth - winWidth);
             } else {
               winLeft = Math.max(16, clampedLeft);
             }
 
-            // Align vertically (Position above if near bottom, position below if near top)
             if (clampedTop > winHeight + 20) {
               winTop = clampedTop - winHeight - 12;
             } else {
               winTop = clampedTop + btnHeight + 12;
             }
 
-            // Clamp Window inside viewport
             winLeft = Math.max(10, Math.min(winLeft, window.innerWidth - winWidth - 10));
             winTop = Math.max(10, Math.min(winTop, window.innerHeight - winHeight - 10));
 
@@ -680,7 +780,6 @@
           difyBtn.style.position = 'fixed';
           difyBtn.style.touchAction = 'none';
 
-          // Load Saved Position or Set Default (Bottom-Right)
           const savedLeft = localStorage.getItem('dify_btn_left');
           const savedTop = localStorage.getItem('dify_btn_top');
 
@@ -692,7 +791,6 @@
             updateDifyPositions(defaultLeft, defaultTop);
           }
 
-          // Drag Events for Mouse & Touch
           difyBtn.addEventListener('mousedown', dragStart);
           document.addEventListener('mousemove', dragMove);
           document.addEventListener('mouseup', dragEnd);
@@ -701,7 +799,6 @@
           document.addEventListener('touchmove', dragMove, { passive: false });
           document.addEventListener('touchend', dragEnd);
 
-          // Prevent click action if user was dragging
           difyBtn.addEventListener('click', (e) => {
             if (hasDragged) {
               e.preventDefault();
@@ -711,7 +808,6 @@
             }
           }, true);
 
-          // Monitor DOM to recalculate window position whenever chatbox is toggled open
           const observer = new MutationObserver(() => {
             const currentLeft = parseFloat(difyBtn.style.left) || (window.innerWidth - 80);
             const currentTop = parseFloat(difyBtn.style.top) || (window.innerHeight - 80);

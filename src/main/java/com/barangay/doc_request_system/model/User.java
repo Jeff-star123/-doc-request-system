@@ -18,6 +18,12 @@ public class User {
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
+    @Column(name = "district")
+    private String district;
+
+    @Column(name = "barangay")
+    private String barangay;
+
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
@@ -54,6 +60,12 @@ public class User {
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public String getDistrict() { return district; }
+    public void setDistrict(String district) { this.district = district; }
+
+    public String getBarangay() { return barangay; }
+    public void setBarangay(String barangay) { this.barangay = barangay; }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
