@@ -37,13 +37,37 @@ function handleSendAiQuery() {
 
 function generateBarangayAiResponse(query) {
     const q = query.toLowerCase().trim();
+
+    // Helper function to check if query contains any Tagalog or English keywords
     const containsAny = (keywords) => keywords.some(k => q.includes(k));
+
+    // Intent 0: Greetings & Self-Identity ("Hi", "Hello", "What are you", "Ano ka", "Kamusta", "Sino ka")
+    const isGreetingOrIdentity = q === 'hi' || q === 'hello' || q === 'hey' || 
+        q.startsWith('hi ') || q.startsWith('hello ') || q.startsWith('hey ') ||
+        containsAny([
+            'what are you', 'who are you', 'ano ka', 'sino ka', 'kamusta', 'kumusta', 
+            'magandang araw', 'magandang umaga', 'magandang hapon', 'magandang gabi', 
+            'good morning', 'good afternoon', 'good evening', 'anong ai ka', 'what kind of ai'
+        ]);
+
+    if (isGreetingOrIdentity) {
+        return `
+            <strong><i class="bi bi-robot text-primary me-1"></i> Barangay AI Assistant 👋</strong><br>
+            Magandang araw, resident! Ako ang inyong <b>Barangay AI Assistant</b> para sa Barangay Bulsa-Korapot Document Request Portal.<br><br>
+            💡 <b>Maaari mo akong tanungin tungkol sa:</b><br>
+            • <b>Document Requirements:</b> Clearance, Residency, o Indigency<br>
+            • <b>Telegram Bot:</b> Setup ng notifications at Chat ID<br>
+            • <b>Biometric Verification:</b> Paano gumagana ang Face Scan<br>
+            • <b>Request Status & Printing:</b> Tracking at pag-print ng approved documents<br><br>
+            👉 <i>Ano ang maipaglilingkod ko sa iyo ngayon? Subukang magtanong: <b>"Ano ang kailangan sa Clearance?"</b></i>
+        `;
+    }
 
     // Intent 1: System Identification / "What is this" / "Ano 'to"
     if (containsAny([
         'what is this', 'ano to', "ano 'to", 'ano ito', 'para saan to', "para saan 'to", 'para saan ito',
         'what is this system', 'ano tong system', 'ano itong system', 'what is this portal', 'what is this website',
-        'sino ka', 'who are you', 'what can you do', 'anong magagawa mo', 'anong ginagawa nito', 'tungkol saan to', "tungkol saan 'to",
+        'what can you do', 'anong magagawa mo', 'anong ginagawa nito', 'tungkol saan to', "tungkol saan 'to",
         'about this system', 'purpose of this'
     ])) {
         return `
@@ -55,7 +79,7 @@ function generateBarangayAiResponse(query) {
         `;
     }
 
-    // Intent 2: Developer / Creator / BSIT Project Info
+    // Intent 2: Developer / Creator / BSIT Project Info ("Sino gumawa nito")
     if (containsAny([
         'developer', 'creator', 'who made', 'who built', 'sino gumawa', 'sinong gumawa', 'sino nag-code', 'sino nag code',
         'sino nag-build', 'sinong dev', 'mga gumawa', 'jeffrey', 'bsit team', 'team', 'author'
@@ -70,7 +94,7 @@ function generateBarangayAiResponse(query) {
         `;
     }
 
-    // Intent 3: Requirements, Clearances & Certificates
+    // Intent 3: Requirements, Clearances & Certificates ("Kailangan", "Paano kumuha")
     if (containsAny([
         'requirement', 'clearance', 'residency', 'indigency', 'apply', 'certificate', 'kailangan', 'mga kailangan',
         'anong kailangan', 'paano kumuha', 'paano mag-apply', 'paano mag apply', 'paano kumuha ng clearance'
@@ -84,7 +108,7 @@ function generateBarangayAiResponse(query) {
         `;
     } 
 
-    // Intent 4: Telegram Setup, Bot, Chat ID & OTP
+    // Intent 4: Telegram Setup, Bot, Chat ID & OTP ("Paano mag telegram")
     if (containsAny([
         'telegram', 'bot', 'chat id', 'notification', 'otp', 'alert', 'mga alert', 'paano mag telegram'
     ])) {
@@ -96,7 +120,7 @@ function generateBarangayAiResponse(query) {
         `;
     } 
 
-    // Intent 5: Biometric Scan, Face Scan & Liveness Verification
+    // Intent 5: Biometric Scan, Face Scan & Liveness Verification ("Mukha", "Face scan")
     if (containsAny([
         'face', 'liveness', 'scan', 'biometric', 'camera', 'kamera', 'verification', 'mukha', 'litrato'
     ])) {
@@ -109,7 +133,7 @@ function generateBarangayAiResponse(query) {
         `;
     } 
 
-    // Intent 6: Status, Tracking, Printing & Approval
+    // Intent 6: Status, Tracking, Printing & Approval ("Kailan makukuha", "Print")
     if (containsAny([
         'status', 'history', 'track', 'print', 'approve', 'reject', 'kailan makukuha', 'kailan ma-approve', 'mga request'
     ])) {
@@ -121,7 +145,7 @@ function generateBarangayAiResponse(query) {
         `;
     }
 
-    // Intent 7: Fees, Price, Payment & Costs
+    // Intent 7: Fees, Price, Payment & Costs ("Magkano", "Libre ba", "Bayad")
     if (containsAny([
         'fee', 'price', 'cost', 'pay', 'payment', 'free', 'magkano', 'may bayad', 'libre ba', 'magkano magbayad'
     ])) {
@@ -132,7 +156,7 @@ function generateBarangayAiResponse(query) {
         `;
     }
 
-    // Intent 8: Account, Settings, Password, Deactivate & Reactivate
+    // Intent 8: Account, Settings, Password, Deactivate & Reactivate ("Palitan ang password")
     if (containsAny([
         'account', 'setting', 'password', 'deactivate', 'reactivate', 'profile', 'palitan', 'nakalimutan'
     ])) {
@@ -144,7 +168,7 @@ function generateBarangayAiResponse(query) {
         `;
     }
 
-    // Intent 9: How to use / How it works / Steps
+    // Intent 9: How to use / How it works / Steps ("Paano gamitin", "Mga hakbang")
     if (containsAny([
         'how to use', 'how it works', 'step', 'guide', 'instruction', 'paano gamitin', 'paano gumagana', 'mga hakbang'
     ])) {
@@ -157,7 +181,7 @@ function generateBarangayAiResponse(query) {
         `;
     }
 
-    // Out-Of-Domain Guardrail Fallback
+    // Out-Of-Domain (OOD) Guardrail Fallback: Taglish Polite Scope Notice
     return `
         <strong><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Barangay AI Scope Notice:</strong><br>
         Magandang araw, resident! 👋 Ako ang <b>Barangay Document Request AI Assistant</b>, na nakadisenyo para tumulong sa mga serbisyo ng Barangay Bulsa-Korapot portal.<br><br>
