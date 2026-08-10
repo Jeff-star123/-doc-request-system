@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
-            background-color: #090d16;
+            background-color: #0b0f19;
             color: #f8fafc;
             min-height: 100vh;
             display: flex;
@@ -18,20 +18,31 @@
             overflow: hidden;
             margin: 0;
         }
+
+        /* Initial Warning Card Styling (No Exit Button) */
         .banned-container {
             text-align: center;
-            max-width: 550px;
-            padding: 2rem;
+            width: 100%;
+            max-width: 480px;
+            padding: 1.5rem;
             z-index: 10;
             transition: opacity 0.4s ease;
         }
         .banned-card {
-            background: rgba(20, 27, 45, 0.95);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(239, 68, 68, 0.15);
-            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(239, 68, 68, 0.2);
+            backdrop-filter: blur(12px);
+            padding: 2.5rem 2rem;
         }
-        /* Full-screen jump scare overlay */
+        .warning-icon {
+            font-size: 3.5rem;
+            color: #ef4444;
+            filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.5));
+        }
+
+        /* Full-screen Overlay & Background Video */
         #jumpScareOverlay {
             position: fixed;
             top: 0;
@@ -42,19 +53,20 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            padding-top: 2rem;
             z-index: 99999;
             opacity: 0;
             pointer-events: none;
-            transform: scale(0.7);
-            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+            transform: translateY(-10px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
         }
         #jumpScareOverlay.active {
             opacity: 1;
             pointer-events: auto;
-            transform: scale(1);
+            transform: translateY(0);
         }
-        .jumpscare-gif {
+        .jumpscare-video {
             width: 100vw;
             height: 100vh;
             object-fit: cover;
@@ -63,44 +75,74 @@
             left: 0;
             z-index: 1;
         }
+
+        /* Minimal Floating Top Banner UI (Unblocks Video Background) */
         .jumpscare-content {
             position: relative;
             z-index: 2;
             text-align: center;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 2.5rem 3rem;
-            border-radius: 20px;
-            border: 2px solid rgba(255, 193, 7, 0.6);
-            box-shadow: 0 0 60px rgba(0, 0, 0, 0.95);
+            background: rgba(10, 10, 12, 0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 1rem 1.75rem;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 193, 7, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 193, 7, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
             max-width: 90vw;
+        }
+        
+        .jumpscare-text {
+            text-align: left;
+        }
+        
+        .jumpscare-text h2 {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .jumpscare-text p {
+            font-size: 0.8rem;
+            margin: 0;
         }
     </style>
 </head>
 <body>
 
-    <!-- Initial Warning State -->
+    <!-- Initial Warning State (Exit button removed) -->
     <div class="banned-container" id="initialWarningContainer">
-        <div class="card banned-card text-danger shadow-lg p-4 rounded-4">
-            <div class="card-body">
-                <i class="bi bi-shield-fill-exclamation display-3 mb-3 text-danger"></i>
-                <h3 class="fw-bold text-white mb-2">Account Deactivated!</h3>
-                <p class="mb-3" style="color: #f87171 !important;"><strong>Reason:</strong> Continuous spamming of print requests detected.</p>
-                <p class="small text-muted mb-4">Check your Telegram messages for details. Admin approval is required to restore access.</p>
-                <a th:href="@{/}" class="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Login
-                </a>
+        <div class="card banned-card border-0">
+            <div class="card-body p-0">
+                <div class="mb-3">
+                    <i class="bi bi-shield-fill-x warning-icon"></i>
+                </div>
+                <h3 class="fw-bold text-white mb-3">Account Deactivated!</h3>
+                <p class="mb-3 text-white-50" style="font-size: 0.95rem;">
+                    <strong class="text-danger">Reason:</strong> Continuous spamming of print requests detected.
+                </p>
+                <p class="small text-secondary mb-0 px-2" style="font-size: 0.85rem; line-height: 1.5;">
+                    Check your Telegram messages for details. Admin approval is required to restore access.
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Full-Screen Jump Scare Overlay (Triggered after voice-over) -->
+    <!-- Full-Screen Jump Scare Overlay -->
     <div id="jumpScareOverlay">
-        <img src="https://cdn.imageurlgenerator.com/uploads/a15efddb-cf91-423a-9d93-072ac66f51c9.gif" alt="Jump Scare Budots" class="jumpscare-gif" />
+        <video id="jumpscareVideo" class="jumpscare-video" loop muted playsinline>
+            <source src="https://www.image2url.com/r2/default/videos/1786333720294-b9fe943c-f84a-4c19-8e75-858a603ff59d.mp4" type="video/mp4">
+        </video>
+        
+        <!-- Non-intrusive Floating Header Notification -->
         <div class="jumpscare-content">
-            <h1 class="text-warning fw-bold display-5 mb-3">🚨 BUDOTS OVERLOAD! 🕺</h1>
-            <p class="text-light fs-5 mb-4">Your account has been locked due to print request spamming.</p>
-            <a th:href="@{/}" class="btn btn-danger btn-lg rounded-pill px-5 fw-bold shadow-lg">
-                <i class="bi bi-box-arrow-left me-2"></i> Return to Login
+            <div class="jumpscare-text">
+                <h2 class="text-warning fw-bold">🚨 BUDOTS OVERLOAD! 🕺</h2>
+                <p class="text-light opacity-75">Account locked due to print request spamming.</p>
+            </div>
+            <a th:href="@{/}" class="btn btn-danger btn-sm rounded-pill px-3 py-1 fw-bold text-nowrap shadow-sm">
+                <i class="bi bi-box-arrow-left me-1"></i> Return to Login
             </a>
         </div>
     </div>
@@ -119,6 +161,7 @@
         function runMultimediaBanSequence() {
             const voiceOver = document.getElementById('voiceOverAudio');
             const budotsMusic = document.getElementById('budotsAudio');
+            const jumpscareVideo = document.getElementById('jumpscareVideo');
             const jumpScareOverlay = document.getElementById('jumpScareOverlay');
             const initialContainer = document.getElementById('initialWarningContainer');
 
@@ -135,17 +178,17 @@
                 console.log("Autoplay blocked by browser policy. User interaction required.");
             });
 
-            // When voice-over finishes playing, fade out warning and trigger full-screen jump scare + music
+            // Trigger full overlay & Budots video upon voice-over completion
             voiceOver.onended = () => {
                 initialContainer.style.opacity = '0';
                 setTimeout(() => {
+                    jumpscareVideo.play().catch(e => console.log("Video playback error:", e));
                     budotsMusic.play().catch(e => console.log("Background music autoplay error:", e));
                     jumpScareOverlay.classList.add('active');
                 }, 150);
             };
         }
 
-        // Auto-run sequence on page load
         window.addEventListener('DOMContentLoaded', () => {
             runMultimediaBanSequence();
         });
