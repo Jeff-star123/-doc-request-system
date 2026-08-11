@@ -248,125 +248,231 @@ body.dashboard-body {
     color: #0d6efd;
 }
 
-/* OVERLAY MODAL DRAWERS */
-.glass-drawer-modal {
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(25px) !important;
-    -webkit-backdrop-filter: blur(25px) !important;
-    border: 1px solid rgba(226, 232, 240, 0.9) !important;
-    border-radius: 24px !important;
-    box-shadow: 0 30px 70px rgba(15, 23, 42, 0.3) !important;
-    color: #0f172a !important;
+/* =========================================================
+   3D REVOLVING OVERLAY HUB (Matching Video 2 ani.mp4)
+   ========================================================= */
+.glass-hub-modal {
+    background: rgba(15, 23, 42, 0.94) !important;
+    backdrop-filter: blur(30px) !important;
+    -webkit-backdrop-filter: blur(30px) !important;
 }
 
-[data-bs-theme="dark"] .glass-drawer-modal {
+.modal-tab-pills {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50px;
+    padding: 4px;
+}
+
+.modal-tab-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.modal-tab-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-tab-btn.active {
+    background: #0d6efd;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+}
+
+/* 3D VIEWPORT & CAROUSEL STAGE */
+.overlay-3d-viewport {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 1300px !important;
+    height: clamp(520px, 80vh, 850px) !important;
+    perspective: 1200px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.overlay-3d-carousel {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    transform-style: preserve-3d !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* 3D SLIDE CARD STYLING */
+.overlay-3d-card {
+    position: absolute !important;
+    width: clamp(320px, 85vw, 980px) !important;
+    height: clamp(480px, 78vh, 800px) !important;
+    border-radius: 24px !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid rgba(226, 232, 240, 0.9) !important;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.4) !important;
+    transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 0.65s ease, 
+                filter 0.65s ease,
+                box-shadow 0.65s ease !important;
+    will-change: transform, opacity, filter !important;
+}
+
+[data-bs-theme="dark"] .overlay-3d-card {
     background: rgba(15, 23, 42, 0.95) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    color: #f8fafc !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6) !important;
 }
 
-#imageModal {
-    z-index: 10050 !important;
+@media (max-width: 768px) {
+    .overlay-3d-viewport { height: 82vh !important; }
+    .overlay-3d-card { width: 92vw !important; height: 78vh !important; border-radius: 18px !important; }
+    .overlay-card-scroll { padding: 8px !important; }
 }
 
-/* =========================================================
-   DEVELOPERS FILTER CARD GRID (TOUCH & MOUSE DRAG SCROLL)
-   ========================================================= */
-.dev-card-grid {
-    display: flex;
-    gap: 20px;
-    overflow-x: auto;
-    padding: 16px 8px;
-    scroll-behavior: smooth;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch; /* Touch swipe on mobile */
-    user-select: none;
-    cursor: grab;
+.overlay-card-scroll {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 12px;
 }
 
-.dev-card-grid.is-dragging {
-    cursor: grabbing !important;
-    scroll-behavior: auto !important;
-    scroll-snap-type: none !important;
-}
-
-.dev-card-grid::-webkit-scrollbar {
-    height: 6px;
-}
-.dev-card-grid::-webkit-scrollbar-thumb {
-    background: rgba(37, 99, 235, 0.4);
+.overlay-card-scroll::-webkit-scrollbar { width: 6px; }
+.overlay-card-scroll::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.4);
     border-radius: 10px;
 }
 
-.dev-card {
-    flex: 0 0 280px;
-    min-width: 280px;
-    height: 380px;
-    position: relative;
-    border-radius: 20px;
-    overflow: hidden;
-    scroll-snap-align: center;
-    cursor: pointer;
-    background: #0f172a;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-                opacity 0.4s ease, 
-                box-shadow 0.4s ease,
-                border-color 0.4s ease;
-    will-change: transform, opacity, filter;
+.overlay-3d-card.active-overlay-card {
+    box-shadow: 0 30px 80px rgba(37, 99, 235, 0.5) !important;
 }
 
-.dev-card-bg {
+#imageModal { z-index: 10050 !important; }
+
+/* FEATURED SPOTLIGHT & QUEUE CAROUSEL */
+.dev-spotlight-container {
+    width: 100%;
+    height: 100%;
+}
+
+.dev-featured-card {
+    position: relative;
+    width: 100%;
+    height: clamp(480px, 60vh, 620px) !important;
+    border-radius: 24px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dev-featured-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 25px 60px rgba(37, 99, 235, 0.35);
+}
+
+.dev-featured-img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), 
-                filter 0.5s ease;
-    will-change: transform, filter;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
 }
 
-.dev-card-overlay {
+.dev-featured-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 55%, rgba(15, 23, 42, 0.05) 100%);
-    transition: opacity 0.4s ease;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.5) 60%, rgba(15, 23, 42, 0.1) 100%);
 }
 
-.dev-card-content {
+.dev-featured-content {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 22px;
+    padding: 28px;
     z-index: 5;
     color: #ffffff;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-/* HOVER EFFECT: Hovered Card Zooms */
-.dev-card:hover {
-    transform: scale(1.05) translateY(-6px);
-    z-index: 10;
-    border-color: rgba(59, 130, 246, 0.8);
-    box-shadow: 0 20px 45px rgba(37, 99, 235, 0.45);
+.dev-queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    height: clamp(480px, 60vh, 620px) !important;
+    overflow-y: auto;
+    padding-right: 6px;
 }
 
-.dev-card:hover .dev-card-bg {
-    transform: scale(1.15);
+.dev-queue-list::-webkit-scrollbar { width: 5px; }
+.dev-queue-list::-webkit-scrollbar-thumb {
+    background: rgba(37, 99, 235, 0.4);
+    border-radius: 10px;
 }
 
-/* FILTER EFFECT: Non-Hovered Cards Shrink, Grayscale & Blur */
-.dev-card-grid:hover > .dev-card:not(:hover) {
-    transform: scale(0.92);
-    opacity: 0.55;
+.dev-queue-item {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 14px 18px;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dev-card-grid:hover > .dev-card:not(:hover) .dev-card-bg,
-.dev-card-grid:hover > .dev-card:not(:hover) .dev-card-content {
-    filter: brightness(0.5) saturate(0) contrast(1.2) blur(8px);
+.dev-queue-item:hover {
+    background: rgba(37, 99, 235, 0.25);
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: translateX(6px);
+}
+
+.dev-queue-item.active {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.8), rgba(30, 58, 138, 0.9));
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.35);
+}
+
+.dev-queue-thumb {
+    width: 72px !important;
+    height: 72px !important;
+    border-radius: 14px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+.dev-queue-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+@media (max-width: 991px) {
+    .dev-queue-list {
+        flex-direction: row;
+        height: auto !important;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 8px;
+    }
+    .dev-queue-item { flex: 0 0 200px; }
 }
 
 /* OVAL GUIDE FRAME FOR FACE SCAN */
@@ -521,3 +627,20 @@ body.dashboard-body {
 .table-hover tbody tr:hover {
     background-color: rgba(13, 110, 253, 0.05) !important;
 }
+
+/* TEAM FOOTER BANNER */
+.dev-team-footer-banner {
+    background: rgba(13, 110, 253, 0.08) !important;
+    border: 1px solid rgba(13, 110, 253, 0.2) !important;
+}
+
+.dev-footer-heading { color: #0f172a !important; }
+.dev-footer-text { color: #475569 !important; }
+
+[data-bs-theme="dark"] .dev-team-footer-banner {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-bs-theme="dark"] .dev-footer-heading { color: #f8fafc !important; }
+[data-bs-theme="dark"] .dev-footer-text { color: #cbd5e1 !important; }

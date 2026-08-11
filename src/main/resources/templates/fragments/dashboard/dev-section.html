@@ -1,104 +1,124 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div th:fragment="devSection" class="card card-custom p-4 reveal-on-scroll focal-card">
+    <div th:fragment="devSection" class="card card-custom p-3 p-md-4 reveal-on-scroll focal-card">
+        <!-- Header -->
         <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <span class="text-primary font-mono fw-bold fs-4">&lt;/&gt;</span>
                 <h5 class="fw-bold mb-0 text-dark">BSIT Developers</h5>
-                <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1">Project Team</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1">Featured Spotlight</span>
+            </div>
+            <span class="text-xs text-muted font-mono" id="devSpotlightCounter">Developer 1 of 7</span>
+        </div>
+
+        <!-- Spotlight Showcase Layout -->
+        <div class="dev-spotlight-container">
+            <div class="row g-3 align-items-stretch">
+                
+                <!-- Left Main Featured Developer Card -->
+                <div class="col-lg-7">
+                    <div class="dev-featured-card" id="devFeaturedCard" onclick="triggerFeaturedLightbox()">
+                        <img id="featuredDevImg" src="https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png" alt="Featured Developer" class="dev-featured-img" />
+                        <div class="dev-featured-overlay"></div>
+                        <div class="dev-featured-content">
+                            <span class="badge bg-primary fw-bold text-uppercase mb-2" id="featuredDevBadge">★ Lead Dev</span>
+                            <h3 class="fw-bold text-white mb-1" id="featuredDevName">Jeffrey M. Serrano Jr.</h3>
+                            <p class="text-info fw-semibold mb-2" id="featuredDevRole">Head Developer</p>
+                            <p class="small text-white-50 mb-0 leading-relaxed" id="featuredDevDesc">Architecture, liveness detection, core logic design, and overall system implementation.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Secondary Queue List -->
+                <div class="col-lg-5">
+                    <div class="dev-queue-list custom-scroll" id="devQueueList">
+                        
+                        <!-- Dev 1 Item -->
+                        <div class="dev-queue-item active" onclick="selectSpotlightDev(0)">
+                            <img src="https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png" class="dev-queue-thumb" alt="Jeffrey M. Serrano Jr." />
+                            <div class="dev-queue-info">
+                                <span class="badge bg-primary text-white mb-1">★ Lead Dev</span>
+                                <h6 class="fw-bold mb-0 text-white">Jeffrey M. Serrano Jr.</h6>
+                                <small class="text-white-50">Head Developer</small>
+                            </div>
+                        </div>
+
+                        <!-- Dev 2 Item -->
+                        <div class="dev-queue-item" onclick="selectSpotlightDev(1)">
+                            <img src="https://cdn.phototourl.com/free/2026-08-09-177e81e4-3ffb-4138-99e8-69ee1278c9b6.jpg" class="dev-queue-thumb" alt="Jalayahay, Jessa Mae P." />
+                            <div class="dev-queue-info">
+                                <span class="badge bg-info text-dark mb-1">Assistant Dev</span>
+                                <h6 class="fw-bold mb-0 text-white">Jalayahay, Jessa Mae P.</h6>
+                                <small class="text-white-50">Assistant Developer</small>
+                            </div>
+                        </div>
+
+                        <!-- Dev 3 Item -->
+                        <div class="dev-queue-item" onclick="selectSpotlightDev(2)">
+                            <img src="https://cdn.phototourl.com/free/2026-08-09-5739fb3b-103b-46e2-a083-dacf4189b199.jpg" class="dev-queue-thumb" alt="Mines, Manzor M." />
+                            <div class="dev-queue-info">
+                                <span class="badge bg-secondary text-white mb-1">Presentor</span>
+                                <h6 class="fw-bold mb-0 text-white">Mines, Manzor M.</h6>
+                                <small class="text-white-50">Project Presentor</small>
+                            </div>
+                        </div>
+
+                        <!-- Dev 4 Item -->
+                        <div class="dev-queue-item" onclick="selectSpotlightDev(3)">
+                            <img src="https://cdn.phototourl.com/free/2026-08-09-1f1dd251-d61d-40b3-9969-e12b6db7e10d.jpg" class="dev-queue-thumb" alt="Gutierrez, Rovil B." />
+                            <div class="dev-queue-info">
+                                <span class="badge bg-secondary text-white mb-1">Documentation</span>
+                                <h6 class="fw-bold mb-0 text-white">Gutierrez, Rovil B.</h6>
+                                <small class="text-white-50">Documentation</small>
+                            </div>
+                        </div>
+
+                        <!-- Dev 5 Item -->
+                        <div class="dev-queue-item" onclick="selectSpotlightDev(4)">
+                            <img src="https://cdn.phototourl.com/free/2026-08-09-9e4f218c-64ac-4a91-9c67-4353e6527b17.jpg" class="dev-queue-thumb" alt="Prescillas, Ej Y." />
+                            <div class="dev-queue-info">
+                                <span class="badge bg-secondary text-white mb-1">Documentation</span>
+                                <h6 class="fw-bold mb-0 text-white">Prescillas, Ej Y.</h6>
+                                <small class="text-white-50">Documentation</small>
+                            </div>
+                        </div>
+
+                        <!-- Dev 6 Item -->
+                        <div class="dev-queue-item" onclick="selectSpotlightDev(5)">
+                            <img src="https://cdn.phototourl.com/free/2026-08-09-8e0595e4-015c-452c-b33e-6cdd247f82d7.jpg" class="dev-queue-thumb" alt="Kurt Bactat Russel" />
+                            <div class="dev-queue-info">
+                                <span class="badge bg-secondary text-white mb-1">Documentation</span>
+                                <h6 class="fw-bold mb-0 text-white">Kurt Bactat Russel</h6>
+                                <small class="text-white-50">Documentation</small>
+                            </div>
+                        </div>
+
+                        <!-- Dev 7 Item -->
+                        <div class="dev-queue-item" onclick="selectSpotlightDev(6)">
+                            <img src="https://cdn.phototourl.com/free/2026-08-09-3b99cbe0-e745-453f-9156-29fb8d4cea10.jpg" class="dev-queue-thumb" alt="Tyrone James Oribiada" />
+                            <div class="dev-queue-info">
+                                <span class="badge bg-secondary text-white mb-1">Documentation</span>
+                                <h6 class="fw-bold mb-0 text-white">Tyrone James Oribiada</h6>
+                                <small class="text-white-50">Documentation</small>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </div>
 
-        <p class="small text-secondary mb-3">Meet Our Talented Team!</p>
-
-        <!-- Developer Cards Container (Drag/Swipe Scrollable) -->
-        <div class="dev-card-grid" id="devCarousel">
-            
-            <!-- Dev 1 -->
-            <div class="dev-card" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png', 'Jeffrey M. Serrano Jr.')">
-                <img src="https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png" alt="Jeffrey M. Serrano Jr." class="dev-card-bg" />
-                <div class="dev-card-overlay"></div>
-                <div class="dev-card-content">
-                    <span class="badge bg-primary fw-bold text-uppercase mb-2">★ Lead Dev</span>
-                    <h5 class="fw-bold text-white mb-1">Jeffrey M. Serrano Jr.</h5>
-                    <p class="small text-info mb-0 fw-semibold">Head Developer</p>
-                    <small class="text-white-50 d-block mt-2" style="font-size:0.75rem;">Architecture, liveness detection, core system logic.</small>
-                </div>
+        <!-- NEW BOTTOM TEAM MESSAGE BANNER (Fills empty space in Image 3) -->
+        <div class="p-3 mt-3 rounded-4 dev-team-footer-banner">
+            <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                <i class="bi bi-heart-fill text-danger fs-6"></i>
+                <h6 class="fw-bold mb-0 text-dark dev-footer-heading">Crafted by the BSIT Project Team</h6>
             </div>
-
-            <!-- Dev 2 -->
-            <div class="dev-card" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-177e81e4-3ffb-4138-99e8-69ee1278c9b6.jpg', 'Jalayahay, Jessa Mae P.')">
-                <img src="https://cdn.phototourl.com/free/2026-08-09-177e81e4-3ffb-4138-99e8-69ee1278c9b6.jpg" alt="Jalayahay, Jessa Mae P." class="dev-card-bg" />
-                <div class="dev-card-overlay"></div>
-                <div class="dev-card-content">
-                    <span class="badge bg-info text-dark fw-bold text-uppercase mb-2">Assistant Dev</span>
-                    <h5 class="fw-bold text-white mb-1">Jalayahay, Jessa Mae P.</h5>
-                    <p class="small text-info mb-0 fw-semibold">Assistant Developer</p>
-                    <small class="text-white-50 d-block mt-2" style="font-size:0.75rem;">UI refinements & workflow integration.</small>
-                </div>
-            </div>
-
-            <!-- Dev 3 -->
-            <div class="dev-card" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-5739fb3b-103b-46e2-a083-dacf4189b199.jpg', 'Mines, Manzor M.')">
-                <img src="https://cdn.phototourl.com/free/2026-08-09-5739fb3b-103b-46e2-a083-dacf4189b199.jpg" alt="Mines, Manzor M." class="dev-card-bg" />
-                <div class="dev-card-overlay"></div>
-                <div class="dev-card-content">
-                    <span class="badge bg-secondary fw-bold text-uppercase mb-2">Presentor</span>
-                    <h5 class="fw-bold text-white mb-1">Mines, Manzor M.</h5>
-                    <p class="small text-info mb-0 fw-semibold">Project Presentor</p>
-                    <small class="text-white-50 d-block mt-2" style="font-size:0.75rem;">Leads demonstrations and technical showcase.</small>
-                </div>
-            </div>
-
-            <!-- Dev 4 -->
-            <div class="dev-card" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-1f1dd251-d61d-40b3-9969-e12b6db7e10d.jpg', 'Gutierrez, Rovil B.')">
-                <img src="https://cdn.phototourl.com/free/2026-08-09-1f1dd251-d61d-40b3-9969-e12b6db7e10d.jpg" alt="Gutierrez, Rovil B." class="dev-card-bg" />
-                <div class="dev-card-overlay"></div>
-                <div class="dev-card-content">
-                    <span class="badge bg-secondary fw-bold text-uppercase mb-2">Documentation</span>
-                    <h5 class="fw-bold text-white mb-1">Gutierrez, Rovil B.</h5>
-                    <p class="small text-info mb-0 fw-semibold">Documentation</p>
-                    <small class="text-white-50 d-block mt-2" style="font-size:0.75rem;">Technical documentation & specifications.</small>
-                </div>
-            </div>
-
-            <!-- Dev 5 -->
-            <div class="dev-card" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-9e4f218c-64ac-4a91-9c67-4353e6527b17.jpg', 'Prescillas, Ej Y.')">
-                <img src="https://cdn.phototourl.com/free/2026-08-09-9e4f218c-64ac-4a91-9c67-4353e6527b17.jpg" alt="Prescillas, Ej Y." class="dev-card-bg" />
-                <div class="dev-card-overlay"></div>
-                <div class="dev-card-content">
-                    <span class="badge bg-secondary fw-bold text-uppercase mb-2">Documentation</span>
-                    <h5 class="fw-bold text-white mb-1">Prescillas, Ej Y.</h5>
-                    <p class="small text-info mb-0 fw-semibold">Documentation</p>
-                    <small class="text-white-50 d-block mt-2" style="font-size:0.75rem;">System requirements writing & workflow charts.</small>
-                </div>
-            </div>
-
-            <!-- Dev 6 -->
-            <div class="dev-card" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-8e0595e4-015c-452c-b33e-6cdd247f82d7.jpg', 'Kurt Bactat Russel')">
-                <img src="https://cdn.phototourl.com/free/2026-08-09-8e0595e4-015c-452c-b33e-6cdd247f82d7.jpg" alt="Kurt Bactat Russel" class="dev-card-bg" />
-                <div class="dev-card-overlay"></div>
-                <div class="dev-card-content">
-                    <span class="badge bg-secondary fw-bold text-uppercase mb-2">Documentation</span>
-                    <h5 class="fw-bold text-white mb-1">Kurt Bactat Russel</h5>
-                    <p class="small text-info mb-0 fw-semibold">Documentation</p>
-                    <small class="text-white-50 d-block mt-2" style="font-size:0.75rem;">User manual development & compliance checks.</small>
-                </div>
-            </div>
-
-            <!-- Dev 7 -->
-            <div class="dev-card" onclick="openImageModal('https://cdn.phototourl.com/free/2026-08-09-3b99cbe0-e745-453f-9156-29fb8d4cea10.jpg', 'Tyrone James Oribiada')">
-                <img src="https://cdn.phototourl.com/free/2026-08-09-3b99cbe0-e745-453f-9156-29fb8d4cea10.jpg" alt="Tyrone James Oribiada" class="dev-card-bg" />
-                <div class="dev-card-overlay"></div>
-                <div class="dev-card-content">
-                    <span class="badge bg-secondary fw-bold text-uppercase mb-2">Documentation</span>
-                    <h5 class="fw-bold text-white mb-1">Tyrone James Oribiada</h5>
-                    <p class="small text-info mb-0 fw-semibold">Documentation</p>
-                    <small class="text-white-50 d-block mt-2" style="font-size:0.75rem;">Visual asset management & project formatting.</small>
-                </div>
-            </div>
-
+            <p class="small text-secondary mb-0 max-w-2xl mx-auto leading-relaxed dev-footer-text text-center">
+                These are the student developers, researchers, and presenters who built the <b>Barangay Bulsa-Korapot Document Request System</b>. Created as an academic capstone prototype to deliver efficient, secure, and modern digital governance services to local residents.
+            </p>
         </div>
     </div>
 </body>

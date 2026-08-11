@@ -35,17 +35,17 @@
 
             <!-- Navigation Pills Bar -->
             <div class="d-none d-lg-flex align-items-center gap-2 nav-pills-bar mx-auto">
-                <button class="nav-pill-item active" id="pillHome"><i class="bi bi-house-door-fill me-1"></i> Dashboard</button>
-                <button class="nav-pill-item" id="pillForm" data-bs-toggle="modal" data-bs-target="#overlayFormModal"><i class="bi bi-file-earmark-plus-fill me-1"></i> Document Application</button>
-                <button class="nav-pill-item" id="pillHistory" data-bs-toggle="modal" data-bs-target="#overlayHistoryModal"><i class="bi bi-clock-history me-1"></i> History</button>
-                <button class="nav-pill-item" id="pillAbout" data-bs-toggle="modal" data-bs-target="#overlayAboutModal"><i class="bi bi-info-circle-fill me-1"></i> About System</button>
-                <button class="nav-pill-item" id="pillDevs" data-bs-toggle="modal" data-bs-target="#overlayDevsModal"><i class="bi bi-code-slash me-1"></i> Developers</button>
+                <button class="nav-pill-item active" id="pillHome" onclick="closeOverlayHub()"><i class="bi bi-house-door-fill me-1"></i> Dashboard</button>
+                <button class="nav-pill-item" id="pillForm" onclick="openOverlayHub(0)"><i class="bi bi-file-earmark-plus-fill me-1"></i> Document Application</button>
+                <button class="nav-pill-item" id="pillHistory" onclick="openOverlayHub(1)"><i class="bi bi-clock-history me-1"></i> History</button>
+                <button class="nav-pill-item" id="pillAbout" onclick="openOverlayHub(2)"><i class="bi bi-info-circle-fill me-1"></i> About System</button>
+                <button class="nav-pill-item" id="pillDevs" onclick="openOverlayHub(3)"><i class="bi bi-code-slash me-1"></i> Developers</button>
             </div>
 
             <!-- Right User Controls -->
             <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-outline-light btn-sm px-2 py-1 rounded-pill" id="themeToggleBtn" title="Toggle Theme">
-                    <i id="themeIcon" class="bi bi-moon-fill"></i> <span class="d-none d-md-inline small ms-1">Theme</span>
+                <button class="btn btn-outline-light btn-sm px-2 py-1 rounded-pill themeToggleBtn" title="Toggle Theme">
+                    <i class="themeIcon bi bi-moon-fill"></i> <span class="d-none d-md-inline small ms-1">Theme</span>
                 </button>
                 <span class="navbar-text text-light d-none d-sm-inline small">
                     <i class="bi bi-person-circle text-info"></i> <strong th:text="${user.fullName}">User</strong>
@@ -119,7 +119,7 @@
                         </p>
                     </div>
 
-                    <!-- Direct AI Response Container (Renders Answers Directly on Dashboard) -->
+                    <!-- Direct AI Response Container -->
                     <div id="aiResponseContainer" class="ai-response-box p-3 rounded-4 mb-3 d-none">
                         <div class="d-flex align-items-start gap-3">
                             <div class="ai-avatar-icon text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
@@ -214,7 +214,7 @@
             
             <!-- Card 1: Apply Document -->
             <div class="col-md-6 col-xl-3">
-                <div class="card card-custom floating-action-card p-4 focal-card" data-bs-toggle="modal" data-bs-target="#overlayFormModal">
+                <div class="card card-custom floating-action-card p-4 focal-card" onclick="openOverlayHub(0)">
                     <div class="action-card-icon bg-primary bg-opacity-10 text-primary mb-3">
                         <i class="bi bi-file-earmark-plus-fill fs-2"></i>
                     </div>
@@ -226,7 +226,7 @@
 
             <!-- Card 2: Track History -->
             <div class="col-md-6 col-xl-3">
-                <div class="card card-custom floating-action-card p-4 focal-card" data-bs-toggle="modal" data-bs-target="#overlayHistoryModal">
+                <div class="card card-custom floating-action-card p-4 focal-card" onclick="openOverlayHub(1)">
                     <div class="action-card-icon bg-info bg-opacity-10 text-info mb-3">
                         <i class="bi bi-clock-history fs-2"></i>
                     </div>
@@ -238,7 +238,7 @@
 
             <!-- Card 3: About System -->
             <div class="col-md-6 col-xl-3">
-                <div class="card card-custom floating-action-card p-4 focal-card" data-bs-toggle="modal" data-bs-target="#overlayAboutModal">
+                <div class="card card-custom floating-action-card p-4 focal-card" onclick="openOverlayHub(2)">
                     <div class="action-card-icon bg-warning bg-opacity-10 text-warning mb-3">
                         <i class="bi bi-shield-lock-fill fs-2"></i>
                     </div>
@@ -250,7 +250,7 @@
 
             <!-- Card 4: BSIT Developers Team -->
             <div class="col-md-6 col-xl-3">
-                <div class="card card-custom floating-action-card p-4 focal-card" data-bs-toggle="modal" data-bs-target="#overlayDevsModal">
+                <div class="card card-custom floating-action-card p-4 focal-card" onclick="openOverlayHub(3)">
                     <div class="action-card-icon bg-success bg-opacity-10 text-success mb-3">
                         <i class="bi bi-code-slash fs-2"></i>
                     </div>
@@ -264,60 +264,67 @@
 
     </div>
 
-    <!-- INTERACTIVE OVERLAY MODAL DRAWERS -->
+    <!-- 3D REVOLVING OVERLAY HUB MODAL (Matching Video ani.mp4) -->
+    <div class="modal fade" id="overlayHubModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content glass-hub-modal border-0 p-2 p-md-3">
+                
+                <!-- Modal Top Navigation Bar -->
+                <div class="d-flex justify-content-between align-items-center w-100 max-w-7xl mx-auto mb-2 px-2 px-md-3 pt-2">
+                    <!-- Tab Selector Pills inside Modal -->
+                    <div class="d-flex align-items-center gap-1 gap-md-2 modal-tab-pills overflow-x-auto">
+                        <button class="modal-tab-btn active" onclick="switchOverlayTab(0)" id="modalTab0"><i class="bi bi-file-earmark-plus-fill me-1"></i> Application</button>
+                        <button class="modal-tab-btn" onclick="switchOverlayTab(1)" id="modalTab1"><i class="bi bi-clock-history me-1"></i> History</button>
+                        <button class="modal-tab-btn" onclick="switchOverlayTab(2)" id="modalTab2"><i class="bi bi-info-circle-fill me-1"></i> About</button>
+                        <button class="modal-tab-btn" onclick="switchOverlayTab(3)" id="modalTab3"><i class="bi bi-code-slash me-1"></i> Developers</button>
+                    </div>
 
-    <!-- 1. DOCUMENT APPLICATION FORM OVERLAY MODAL -->
-    <div class="modal fade" id="overlayFormModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content glass-drawer-modal p-2 p-md-3">
-                <div class="modal-header border-0 pb-0">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <!-- Right Controls: Theme Switcher & Close -->
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3 py-1 themeToggleBtn" title="Toggle Dark/Light Mode">
+                            <i class="themeIcon bi bi-moon-fill me-1"></i> <span class="small d-none d-sm-inline">Theme</span>
+                        </button>
+                        <button type="button" class="btn-close btn-close-white ms-1" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
                 </div>
-                <div class="modal-body p-2 p-md-3">
-                    <div th:replace="~{fragments/dashboard/document-form :: documentForm}"></div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- 2. REQUEST HISTORY OVERLAY MODAL -->
-    <div class="modal fade" id="overlayHistoryModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content glass-drawer-modal p-2 p-md-3">
-                <div class="modal-header border-0 pb-0">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-2 p-md-3">
-                    <div th:replace="~{fragments/dashboard/history-table :: historyTable}"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+                <!-- 3D Revolving Stage Viewport -->
+                <div class="overlay-3d-viewport mx-auto" id="overlay3dViewport">
+                    
+                    <!-- 3D Carousel Cards Container -->
+                    <div class="overlay-3d-carousel" id="overlay3dCarousel">
+                        
+                        <!-- Slide 0: Document Application Form -->
+                        <div class="overlay-3d-card" id="overlayCard0" onclick="handleOverlayCardClick(0)">
+                            <div class="overlay-card-scroll">
+                                <div th:replace="~{fragments/dashboard/document-form :: documentForm}"></div>
+                            </div>
+                        </div>
 
-    <!-- 3. ABOUT SYSTEM OVERLAY MODAL -->
-    <div class="modal fade" id="overlayAboutModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content glass-drawer-modal p-2 p-md-3">
-                <div class="modal-header border-0 pb-0">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-2 p-md-3">
-                    <div th:replace="~{fragments/dashboard/about-section :: aboutSection}"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+                        <!-- Slide 1: Request History Table -->
+                        <div class="overlay-3d-card" id="overlayCard1" onclick="handleOverlayCardClick(1)">
+                            <div class="overlay-card-scroll">
+                                <div th:replace="~{fragments/dashboard/history-table :: historyTable}"></div>
+                            </div>
+                        </div>
 
-    <!-- 4. BSIT DEVELOPERS OVERLAY MODAL -->
-    <div class="modal fade" id="overlayDevsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content glass-drawer-modal p-2 p-md-3">
-                <div class="modal-header border-0 pb-0">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <!-- Slide 2: About System Cards -->
+                        <div class="overlay-3d-card" id="overlayCard2" onclick="handleOverlayCardClick(2)">
+                            <div class="overlay-card-scroll">
+                                <div th:replace="~{fragments/dashboard/about-section :: aboutSection}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 3: BSIT Developers Team -->
+                        <div class="overlay-3d-card" id="overlayCard3" onclick="handleOverlayCardClick(3)">
+                            <div class="overlay-card-scroll">
+                                <div th:replace="~{fragments/dashboard/dev-section :: devSection}"></div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-                <div class="modal-body p-2 p-md-3">
-                    <div th:replace="~{fragments/dashboard/dev-section :: devSection}"></div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -333,6 +340,6 @@
     <script th:src="@{/js/dashboard/ai-assistant.js}" src="/js/dashboard/ai-assistant.js"></script>
     <script th:src="@{/js/dashboard/verification-ocr.js}" src="/js/dashboard/verification-ocr.js"></script>
     <script th:src="@{/js/dashboard/widgets.js}" src="/js/dashboard/widgets.js"></script>
-    
+
 </body>
 </html>
