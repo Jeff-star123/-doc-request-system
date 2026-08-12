@@ -1,10 +1,43 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div th:fragment="usersTable" class="card card-custom shadow-lg p-3 p-md-4 reveal-on-scroll focal-card admin-card-theme">
+    <div th:fragment="usersTable" class="card card-custom shadow-lg p-3 p-md-4 reveal-on-scroll focal-card admin-card-theme mb-4">
         
-        <!-- EMBEDDED MOBILE STYLES -->
+        <!-- EMBEDDED STYLES -->
         <style>
+            .admin-user-filter-group {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 4px;
+                background: rgba(125, 125, 125, 0.12);
+                border-radius: 50px;
+                border: 1px solid var(--bs-border-color-translucent);
+            }
+
+            .admin-user-filter-btn {
+                border: none;
+                background: transparent;
+                color: var(--bs-secondary-color);
+                font-size: 0.8rem;
+                font-weight: 600;
+                padding: 5px 15px;
+                border-radius: 50px;
+                transition: all 0.2s ease-in-out;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+
+            .admin-user-filter-btn:hover {
+                color: var(--bs-body-color);
+            }
+
+            .admin-user-filter-btn.active {
+                background: #0d6efd !important;
+                color: #ffffff !important;
+                box-shadow: 0 4px 12px rgba(13, 110, 253, 0.35);
+            }
+
             .user-mobile-card {
                 background: rgba(125, 125, 125, 0.08);
                 border: 1px solid var(--bs-border-color-translucent);
@@ -13,14 +46,79 @@
             }
         </style>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2 fs-6 fs-md-5">
-                <i class="bi bi-people-fill text-primary fs-4"></i> Registered Users Directory & Anti-Spam Control
-            </h5>
-            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1 fw-bold">User Directory</span>
+        <!-- Header Bar -->
+        <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-4">
+            <div>
+                <h5 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2 fs-6 fs-md-5">
+                    <i class="bi bi-people-fill text-primary fs-4"></i> Registered Users Directory & Anti-Spam Control
+                </h5>
+                <p class="small text-secondary mb-0">Manage registered resident accounts, roles, and deactivate suspicious accounts.</p>
+            </div>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 fw-bold align-self-start align-self-sm-center">User Directory</span>
+        </div>
+
+        <!-- TOP STAT METRIC CARDS -->
+        <div class="row g-2 g-md-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-20 text-primary h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="small fw-bold text-uppercase opacity-75">Total Users</span>
+                        <i class="bi bi-people-fill fs-5"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0" th:text="${#lists.size(allUsers)}">0</h4>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <div class="p-3 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-20 text-success h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="small fw-bold text-uppercase opacity-75">Active Users</span>
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0" th:text="${#lists.size(allUsers.?[status == 'ACTIVE' || status == null])}">0</h4>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <div class="p-3 rounded-4 bg-warning-adaptive border border-warning-adaptive text-warning-adaptive h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="small fw-bold text-uppercase opacity-90">Pending Reactivation</span>
+                        <i class="bi bi-hourglass-split fs-5"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0" th:text="${#lists.size(allUsers.?[status == 'REACTIVATION_PENDING'])}">0</h4>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <div class="p-3 rounded-4 bg-danger bg-opacity-10 border border-danger border-opacity-20 text-danger h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="small fw-bold text-uppercase opacity-75">Deactivated</span>
+                        <i class="bi bi-pause-circle-fill fs-5"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0" th:text="${#lists.size(allUsers.?[status == 'DEACTIVATED' || status == 'BANNED'])}">0</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTER PILLS & LIVE SEARCH BAR -->
+        <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-2 mb-3">
+            <div class="admin-user-filter-group overflow-x-auto pb-1 pb-md-0">
+                <button type="button" class="admin-user-filter-btn active" data-filter="ALL" onclick="filterAdminUsers('ALL', this)">All</button>
+                <button type="button" class="admin-user-filter-btn" data-filter="ACTIVE" onclick="filterAdminUsers('ACTIVE', this)">Active</button>
+                <button type="button" class="admin-user-filter-btn" data-filter="PENDING" onclick="filterAdminUsers('PENDING', this)">Pending Reactivation</button>
+                <button type="button" class="admin-user-filter-btn" data-filter="DEACTIVATED" onclick="filterAdminUsers('DEACTIVATED', this)">Deactivated</button>
+                <button type="button" class="admin-user-filter-btn" data-filter="ADMIN" onclick="filterAdminUsers('ADMIN', this)">Admins</button>
+            </div>
+
+            <div class="input-group input-group-sm w-100 w-md-auto max-w-md">
+                <span class="input-group-text bg-transparent border-end-0 text-secondary">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="adminUserSearch" class="form-control bg-transparent text-body border-start-0 ps-0 shadow-none" placeholder="Search full name or username..." onkeyup="searchAdminUsers()" oninput="searchAdminUsers()">
+            </div>
         </div>
         
-        <!-- DESKTOP TABLE VIEW (Visible on md and up) -->
+        <!-- DESKTOP TABLE VIEW -->
         <div class="d-none d-md-block table-responsive admin-table-wrapper">
             <table class="table align-middle mb-0">
                 <thead>
@@ -33,14 +131,14 @@
                         <th class="text-end pe-3 py-3" style="width: 15%;">Account Control</th>
                     </tr>
                 </thead>
-                <tbody class="small">
-                    <tr th:each="u : ${allUsers}" class="admin-row">
+                <tbody class="small" id="adminUserBody">
+                    <tr th:each="u : ${allUsers}" class="admin-row admin-user-row" th:data-status="${u.status != null ? u.status : 'ACTIVE'}" th:data-role="${u.role}">
                         <td class="ps-3 py-3 font-monospace fw-bold" th:text="'#' + ${u.id}">#1</td>
                         <td class="py-3">
-                            <strong class="text-body" th:text="${u.fullName}">Name</strong>
+                            <strong class="text-body admin-full-name" th:text="${u.fullName}">Name</strong>
                         </td>
                         <td class="py-3">
-                            <span class="badge bg-body-tertiary text-body border px-2 py-1 font-monospace" th:text="${'@' + u.username}">@username</span>
+                            <span class="badge bg-body-tertiary text-body border px-2 py-1 font-monospace admin-username" th:text="${'@' + u.username}">@username</span>
                         </td>
                         <td class="py-3">
                             <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1 font-monospace" th:text="${u.role}">RESIDENT</span>
@@ -60,7 +158,6 @@
                             <span th:if="${u.role == 'ADMIN'}" class="badge bg-secondary bg-opacity-10 text-secondary border rounded-pill px-3 py-1">System Admin</span>
                             
                             <div th:if="${u.role != 'ADMIN'}" class="d-inline-flex gap-1">
-                                <!-- DEACTIVATE MODAL TRIGGER (NO NATIVE CONFIRM) -->
                                 <button th:if="${u.status == 'ACTIVE' || u.status == null}" type="button" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold" data-bs-toggle="modal" th:data-bs-target="'#deactivateUserModal' + ${u.id}">
                                     <i class="bi bi-pause-circle me-1"></i> Deactivate
                                 </button>
@@ -71,17 +168,21 @@
                             </div>
                         </td>
                     </tr>
+
+                    <tr th:if="${#lists.isEmpty(allUsers)}" id="emptyAdminUserRow">
+                        <td colspan="6" class="text-center py-5 text-secondary">No registered users found.</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- MOBILE STACKED CARDS VIEW (Visible on mobile screens) -->
-        <div class="d-md-none d-flex flex-column gap-2">
-            <div th:each="u : ${allUsers}" class="user-mobile-card">
+        <!-- MOBILE STACKED CARDS VIEW -->
+        <div class="d-md-none d-flex flex-column gap-2" id="adminUserMobileList">
+            <div th:each="u : ${allUsers}" class="user-mobile-card admin-user-mobile-card" th:data-status="${u.status != null ? u.status : 'ACTIVE'}" th:data-role="${u.role}">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div>
-                        <strong class="text-body fs-6 d-block" th:text="${u.fullName}">Name</strong>
-                        <span class="badge bg-body-tertiary text-body border px-2 py-0.5 font-monospace small" th:text="${'@' + u.username}">@username</span>
+                        <strong class="text-body fs-6 d-block admin-full-name" th:text="${u.fullName}">Name</strong>
+                        <span class="badge bg-body-tertiary text-body border px-2 py-0.5 font-monospace small admin-username" th:text="${'@' + u.username}">@username</span>
                     </div>
                     <span class="small text-secondary font-monospace" th:text="'#' + ${u.id}">#1</span>
                 </div>
@@ -106,7 +207,6 @@
                     <span th:if="${u.role == 'ADMIN'}" class="badge bg-secondary bg-opacity-10 text-secondary border rounded-pill px-3 py-1 w-100 d-block text-center">System Admin Account</span>
                     
                     <div th:if="${u.role != 'ADMIN'}">
-                        <!-- DEACTIVATE MODAL TRIGGER FOR MOBILE -->
                         <button th:if="${u.status == 'ACTIVE' || u.status == null}" type="button" class="btn btn-warning btn-sm w-100 rounded-pill fw-bold" data-bs-toggle="modal" th:data-bs-target="'#deactivateUserModal' + ${u.id}">
                             <i class="bi bi-pause-circle me-1"></i> Deactivate Account
                         </button>
@@ -117,8 +217,57 @@
                     </div>
                 </div>
             </div>
+
+            <div th:if="${#lists.isEmpty(allUsers)}" class="text-center py-4 text-secondary">
+                No registered users found.
+            </div>
         </div>
 
+        <!-- EMBEDDED FILTER & SEARCH JS ENGINE -->
+        <script>
+            window.filterAdminUsers = function(status, btnEl) {
+                const buttons = document.querySelectorAll('.admin-user-filter-btn');
+                buttons.forEach(b => b.classList.remove('active'));
+                
+                if (btnEl) {
+                    btnEl.classList.add('active');
+                } else {
+                    const matchBtn = document.querySelector(`.admin-user-filter-btn[data-filter="${status}"]`);
+                    if (matchBtn) matchBtn.classList.add('active');
+                }
+
+                const query = (document.getElementById('adminUserSearch')?.value || '').toLowerCase().trim();
+                const items = document.querySelectorAll('#adminUserBody .admin-user-row, #adminUserMobileList .admin-user-mobile-card');
+
+                items.forEach(item => {
+                    const itemStatus = (item.getAttribute('data-status') || '').toUpperCase().trim();
+                    const itemRole = (item.getAttribute('data-role') || '').toUpperCase().trim();
+                    const nameText = (item.querySelector('.admin-full-name')?.innerText || '').toLowerCase();
+                    const userText = (item.querySelector('.admin-username')?.innerText || '').toLowerCase();
+
+                    let matchesStatus = false;
+                    if (status === 'ALL') matchesStatus = true;
+                    else if (status === 'ACTIVE') matchesStatus = (itemStatus === 'ACTIVE' || itemStatus === '');
+                    else if (status === 'PENDING') matchesStatus = (itemStatus === 'REACTIVATION_PENDING');
+                    else if (status === 'DEACTIVATED') matchesStatus = (itemStatus === 'DEACTIVATED' || itemStatus === 'BANNED');
+                    else if (status === 'ADMIN') matchesStatus = (itemRole === 'ADMIN');
+
+                    const matchesSearch = (!query || nameText.includes(query) || userText.includes(query));
+
+                    if (matchesStatus && matchesSearch) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            };
+
+            window.searchAdminUsers = function() {
+                const activeBtn = document.querySelector('.admin-user-filter-btn.active');
+                const currentFilter = activeBtn ? (activeBtn.getAttribute('data-filter') || 'ALL') : 'ALL';
+                window.filterAdminUsers(currentFilter, activeBtn);
+            };
+        </script>
     </div>
 </body>
 </html>

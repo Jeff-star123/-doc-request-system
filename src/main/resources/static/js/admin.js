@@ -47,7 +47,7 @@ function handleOverlayCardClick(cardIndex) {
     }
 }
 
-// 3D Revolving Stage Math
+// 3D Revolving Stage Math (Centered for Mobile & PC)
 function update3dOverlayHub() {
     const cards = document.querySelectorAll('.overlay-3d-card');
     const total = cards.length;
@@ -242,7 +242,7 @@ function generateAdminAiResponse(query) {
             <strong><i class="bi bi-person-exclamation text-warning me-1"></i> Account Reactivation Management:</strong><br>
             • Kapag nag-deactivate ang isang residente ng kanyang account, kailangan nito ng <b>Admin Approval</b> para muling maka-login.<br>
             • Makikita ang mga humihingi ng reactivation sa <b>"Pending Account Reactivation Requests"</b> card o tab.<br>
-            • I-click ang <b>"Approve"</b> button para ibalik the access ng residente!
+            • I-click ang <b>"Approve"</b> button para ibalik ang access ng residente!
         `;
     }
 
@@ -391,7 +391,9 @@ document.querySelectorAll('.themeToggleBtn').forEach(btn => {
     });
 });
 
-// GLOBAL SEARCH & STATUS FILTER ENGINE
+// =========================================================
+// 1. REQUESTS TAB FILTER & SEARCH ENGINE
+// =========================================================
 window.filterAdminRequests = function(status, btnEl) {
     const buttons = document.querySelectorAll('.admin-filter-btn');
     buttons.forEach(b => b.classList.remove('active'));
@@ -427,6 +429,107 @@ window.searchAdminRequests = function() {
     const activeBtn = document.querySelector('.admin-filter-btn.active');
     const currentFilter = activeBtn ? (activeBtn.getAttribute('data-filter') || 'ALL') : 'ALL';
     window.filterAdminRequests(currentFilter, activeBtn);
+};
+
+// =========================================================
+// 2. REACTIVATION TAB FILTER & SEARCH ENGINE
+// =========================================================
+window.filterAdminReactivations = function(status, btnEl) {
+    const buttons = document.querySelectorAll('.admin-react-filter-btn');
+    buttons.forEach(b => b.classList.remove('active'));
+    
+    if (btnEl) {
+        btnEl.classList.add('active');
+    } else {
+        const matchBtn = document.querySelector(`.admin-react-filter-btn[data-filter="${status}"]`);
+        if (matchBtn) matchBtn.classList.add('active');
+    }
+
+    const query = (document.getElementById('adminReactSearch')?.value || '').toLowerCase().trim();
+    const items = document.querySelectorAll('#adminReactBody .admin-react-row, #adminReactMobileList .admin-react-mobile-card');
+
+    let visibleCount = 0;
+
+    items.forEach(item => {
+        const itemStatus = (item.getAttribute('data-status') || '').toUpperCase().trim();
+        const nameText = (item.querySelector('.admin-res-name')?.innerText || '').toLowerCase();
+        const userText = (item.querySelector('.admin-user-name')?.innerText || '').toLowerCase();
+
+        const matchesStatus = (status === 'ALL' || itemStatus === status);
+        const matchesSearch = (!query || nameText.includes(query) || userText.includes(query));
+
+        if (matchesStatus && matchesSearch) {
+            item.style.display = '';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    const emptyRow = document.getElementById('emptyAdminReactRow');
+    if (emptyRow) {
+        emptyRow.style.display = (visibleCount === 0) ? '' : 'none';
+    }
+};
+
+window.searchAdminReactivations = function() {
+    const activeBtn = document.querySelector('.admin-react-filter-btn.active');
+    const currentFilter = activeBtn ? (activeBtn.getAttribute('data-filter') || 'ALL') : 'ALL';
+    window.filterAdminReactivations(currentFilter, activeBtn);
+};
+
+// =========================================================
+// 3. USER DIRECTORY TAB FILTER & SEARCH ENGINE
+// =========================================================
+window.filterAdminUsers = function(status, btnEl) {
+    const buttons = document.querySelectorAll('.admin-user-filter-btn');
+    buttons.forEach(b => b.classList.remove('active'));
+    
+    if (btnEl) {
+        btnEl.classList.add('active');
+    } else {
+        const matchBtn = document.querySelector(`.admin-user-filter-btn[data-filter="${status}"]`);
+        if (matchBtn) matchBtn.classList.add('active');
+    }
+
+    const query = (document.getElementById('adminUserSearch')?.value || '').toLowerCase().trim();
+    const items = document.querySelectorAll('#adminUserBody .admin-user-row, #adminUserMobileList .admin-user-mobile-card');
+
+    let visibleCount = 0;
+
+    items.forEach(item => {
+        const itemStatus = (item.getAttribute('data-status') || '').toUpperCase().trim();
+        const itemRole = (item.getAttribute('data-role') || '').toUpperCase().trim();
+        const nameText = (item.querySelector('.admin-full-name')?.innerText || '').toLowerCase();
+        const userText = (item.querySelector('.admin-username')?.innerText || '').toLowerCase();
+
+        let matchesStatus = false;
+        if (status === 'ALL') matchesStatus = true;
+        else if (status === 'ACTIVE') matchesStatus = (itemStatus === 'ACTIVE' || itemStatus === '');
+        else if (status === 'PENDING') matchesStatus = (itemStatus === 'REACTIVATION_PENDING');
+        else if (status === 'DEACTIVATED') matchesStatus = (itemStatus === 'DEACTIVATED' || itemStatus === 'BANNED');
+        else if (status === 'ADMIN') matchesStatus = (itemRole === 'ADMIN');
+
+        const matchesSearch = (!query || nameText.includes(query) || userText.includes(query));
+
+        if (matchesStatus && matchesSearch) {
+            item.style.display = '';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    const emptyRow = document.getElementById('emptyAdminUserRow');
+    if (emptyRow) {
+        emptyRow.style.display = (visibleCount === 0) ? '' : 'none';
+    }
+};
+
+window.searchAdminUsers = function() {
+    const activeBtn = document.querySelector('.admin-user-filter-btn.active');
+    const currentFilter = activeBtn ? (activeBtn.getAttribute('data-filter') || 'ALL') : 'ALL';
+    window.filterAdminUsers(currentFilter, activeBtn);
 };
 
 // =========================================================

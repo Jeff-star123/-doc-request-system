@@ -1,27 +1,44 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div th:fragment="pendingReactivations" th:if="${not #lists.isEmpty(pendingReactivations)}" class="card card-custom border-warning border-opacity-40 shadow-lg reveal-on-scroll focal-card mb-4 bg-warning bg-opacity-10 admin-card-theme">
+    <!-- Card is ALWAYS rendered (th:if condition removed from outer container so tab never looks blank) -->
+    <div th:fragment="pendingReactivations" class="card card-custom shadow-lg p-3 p-md-4 reveal-on-scroll focal-card mb-4 admin-card-theme border-warning-adaptive bg-warning-adaptive">
         
-        <!-- EMBEDDED SCOPED STYLES -->
+        <!-- EMBEDDED STYLES -->
         <style>
-            .text-warning-adaptive {
-                color: #92400e !important;
+            .admin-react-filter-group {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 4px;
+                background: rgba(125, 125, 125, 0.12);
+                border-radius: 50px;
+                border: 1px solid var(--bs-border-color-translucent);
             }
 
-            [data-bs-theme="dark"] .text-warning-adaptive {
-                color: #fbbf24 !important;
+            .admin-react-filter-btn {
+                border: none;
+                background: transparent;
+                color: var(--bs-secondary-color);
+                font-size: 0.8rem;
+                font-weight: 600;
+                padding: 5px 15px;
+                border-radius: 50px;
+                transition: all 0.2s ease-in-out;
+                cursor: pointer;
+                white-space: nowrap;
             }
 
-            .border-warning-adaptive {
-                border-color: rgba(217, 119, 6, 0.4) !important;
+            .admin-react-filter-btn:hover {
+                color: var(--bs-body-color);
             }
 
-            [data-bs-theme="dark"] .border-warning-adaptive {
-                border-color: rgba(251, 191, 36, 0.3) !important;
+            .admin-react-filter-btn.active {
+                background: #0d6efd !important;
+                color: #ffffff !important;
+                box-shadow: 0 4px 12px rgba(13, 110, 253, 0.35);
             }
 
-            /* Responsive Mobile Card Item */
             .reactivation-mobile-card {
                 background: rgba(125, 125, 125, 0.08);
                 border: 1px solid var(--bs-border-color-translucent);
@@ -31,16 +48,66 @@
         </style>
 
         <!-- Header -->
-        <div class="p-3 border-bottom border-warning-adaptive d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <h6 class="fw-bold mb-0 text-body d-flex align-items-center gap-2 fs-6 fs-md-5">
-                <i class="bi bi-person-exclamation text-warning fs-5"></i> Pending Account Reactivation Requests
-            </h6>
-            <!-- 100% High Contrast Number Badge -->
-            <span class="badge bg-warning text-dark font-monospace fw-bold px-3 py-1.5 rounded-pill shadow-sm fs-6" th:text="${#lists.size(pendingReactivations)}">1</span>
+        <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-4">
+            <div>
+                <h5 class="fw-bold mb-1 text-warning-adaptive d-flex align-items-center gap-2 fs-6 fs-md-5">
+                    <i class="bi bi-person-exclamation fs-4"></i> Pending Account Reactivation Requests
+                </h5>
+                <p class="small text-secondary mb-0">Review deactivated resident accounts requesting reactivation access to the portal.</p>
+            </div>
+            <span class="badge bg-warning text-dark font-monospace fw-bold px-3 py-2 rounded-pill shadow-sm align-self-start align-self-sm-center fs-6" th:text="${#lists.size(pendingReactivations)} + ' Pending'">0 Pending</span>
         </div>
 
-        <div class="p-2 p-md-3">
-            <!-- DESKTOP TABLE VIEW (Visible on md and up) -->
+        <!-- TOP METRICS ROW -->
+        <div class="row g-2 g-md-3 mb-4">
+            <div class="col-6 col-md-4">
+                <div class="p-3 rounded-4 bg-warning-adaptive border border-warning-adaptive text-warning-adaptive h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="small fw-bold text-uppercase opacity-90">Pending Reactivations</span>
+                        <i class="bi bi-person-exclamation fs-5"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0" id="reactPendingCount" th:text="${#lists.size(pendingReactivations)}">0</h4>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4">
+                <div class="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-20 text-primary h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="small fw-bold text-uppercase opacity-75">Verification Security</span>
+                        <i class="bi bi-shield-lock-fill fs-5"></i>
+                    </div>
+                    <h6 class="fw-bold mb-0 text-primary mt-1"><i class="bi bi-check-circle-fill me-1"></i> Admin Guard Active</h6>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="p-3 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-20 text-success h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="small fw-bold text-uppercase opacity-75">Approval Policy</span>
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                    </div>
+                    <small class="d-block text-success fw-semibold">Manual admin review required before restoring account access.</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTER PILLS & LIVE SEARCH BAR -->
+        <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-2 mb-3">
+            <div class="admin-react-filter-group overflow-x-auto pb-1 pb-md-0">
+                <button type="button" class="admin-react-filter-btn active" data-filter="ALL" onclick="filterAdminReactivations('ALL', this)">All</button>
+                <button type="button" class="admin-react-filter-btn" data-filter="PENDING" onclick="filterAdminReactivations('PENDING', this)">Pending</button>
+            </div>
+
+            <div class="input-group input-group-sm w-100 w-md-auto max-w-md">
+                <span class="input-group-text bg-transparent border-end-0 text-secondary">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="adminReactSearch" class="form-control bg-transparent text-body border-start-0 ps-0 shadow-none" placeholder="Search resident name or username..." onkeyup="searchAdminReactivations()" oninput="searchAdminReactivations()">
+            </div>
+        </div>
+
+        <div class="p-1">
+            <!-- DESKTOP TABLE VIEW -->
             <div class="d-none d-md-block table-responsive admin-table-wrapper">
                 <table class="table align-middle mb-0" style="min-width: 580px;">
                     <thead>
@@ -51,21 +118,21 @@
                             <th class="text-end pe-3 py-3" style="width: 20%;">Action Required</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr th:each="u : ${pendingReactivations}" class="admin-row">
+                    <tbody class="small" id="adminReactBody">
+                        <tr th:each="u : ${pendingReactivations}" class="admin-row admin-react-row" data-status="PENDING">
                             <td class="ps-3 py-3">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="text-primary rounded-circle d-flex align-items-center justify-content-center p-2 bg-primary bg-opacity-10 border border-primary border-opacity-20 flex-shrink-0" style="width: 38px; height: 38px;">
                                         <i class="bi bi-person-fill fs-5"></i>
                                     </div>
                                     <div>
-                                        <h6 class="fw-bold mb-0 text-body" th:text="${u.fullName}">Resident Name</h6>
+                                        <h6 class="fw-bold mb-0 text-body admin-res-name" th:text="${u.fullName}">Resident Name</h6>
                                         <span class="small text-secondary" th:text="'User ID #' + ${u.id}">ID #1</span>
                                     </div>
                                 </div>
                             </td>
                             <td class="py-3">
-                                <span class="badge bg-body-tertiary text-body border px-2 py-1 font-monospace" th:text="${'@' + u.username}">@username</span>
+                                <span class="badge bg-body-tertiary text-body border px-2 py-1 font-monospace admin-user-name" th:text="${'@' + u.username}">@username</span>
                             </td>
                             <td class="py-3">
                                 <span class="badge badge-status-pending rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-2">
@@ -83,21 +150,32 @@
                                 </div>
                             </td>
                         </tr>
+
+                        <!-- Empty State Row when no pending requests exist -->
+                        <tr th:if="${#lists.isEmpty(pendingReactivations)}" id="emptyAdminReactRow">
+                            <td colspan="4" class="text-center py-5">
+                                <div class="py-4 text-center">
+                                    <i class="bi bi-shield-check fs-1 text-success d-block mb-2 opacity-75"></i>
+                                    <h6 class="fw-bold text-body mb-1">All Resident Accounts Clear</h6>
+                                    <p class="small text-secondary mb-0">There are currently no pending account reactivation requests requiring admin approval.</p>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- MOBILE STACKED CARDS VIEW (Visible on mobile screens) -->
-            <div class="d-md-none d-flex flex-column gap-2">
-                <div th:each="u : ${pendingReactivations}" class="reactivation-mobile-card">
+            <!-- MOBILE STACKED CARDS VIEW -->
+            <div class="d-md-none d-flex flex-column gap-2" id="adminReactMobileList">
+                <div th:each="u : ${pendingReactivations}" class="reactivation-mobile-card admin-react-mobile-card" data-status="PENDING">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <div class="d-flex align-items-center gap-2">
                             <div class="text-primary rounded-circle d-flex align-items-center justify-content-center p-2 bg-primary bg-opacity-10 border border-primary border-opacity-20 flex-shrink-0" style="width: 36px; height: 36px;">
                                 <i class="bi bi-person-fill fs-5"></i>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-0 text-body fs-6" th:text="${u.fullName}">Resident Name</h6>
-                                <span class="badge bg-body-tertiary text-body border px-2 py-0.5 font-monospace small" th:text="${'@' + u.username}">@username</span>
+                                <h6 class="fw-bold mb-0 text-body fs-6 admin-res-name" th:text="${u.fullName}">Resident Name</h6>
+                                <span class="badge bg-body-tertiary text-body border px-2 py-0.5 font-monospace small admin-user-name" th:text="${'@' + u.username}">@username</span>
                             </div>
                         </div>
                         <span class="small text-secondary font-monospace" th:text="'#' + ${u.id}">#1</span>
@@ -122,9 +200,55 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Mobile Empty State -->
+                <div th:if="${#lists.isEmpty(pendingReactivations)}" class="text-center py-4">
+                    <i class="bi bi-shield-check fs-1 text-success d-block mb-2 opacity-75"></i>
+                    <h6 class="fw-bold text-body mb-1">All Resident Accounts Clear</h6>
+                    <p class="small text-secondary mb-0">No pending reactivation requests.</p>
+                </div>
             </div>
 
         </div>
+
+        <!-- EMBEDDED FILTER & SEARCH JS ENGINE -->
+        <script>
+            window.filterAdminReactivations = function(status, btnEl) {
+                const buttons = document.querySelectorAll('.admin-react-filter-btn');
+                buttons.forEach(b => b.classList.remove('active'));
+                
+                if (btnEl) {
+                    btnEl.classList.add('active');
+                } else {
+                    const matchBtn = document.querySelector(`.admin-react-filter-btn[data-filter="${status}"]`);
+                    if (matchBtn) matchBtn.classList.add('active');
+                }
+
+                const query = (document.getElementById('adminReactSearch')?.value || '').toLowerCase().trim();
+                const items = document.querySelectorAll('#adminReactBody .admin-react-row, #adminReactMobileList .admin-react-mobile-card');
+
+                items.forEach(item => {
+                    const itemStatus = (item.getAttribute('data-status') || '').toUpperCase().trim();
+                    const nameText = (item.querySelector('.admin-res-name')?.innerText || '').toLowerCase();
+                    const userText = (item.querySelector('.admin-user-name')?.innerText || '').toLowerCase();
+
+                    const matchesStatus = (status === 'ALL' || itemStatus === status);
+                    const matchesSearch = (!query || nameText.includes(query) || userText.includes(query));
+
+                    if (matchesStatus && matchesSearch) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            };
+
+            window.searchAdminReactivations = function() {
+                const activeBtn = document.querySelector('.admin-react-filter-btn.active');
+                const currentFilter = activeBtn ? (activeBtn.getAttribute('data-filter') || 'ALL') : 'ALL';
+                window.filterAdminReactivations(currentFilter, activeBtn);
+            };
+        </script>
     </div>
 </body>
 </html>
