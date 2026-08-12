@@ -6,11 +6,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +38,8 @@ import com.barangay.doc_request_system.repository.DocumentRequestRepository;
 import com.barangay.doc_request_system.repository.UserRepository;
 import com.barangay.doc_request_system.service.TelegramService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -48,12 +58,25 @@ public class MainController {
     private TelegramService telegramService;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
+    // Fallback to Spring SecurityContextHolder if session user is null
     private User getAuthenticatedUser(HttpSession session) {
-        return (User) session.getAttribute("loggedInUser");
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+                String username = auth.getName();
+                user = userRepository.findByUsername(username).orElse(null);
+                if (user != null) {
+                    session.setAttribute("loggedInUser", user);
+                }
+            }
+        }
+        return user;
     }
 
-    // Helper method to check if the user is banned or deactivated and redirect to spam-banned if so
+    // Helper method to check if the user is banned or deactivated
     private String checkUserAndRedirect(HttpSession session) {
         User user = getAuthenticatedUser(session);
         if (user == null) {
@@ -67,48 +90,89 @@ public class MainController {
     }
 
     @GetMapping("/")
-    public String index() {
+    public String index(@RequestParam(value = "error", required = false) String error, Model model) {
+        if (error != null) {
+            model.addAttribute("error", "Invalid username or password!");
+        }
         return "index";
     }
 
     @PostMapping("/login")
     public String login(@RequestParam String username, 
                         @RequestParam String password, 
+                        HttpServletRequest request,
+                        HttpServletResponse response,
                         HttpSession session, 
                         Model model) {
         
+        System.out.println("\n--------------------------------------------------");
+        System.out.println("🔍 [LOGIN DEBUG] Attempting login for username: '" + username + "'");
+
         User user = userRepository.findByUsername(username).orElse(null);
         
-        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+        if (user == null) {
+            System.err.println("❌ [LOGIN DEBUG] User NOT FOUND in database!");
+            model.addAttribute("error", "Invalid username or password!");
+            return "index";
+        }
 
-            if ("BANNED".equalsIgnoreCase(user.getStatus())) {
-                model.addAttribute("error", "Your account has been permanently banned by the Barangay Administrator.");
-                return "index";
-            }
+        System.out.println("✅ [LOGIN DEBUG] User found! Name: " + user.getFullName() + " | Role: " + user.getRole() + " | Status: " + user.getStatus());
 
-            if ("DEACTIVATED".equalsIgnoreCase(user.getStatus())) {
-                model.addAttribute("showReactivatePrompt", true);
-                model.addAttribute("pendingUserId", user.getId());
-                model.addAttribute("pendingUsername", user.getUsername());
-                return "index";
-            }
+        boolean passwordMatches = passwordEncoder.matches(password, user.getPassword());
+        System.out.println("🔑 [LOGIN DEBUG] BCrypt Password match: " + (passwordMatches ? "PASSED ✅" : "FAILED ❌"));
 
-            if ("REACTIVATION_PENDING".equalsIgnoreCase(user.getStatus())) {
-                model.addAttribute("error", "Your account reactivation request is currently pending Admin approval.");
-                return "index";
-            }
+        if (!passwordMatches) {
+            model.addAttribute("error", "Invalid username or password!");
+            return "index";
+        }
 
-            session.setAttribute("loggedInUser", user);
-            session.removeAttribute("printTimestamps"); // Reset spam tracking timestamps on login
+        if ("BANNED".equalsIgnoreCase(user.getStatus())) {
+            System.err.println("🚫 [LOGIN DEBUG] Login rejected: Account is BANNED.");
+            model.addAttribute("error", "Your account has been permanently banned by the Barangay Administrator.");
+            return "index";
+        }
 
-            if ("ADMIN".equals(user.getRole())) {
-                return "redirect:/admin";
-            }
-            return "redirect:/dashboard";
+        if ("DEACTIVATED".equalsIgnoreCase(user.getStatus())) {
+            System.out.println("⚠️ [LOGIN DEBUG] Account DEACTIVATED. Triggering Reactivation Prompt.");
+            model.addAttribute("showReactivatePrompt", true);
+            model.addAttribute("pendingUserId", user.getId());
+            model.addAttribute("pendingUsername", user.getUsername());
+            return "index";
+        }
+
+        if ("REACTIVATION_PENDING".equalsIgnoreCase(user.getStatus())) {
+            System.out.println("⏳ [LOGIN DEBUG] Account REACTIVATION_PENDING.");
+            model.addAttribute("error", "Your account reactivation request is currently pending Admin approval.");
+            return "index";
+        }
+
+        // 1. Store in HTTP Session for Thymeleaf views
+        session.setAttribute("loggedInUser", user);
+        session.removeAttribute("printTimestamps");
+
+        // 2. Register Authentication in Spring Security Context
+        String roleName = user.getRole().startsWith("ROLE_") ? user.getRole().toUpperCase() : "ROLE_" + user.getRole().toUpperCase();
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            user.getUsername(),
+            null,
+            Collections.singletonList(new SimpleGrantedAuthority(roleName))
+        );
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        // 3. PERSIST SecurityContext across HTTP redirects (Spring Security 6)
+        securityContextRepository.saveContext(context, request, response);
+        System.out.println("🔐 [LOGIN DEBUG] Spring SecurityContext persisted to Session for role: " + roleName);
+
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+            System.out.println("🚀 [LOGIN DEBUG] Redirecting ADMIN to /admin");
+            return "redirect:/admin";
         }
         
-        model.addAttribute("error", "Invalid username or password!");
-        return "index";
+        System.out.println("🚀 [LOGIN DEBUG] Redirecting Resident to /dashboard");
+        return "redirect:/dashboard";
     }
 
     @PostMapping("/request/reactivate")
@@ -169,12 +233,13 @@ public class MainController {
                 Files.createDirectories(uploadPath);
             }
 
+            // Save image paths pointing to /secure-uploads/ (FileAccessController)
             if (idCardFile != null && !idCardFile.isEmpty()) {
                 String originalFilename = Paths.get(idCardFile.getOriginalFilename()).getFileName().toString();
                 String fileName = System.currentTimeMillis() + "_id_" + originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
                 Path filePath = uploadPath.resolve(fileName);
                 Files.copy(idCardFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                docRequest.setIdCardImagePath("/uploads/" + fileName);
+                docRequest.setIdCardImagePath("/secure-uploads/" + fileName);
             }
 
             if (selfieWithIdFile != null && !selfieWithIdFile.isEmpty()) {
@@ -182,7 +247,7 @@ public class MainController {
                 String fileName = System.currentTimeMillis() + "_selfie_" + originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
                 Path filePath = uploadPath.resolve(fileName);
                 Files.copy(selfieWithIdFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                docRequest.setSelfieImagePath("/uploads/" + fileName);
+                docRequest.setSelfieImagePath("/secure-uploads/" + fileName);
             }
 
         } catch (IOException e) {
@@ -210,13 +275,14 @@ public class MainController {
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
+        SecurityContextHolder.clearContext();
         return "redirect:/";
     }
 
     @GetMapping("/admin")
     public String adminDashboard(HttpSession session, Model model) {
         User user = getAuthenticatedUser(session);
-        if (user == null || !"ADMIN".equals(user.getRole())) {
+        if (user == null || (!"ADMIN".equalsIgnoreCase(user.getRole()) && !"ROLE_ADMIN".equalsIgnoreCase(user.getRole()))) {
             return "redirect:/";
         }
 
@@ -281,7 +347,7 @@ public class MainController {
     @PostMapping("/admin/user/deactivate/{id}")
     public String adminDeactivateUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         User user = userRepository.findById(id).orElse(null);
-        if (user != null && !"ADMIN".equals(user.getRole())) {
+        if (user != null && !"ADMIN".equalsIgnoreCase(user.getRole()) && !"ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
             ArchivedUser archivedUser = new ArchivedUser(user);
             archivedUserRepository.save(archivedUser);
 
@@ -300,7 +366,7 @@ public class MainController {
     @PostMapping("/admin/user/ban/{id}")
     public String adminBanUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         User user = userRepository.findById(id).orElse(null);
-        if (user != null && !"ADMIN".equals(user.getRole())) {
+        if (user != null && !"ADMIN".equalsIgnoreCase(user.getRole()) && !"ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
             ArchivedUser archivedUser = new ArchivedUser(user);
             archivedUserRepository.save(archivedUser);
 
@@ -401,7 +467,7 @@ public class MainController {
         session.setAttribute("printTimestamps", printTimestamps);
 
         if (printTimestamps.size() >= 5) {
-            if (user != null && !"ADMIN".equals(user.getRole())) {
+            if (user != null && !"ADMIN".equalsIgnoreCase(user.getRole()) && !"ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
                 ArchivedUser archivedUser = new ArchivedUser(user);
                 archivedUserRepository.save(archivedUser);
 
@@ -443,6 +509,7 @@ public class MainController {
                 }
             }
             session.invalidate();
+            SecurityContextHolder.clearContext();
         }
         
         return "spam-banned";
@@ -506,7 +573,6 @@ public class MainController {
         return "settings";
     }
 
-    // UPDATED: Require Current Password AND Telegram OTP Verification to Update Profile
     @PostMapping("/settings/update-profile")
     public String updateProfile(@RequestParam String fullName,
                                 @RequestParam String username,
@@ -520,18 +586,15 @@ public class MainController {
 
         User user = getAuthenticatedUser(session);
 
-        // 1. Verify Current Password via BCrypt
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Incorrect current password entered!");
             return "redirect:/settings";
         }
 
-        // 2. Resolve Target Telegram Chat ID
         String targetChatId = (telegramChatId != null && !telegramChatId.trim().isEmpty()) 
                 ? telegramChatId.trim() 
                 : user.getTelegramChatId();
 
-        // 3. Verify Telegram OTP if Chat ID is present
         if (targetChatId != null && !targetChatId.trim().isEmpty()) {
             if (otpCode == null || !telegramService.verifyOtp(targetChatId, otpCode)) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Invalid or expired Telegram OTP code! Verification failed.");
@@ -539,14 +602,12 @@ public class MainController {
             }
         }
 
-        // 4. Check Username Uniqueness
         Optional<User> existingUser = userRepository.findByUsername(username);
         if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Username is already taken by another user!");
             return "redirect:/settings";
         }
 
-        // 5. Apply Updates
         user.setFullName(fullName);
         user.setUsername(username);
         user.setTelegramChatId(targetChatId != null ? targetChatId : "");
@@ -558,7 +619,6 @@ public class MainController {
         return "redirect:/settings";
     }
 
-    // UPDATED: Require Current Password AND Telegram OTP Verification to Change Password
     @PostMapping("/settings/change-password")
     public String changePassword(@RequestParam String currentPassword,
                                  @RequestParam String newPassword,
@@ -571,19 +631,16 @@ public class MainController {
 
         User user = getAuthenticatedUser(session);
 
-        // 1. Verify Current Password
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Incorrect current password entered!");
             return "redirect:/settings";
         }
 
-        // 2. Verify New Passwords Match
         if (!newPassword.equals(confirmPassword)) {
             redirectAttributes.addFlashAttribute("errorMessage", "New passwords do not match!");
             return "redirect:/settings";
         }
 
-        // 3. Verify Telegram OTP if user has Telegram Chat ID
         if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
             if (otpCode == null || !telegramService.verifyOtp(user.getTelegramChatId(), otpCode)) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Invalid or expired Telegram OTP code!");
@@ -591,7 +648,6 @@ public class MainController {
             }
         }
 
-        // 4. Update Password
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         session.setAttribute("loggedInUser", user);
@@ -600,7 +656,6 @@ public class MainController {
         return "redirect:/settings";
     }
 
-    // UPDATED: Require Password AND Telegram OTP Verification to Deactivate Account
     @PostMapping("/settings/deactivate-account")
     public String deactivateAccount(@RequestParam String confirmPassword,
                                     @RequestParam(required = false) String otpCode,
@@ -611,13 +666,11 @@ public class MainController {
 
         User user = getAuthenticatedUser(session);
 
-        // 1. Verify Password
         if (!passwordEncoder.matches(confirmPassword, user.getPassword())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Incorrect password confirmation. Account deactivation cancelled.");
             return "redirect:/settings";
         }
 
-        // 2. Verify Telegram OTP if user has Telegram Chat ID
         if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
             if (otpCode == null || !telegramService.verifyOtp(user.getTelegramChatId(), otpCode)) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Invalid or expired Telegram OTP code!");
@@ -633,6 +686,7 @@ public class MainController {
             userRepository.save(user);
 
             session.invalidate();
+            SecurityContextHolder.clearContext();
 
             redirectAttributes.addFlashAttribute("success", "Your account has been deactivated.");
             return "redirect:/";
