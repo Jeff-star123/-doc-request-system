@@ -2,20 +2,70 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
     <div th:fragment="settingsModals">
-        <!-- Change Password Modal -->
+
+        <!-- Password Confirmation Modal Before Saving Profile Changes -->
+        <div class="modal fade" id="confirmProfileSaveModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg p-2">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold text-primary"><i class="bi bi-shield-lock-fill me-2"></i> Confirm Profile Changes</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-start">
+                        <p class="text-secondary small mb-3">Please verify your identity with your current password and Telegram OTP to save profile changes:</p>
+                        
+                        <!-- 1. Password Verification Field -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">CURRENT PASSWORD</label>
+                            <div class="input-group">
+                                <input type="password" id="confirmProfilePassword" name="currentPassword" form="profileUpdateForm" class="form-control settings-input" placeholder="Enter current password" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmProfilePassword', 'eyeIconSaveProfile')">
+                                    <i id="eyeIconSaveProfile" class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 2. Telegram OTP Verification Section -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">TELEGRAM CHAT ID</label>
+                            <div class="input-group mb-2">
+                                <input type="text" id="modalProfileTelegramId" class="form-control settings-input" th:value="${user.telegramChatId}" placeholder="Enter Telegram Chat ID">
+                                <button type="button" class="btn btn-outline-primary fw-semibold" id="btnSendProfileOtp" onclick="sendSettingsOtp('modalProfileTelegramId', 'btnSendProfileOtp', 'profileOtpStatus')">
+                                    Send Telegram OTP
+                                </button>
+                            </div>
+                            <span id="profileOtpStatus" class="small d-none"></span>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold text-secondary">6-DIGIT TELEGRAM OTP CODE</label>
+                            <input type="text" name="otpCode" form="profileUpdateForm" class="form-control settings-input font-monospace text-center fs-5" placeholder="Enter 6-digit OTP" maxlength="6">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" form="profileUpdateForm" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold text-white shadow-sm">
+                            <i class="bi bi-check-circle-fill me-1"></i> Confirm & Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password + Telegram OTP Modal for Password Change -->
         <div class="modal fade" id="changePasswordModal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg">
+                <div class="modal-content border-0 shadow-lg p-2">
                     <form th:action="@{/settings/change-password}" method="post">
-                        <div class="modal-header bg-light">
-                            <h5 class="modal-title fw-bold text-dark"><i class="bi bi-key text-primary me-2"></i> Change Your Password</h5>
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title fw-bold text-dark"><i class="bi bi-key text-primary me-2"></i> Change Password</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                        <div class="modal-body p-4">
+                        <div class="modal-body p-4 text-start">
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">CURRENT PASSWORD</label>
+                                <label class="form-label small fw-bold text-secondary">CURRENT PASSWORD</label>
                                 <div class="input-group">
-                                    <input type="password" id="currentPassword" name="currentPassword" class="form-control" required>
+                                    <input type="password" id="currentPassword" name="currentPassword" class="form-control settings-input" required>
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('currentPassword', 'eyeIconCurrent')">
                                         <i id="eyeIconCurrent" class="bi bi-eye"></i>
                                     </button>
@@ -23,9 +73,9 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">NEW PASSWORD</label>
+                                <label class="form-label small fw-bold text-secondary">NEW PASSWORD</label>
                                 <div class="input-group">
-                                    <input type="password" id="newPassword" name="newPassword" class="form-control" required>
+                                    <input type="password" id="newPassword" name="newPassword" class="form-control settings-input" required>
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('newPassword', 'eyeIconNew')">
                                         <i id="eyeIconNew" class="bi bi-eye"></i>
                                     </button>
@@ -33,18 +83,31 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">CONFIRM NEW PASSWORD</label>
+                                <label class="form-label small fw-bold text-secondary">CONFIRM NEW PASSWORD</label>
                                 <div class="input-group">
-                                    <input type="password" id="confirmNewPassword" name="confirmPassword" class="form-control" required>
+                                    <input type="password" id="confirmNewPassword" name="confirmPassword" class="form-control settings-input" required>
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmNewPassword', 'eyeIconConfirm')">
                                         <i id="eyeIconConfirm" class="bi bi-eye"></i>
                                     </button>
                                 </div>
                             </div>
+
+                            <!-- Telegram OTP Section -->
+                            <div th:if="${user.telegramChatId != null and user.telegramChatId != ''}" class="mb-3 pt-2 border-top">
+                                <label class="form-label small fw-bold text-secondary">TELEGRAM VERIFICATION OTP</label>
+                                <div class="input-group mb-2">
+                                    <input type="hidden" id="passChangeTelegramId" th:value="${user.telegramChatId}">
+                                    <input type="text" name="otpCode" class="form-control settings-input font-monospace text-center fs-6" placeholder="Enter 6-digit OTP">
+                                    <button type="button" class="btn btn-outline-primary btn-sm fw-semibold" id="btnSendPassOtp" onclick="sendSettingsOtp('passChangeTelegramId', 'btnSendPassOtp', 'passOtpStatus')">
+                                        Send OTP
+                                    </button>
+                                </div>
+                                <span id="passOtpStatus" class="small d-none"></span>
+                            </div>
                         </div>
-                        <div class="modal-footer bg-light">
-                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 text-white">Update Password</button>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold text-white">Update Password</button>
                         </div>
                     </form>
                 </div>
@@ -54,34 +117,67 @@
         <!-- Deactivate Account Confirmation Modal -->
         <div class="modal fade" id="deactivateAccountModal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg">
+                <div class="modal-content border-0 shadow-lg p-2">
                     <form th:action="@{/settings/deactivate-account}" method="post">
-                        <div class="modal-header bg-warning text-dark">
-                            <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Account Deactivation</h5>
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title fw-bold text-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Account Deactivation</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                        <div class="modal-body p-4">
-                            <p class="text-dark fw-semibold mb-3">Are you sure you want to deactivate your account?</p>
+                        <div class="modal-body p-4 text-start">
+                            <p class="fw-semibold mb-3 text-secondary">Are you sure you want to deactivate your account?</p>
                             
                             <div class="alert alert-danger py-2 small mb-3 rounded-3">
-                                <i class="bi bi-exclamation-circle-fill me-1"></i> <strong>Warning:</strong> You will not be able to log back in freely. Reactivation will require manual approval from a Barangay Administrator.
+                                <i class="bi bi-exclamation-circle-fill me-1"></i> <strong>Warning:</strong> You will not be able to log back in freely. Reactivation requires manual approval from a Barangay Administrator.
                             </div>
 
-                            <p class="small text-muted mb-2">Please enter your password to confirm identity:</p>
                             <div class="mb-3">
+                                <label class="form-label small fw-bold text-secondary">PLEASE ENTER YOUR PASSWORD TO CONFIRM</label>
                                 <div class="input-group">
-                                    <input type="password" id="deactivateConfirmPassword" name="confirmPassword" class="form-control" placeholder="Enter password to confirm" required>
+                                    <input type="password" id="deactivateConfirmPassword" name="confirmPassword" class="form-control settings-input" placeholder="Enter password to confirm" required>
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('deactivateConfirmPassword', 'eyeIconDeactivate')">
                                         <i id="eyeIconDeactivate" class="bi bi-eye"></i>
                                     </button>
                                 </div>
                             </div>
+
+                            <!-- Telegram OTP Section -->
+                            <div th:if="${user.telegramChatId != null and user.telegramChatId != ''}" class="mb-2">
+                                <label class="form-label small fw-bold text-secondary">TELEGRAM VERIFICATION OTP</label>
+                                <div class="input-group mb-2">
+                                    <input type="hidden" id="deactTelegramId" th:value="${user.telegramChatId}">
+                                    <input type="text" name="otpCode" class="form-control settings-input font-monospace text-center fs-6" placeholder="Enter 6-digit OTP">
+                                    <button type="button" class="btn btn-outline-primary btn-sm fw-semibold" id="btnSendDeactOtp" onclick="sendSettingsOtp('deactTelegramId', 'btnSendDeactOtp', 'deactOtpStatus')">
+                                        Send OTP
+                                    </button>
+                                </div>
+                                <span id="deactOtpStatus" class="small d-none"></span>
+                            </div>
                         </div>
-                        <div class="modal-footer bg-light">
-                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-warning btn-sm fw-semibold rounded-pill px-4">Deactivate Account</button>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning btn-sm fw-bold rounded-pill px-4">Deactivate Account</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logout Confirmation Modal -->
+        <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg p-2">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold text-danger"><i class="bi bi-box-arrow-right me-2"></i> Confirm Logout</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-start">
+                        <p class="text-secondary mb-2">Are you sure you want to log out of your session?</p>
+                        <p class="small text-muted mb-0">Any unsaved form entries will be cleared.</p>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <a th:href="@{/logout}" class="btn btn-danger btn-sm rounded-pill px-4 fw-bold shadow-sm">Logout Session</a>
+                    </div>
                 </div>
             </div>
         </div>

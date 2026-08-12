@@ -1,0 +1,133 @@
+/* =========================================================
+   3D REVOLVING OVERLAY HUB (Centering & Mobile Lock Fix)
+   ========================================================= */
+html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+}
+
+.glass-hub-modal {
+    background: rgba(15, 23, 42, 0.95) !important;
+    backdrop-filter: blur(30px) !important;
+    -webkit-backdrop-filter: blur(30px) !important;
+    overflow-x: hidden !important;
+}
+
+/* Modal Navigation Pills Container */
+.modal-tab-pills {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50px;
+    padding: 4px;
+    max-width: 100%;
+    flex-shrink: 1;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+}
+
+.modal-tab-pills::-webkit-scrollbar {
+    display: none;
+}
+
+.modal-tab-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.25s ease;
+}
+
+.modal-tab-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-tab-btn.active {
+    background: #0d6efd;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+}
+
+/* 3D VIEWPORT & CAROUSEL STAGE */
+.overlay-3d-viewport {
+    position: relative !important;
+    width: 100vw !important;
+    max-width: 1300px !important;
+    height: clamp(500px, 82vh, 850px) !important;
+    perspective: 1200px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.overlay-3d-carousel {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    transform-style: preserve-3d !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* 3D SLIDE CARD STYLING (DEAD CENTERED) */
+.overlay-3d-card {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    width: clamp(290px, 92vw, 980px) !important;
+    height: clamp(460px, 80vh, 800px) !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid rgba(226, 232, 240, 0.9) !important;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.4) !important;
+    transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 0.65s ease, 
+                filter 0.65s ease,
+                box-shadow 0.65s ease !important;
+    will-change: transform, opacity, filter !important;
+}
+
+[data-bs-theme="dark"] .overlay-3d-card {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6) !important;
+}
+
+@media (max-width: 768px) {
+    .overlay-3d-viewport { height: 82vh !important; }
+    .overlay-3d-card { width: 92vw !important; height: 78vh !important; border-radius: 16px !important; }
+    .overlay-card-scroll { padding: 6px !important; }
+}
+
+.overlay-card-scroll {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 10px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.overlay-card-scroll::-webkit-scrollbar { width: 5px; }
+.overlay-card-scroll::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.4);
+    border-radius: 10px;
+}
+
+.overlay-3d-card.active-overlay-card {
+    box-shadow: 0 30px 80px rgba(37, 99, 235, 0.5) !important;
+}
+
+.overlay-3d-card .reveal-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+}

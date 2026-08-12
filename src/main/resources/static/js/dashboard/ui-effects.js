@@ -5,6 +5,17 @@
 let currentOverlayTab = 0;
 let overlayHubModal = null;
 
+// Failsafe Developer Data Array to prevent Uncaught ReferenceErrors on cached client scripts [2]
+const devTeamData = [
+    { name: "Jeffrey M. Serrano Jr.", img: "https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png" },
+    { name: "Jalayahay, Jessa Mae P.", img: "https://cdn.phototourl.com/free/2026-08-09-177e81e4-3ffb-4138-99e8-69ee1278c9b6.jpg" },
+    { name: "Mines, Manzor M.", img: "https://cdn.phototourl.com/free/2026-08-09-5739fb3b-103b-46e2-a083-dacf4189b199.jpg" },
+    { name: "Gutierrez, Rovil B.", img: "https://cdn.phototourl.com/free/2026-08-09-1f1dd251-d61d-40b3-9969-e12b6db7e10d.jpg" },
+    { name: "Prescillas, Ej Y.", img: "https://cdn.phototourl.com/free/2026-08-09-9e4f218c-64ac-4a91-9c67-4353e6527b17.jpg" },
+    { name: "Kurt Bactat Russel", img: "https://cdn.phototourl.com/free/2026-08-09-8e0595e4-015c-452c-b33e-6cdd247f82d7.jpg" },
+    { name: "Tyrone James Oribiada", img: "https://cdn.phototourl.com/free/2026-08-09-3b99cbe0-e745-453f-9156-29fb8d4cea10.jpg" }
+];
+
 // Open Overlay Hub Modal at specific Tab Index
 function openOverlayHub(tabIndex) {
     if (!overlayHubModal) {
@@ -42,7 +53,7 @@ function handleOverlayCardClick(cardIndex) {
     }
 }
 
-// 3D Revolving Motion Math (Matching Video 2 ani.mp4)
+// 3D Revolving Motion Math (Centered with translate(-50%, -50%))
 function update3dOverlayHub() {
     const cards = document.querySelectorAll('.overlay-3d-card');
     const total = cards.length;
@@ -62,7 +73,8 @@ function update3dOverlayHub() {
         let scale = Math.max(1 - absDiff * 0.12, 0.65);
         let opacity = diff === 0 ? 1 : Math.max(0.35, 1 - absDiff * 0.4);
 
-        card.style.transform = `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
+        // FIX: PREPEND translate(-50%, -50%) TO CENTER CARDS OVER left: 50%; top: 50%
+        card.style.transform = `translate(-50%, -50%) translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
         card.style.opacity = opacity;
         card.style.zIndex = 30 - absDiff;
 
@@ -76,6 +88,11 @@ function update3dOverlayHub() {
             card.style.filter = 'brightness(0.55) blur(2px)';
         }
     });
+
+    // Automatically trigger developer 3D calculations when Developers (tab 3) is active
+    if (currentOverlayTab === 3) {
+        setTimeout(updateDev3dCarousel, 50);
+    }
 
     // Update Modal Tab Pill Indicators
     for (let i = 0; i < total; i++) {
@@ -104,121 +121,122 @@ function update3dOverlayHub() {
 }
 
 // =========================================================
-// SPOTLIGHT & QUEUE DEVELOPER SHOWCASE CONTROLLER
+// DEVELOPER 3D CAROUSEL CONTROLLER
 // =========================================================
-const devTeamData = [
-    {
-        name: "Jeffrey M. Serrano Jr.",
-        role: "Head Developer",
-        badge: "★ Lead Dev",
-        badgeClass: "bg-primary text-white",
-        desc: "Architecture, liveness detection, core logic design, and overall system implementation.",
-        img: "https://cdn.phototourl.com/free/2026-08-09-94b8e222-4932-4fa2-98dd-313cb0c52169.png"
-    },
-    {
-        name: "Jalayahay, Jessa Mae P.",
-        role: "Assistant Developer",
-        badge: "Assistant Dev",
-        badgeClass: "bg-info text-dark",
-        desc: "Assists with development workflows, UI refinements, and feature integration.",
-        img: "https://cdn.phototourl.com/free/2026-08-09-177e81e4-3ffb-4138-99e8-69ee1278c9b6.jpg"
-    },
-    {
-        name: "Mines, Manzor M.",
-        role: "Project Presentor",
-        badge: "Presentor",
-        badgeClass: "bg-secondary text-white",
-        desc: "Leads system demonstrations, academic project pitch presentation, and technical showcase.",
-        img: "https://cdn.phototourl.com/free/2026-08-09-5739fb3b-103b-46e2-a083-dacf4189b199.jpg"
-    },
-    {
-        name: "Gutierrez, Rovil B.",
-        role: "Documentation",
-        badge: "Documentation",
-        badgeClass: "bg-secondary text-white",
-        desc: "Responsible for preparing project technical documentation, system specifications, and compliance records.",
-        img: "https://cdn.phototourl.com/free/2026-08-09-1f1dd251-d61d-40b3-9969-e12b6db7e10d.jpg"
-    },
-    {
-        name: "Prescillas, Ej Y.",
-        role: "Documentation",
-        badge: "Documentation",
-        badgeClass: "bg-secondary text-white",
-        desc: "Manages project reporting, system requirements writing, and process workflow charts.",
-        img: "https://cdn.phototourl.com/free/2026-08-09-9e4f218c-64ac-4a91-9c67-4353e6527b17.jpg"
-    },
-    {
-        name: "Kurt Bactat Russel",
-        role: "Documentation",
-        badge: "Documentation",
-        badgeClass: "bg-secondary text-white",
-        desc: "Assists with software user manual development, academic case studies, and compliance checks.",
-        img: "https://cdn.phototourl.com/free/2026-08-09-8e0595e4-015c-452c-b33e-6cdd247f82d7.jpg"
-    },
-    {
-        name: "Tyrone James Oribiada",
-        role: "Documentation",
-        badge: "Documentation",
-        badgeClass: "bg-secondary text-white",
-        desc: "Maintains visual assets, final project formatting, and documentation archives.",
-        img: "https://cdn.phototourl.com/free/2026-08-09-3b99cbe0-e745-453f-9156-29fb8d4cea10.jpg"
-    }
-];
+let currentDevTab = 0;
 
-let activeDevIndex = 0;
+function updateDev3dCarousel() {
+    const cards = document.querySelectorAll('.dev-3d-card');
+    const total = cards.length;
+    if (total === 0) return;
 
-function selectSpotlightDev(index) {
-    if (index < 0 || index >= devTeamData.length) return;
-    activeDevIndex = index;
-    const dev = devTeamData[index];
+    const isMobile = window.innerWidth <= 768;
+    const spacing = isMobile ? 180 : 260; // Horizontal Stage intervals
 
-    const img = document.getElementById('featuredDevImg');
-    const badge = document.getElementById('featuredDevBadge');
-    const name = document.getElementById('featuredDevName');
-    const role = document.getElementById('featuredDevRole');
-    const desc = document.getElementById('featuredDevDesc');
-    const counter = document.getElementById('devSpotlightCounter');
+    cards.forEach((card, index) => {
+        let diff = index - currentDevTab;
+        
+        if (diff > total / 2) diff -= total;
+        if (diff < -total / 2) diff += total;
 
-    if (img && name && role && desc) {
-        img.style.opacity = '0.3';
-        img.style.transform = 'scale(1.08)';
+        let absDiff = Math.abs(diff);
 
-        setTimeout(() => {
-            img.src = dev.img;
-            name.innerText = dev.name;
-            role.innerText = dev.role;
-            desc.innerText = dev.desc;
+        let translateX = diff * spacing;
+        let translateZ = -Math.min(absDiff * 160, 400);
+        let rotateY = diff < 0 ? Math.min(Math.abs(diff) * 28, 45) : -Math.min(Math.abs(diff) * 28, 45);
+        let scale = Math.max(1 - absDiff * 0.12, 0.65);
+        let opacity = Math.max(1 - absDiff * 0.35, 0);
 
-            if (badge) {
-                badge.className = `badge ${dev.badgeClass} fw-bold text-uppercase mb-2`;
-                badge.innerText = dev.badge;
-            }
+        card.style.transform = `translate(-50%, -50%) translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
+        card.style.opacity = opacity;
+        card.style.zIndex = 30 - absDiff;
 
-            if (counter) {
-                counter.innerText = `Developer ${index + 1} of ${devTeamData.length}`;
-            }
-
-            img.style.opacity = '1';
-            img.style.transform = 'scale(1)';
-        }, 150);
-    }
-
-    const items = document.querySelectorAll('.dev-queue-item');
-    items.forEach((item, idx) => {
-        if (idx === index) {
-            item.classList.add('active');
+        if (diff === 0) {
+            card.classList.add('active-dev-card');
+            card.style.pointerEvents = 'auto';
+            card.style.filter = 'none';
         } else {
-            item.classList.remove('active');
+            card.classList.remove('active-dev-card');
+            card.style.pointerEvents = 'auto';
+            card.style.filter = 'brightness(0.65) blur(1px)';
         }
     });
 }
 
-function triggerFeaturedLightbox() {
-    const dev = devTeamData[activeDevIndex];
-    if (dev) {
-        openImageModal(dev.img, dev.name);
+function rotateDev3d(direction) {
+    const total = 7;
+    currentDevTab += direction;
+    if (currentDevTab < 0) currentDevTab = total - 1;
+    if (currentDevTab >= total) currentDevTab = 0;
+    updateDev3dCarousel();
+}
+
+function selectDev3d(index) {
+    const total = 7;
+    if (index >= 0 && index < total && index !== currentDevTab) {
+        currentDevTab = index;
+        updateDev3dCarousel();
     }
 }
+
+// =========================================================
+// SYSTEM CAPABILITY EXPANDING ACCORDION CONTROLLER
+// =========================================================
+function selectAboutPanel(index) {
+    const panels = document.querySelectorAll('.about-panel');
+    panels.forEach((panel, idx) => {
+        if (idx === index) {
+            panel.classList.add('active');
+        } else {
+            panel.classList.remove('active');
+        }
+    });
+}
+
+// =========================================================
+// BUTTERY SMOOTH TOUCH-SWIPE ENGINE FOR MOBILE
+// =========================================================
+function detectSwipe(elementId, callback) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    element.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    element.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diffX = touchEndX - touchStartX;
+
+        if (Math.abs(diffX) > 50) {
+            if (diffX > 0) {
+                callback(-1);
+            } else {
+                callback(1);
+            }
+        }
+    }, { passive: true });
+}
+
+// Initialize touch listeners once loaded
+document.addEventListener('DOMContentLoaded', () => {
+    detectSwipe('overlay3dCarousel', rotateOverlayHub);
+    detectSwipe('dev3dCarousel', rotateDev3d);
+
+    if (typeof VanillaTilt !== 'undefined') {
+        VanillaTilt.init(document.querySelectorAll(".dev-card-inner"), {
+            max: 18,
+            speed: 800,
+            glare: true,
+            "max-glare": 0.35,
+            perspective: 1000,
+            scale: 1.04
+        });
+    }
+});
 
 // Scroll Reveal Observer Animation
 const observerOptions = { root: null, threshold: 0.15 };
@@ -310,4 +328,15 @@ function closeImageModal() {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
     }
+}
+
+// Toggle Interactive Feature Cards inside About Section
+function toggleFeatureCard(cardElement) {
+    const allCards = document.querySelectorAll('.about-feature-card');
+    allCards.forEach(card => {
+        if (card !== cardElement) {
+            card.classList.remove('active');
+        }
+    });
+    cardElement.classList.toggle('active');
 }

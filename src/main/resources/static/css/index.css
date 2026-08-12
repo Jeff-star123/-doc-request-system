@@ -7,6 +7,17 @@
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* KINETIC INTERACTIVE CANVAS OVERLAY STYLING */
+.kinetic-canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    pointer-events: none !important;
+    z-index: 2 !important; /* Sits above background image, behind seal (z-index: 20) and auth container (z-index: 30) */
+}
+
 /* Light Mode Background */
 body.hero-body {
     min-height: 100vh;
@@ -89,16 +100,14 @@ body.hero-body {
     pointer-events: none !important;
 }
 
-/* =========================================================
-   STATE 1: INITIAL CENTERED LARGE SEAL
-   ========================================================= */
+/* STATE 1: INITIAL CENTERED LARGE SEAL */
 .interactive-seal-wrapper {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: clamp(400px, 52vh, 500px);
-    height: clamp(400px, 52vh, 500px);
+    width: clamp(400px, 52vh, 500px);  
+    height: clamp(400px, 52vh, 500px); 
     border-radius: 50%;
     cursor: pointer;
     z-index: 20;
@@ -173,17 +182,15 @@ body.hero-body {
 .hero-app-wrapper.card-active .interactive-seal-wrapper {
     opacity: 0 !important;
     pointer-events: none !important;
-    transform: translate(-50%, -50%) scale(0.8);
+    transform: translate(-50%, -50%) scale(0.8) !important;
 }
 
-/* =========================================================
-   STATE 2: SPLIT SLIDING CONTAINER (Spacious Height Fix)
-   ========================================================= */
+/* STATE 2: SPLIT SLIDING CONTAINER */
 .sliding-auth-container {
     position: relative;
     width: 92vw;
     max-width: 1050px;
-    min-height: 660px; /* Increased min-height to fit full form comfortably */
+    min-height: 660px;
     max-height: 90vh;
     background: rgba(255, 255, 255, 0.94);
     backdrop-filter: blur(20px);
@@ -275,7 +282,7 @@ body.hero-body {
     transform: scale(1.08);
 }
 
-/* FORM PANEL - Fixed Flex Overflow Top Clipping */
+/* FORM PANEL */
 .sliding-panel.form-panel {
     position: absolute;
     top: 0;
@@ -285,36 +292,49 @@ body.hero-body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* Prevents top header clipping on long forms! */
-    padding: 24px 20px;
+    justify-content: flex-start;
     z-index: 5;
     transition: transform 0.65s var(--ease-out-expo);
-    overflow-y: auto;
+    overflow: hidden;
+    padding: 0 !important;
 }
 
-/* Custom Scrollbar for Form Panel */
-.sliding-panel.form-panel::-webkit-scrollbar {
-    width: 6px;
-}
-.sliding-panel.form-panel::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.4);
-    border-radius: 10px;
-}
-
-.auth-view-content {
-    width: 100%;
-    max-width: 440px;
-    margin: auto 0; /* Auto margin vertically centers short forms & scrolls long forms cleanly from top */
-    padding: 12px 0;
-}
-
-/* REGISTER MODE SWAP (SLIDES PANELS) */
 .sliding-auth-container.active-signup .sliding-panel.brand-panel {
     transform: translateX(100%);
 }
 
 .sliding-auth-container.active-signup .sliding-panel.form-panel {
     transform: translateX(-100%);
+}
+
+.auth-view-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 24px 20px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    will-change: transform, opacity;
+    transition: opacity 0.65s var(--ease-out-expo), 
+                transform 0.65s var(--ease-out-expo), 
+                visibility 0.65s var(--ease-out-expo);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(0.96);
+}
+
+.auth-view-content.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: scale(1);
 }
 
 @media (max-width: 850px) {
@@ -333,13 +353,16 @@ body.hero-body {
         transform: none !important;
     }
 
+    .sliding-panel.form-panel {
+        height: 480px;
+    }
+
     .panel-seal-circle {
         width: 100px !important;
         height: 100px !important;
     }
 }
 
-/* Glass Card & Buttons Inside Form Panel */
 .portal-card {
     background: transparent !important;
     border: none !important;
@@ -347,13 +370,8 @@ body.hero-body {
     padding: 0 !important;
 }
 
-.card-title-text {
-    color: #0f172a !important;
-}
-
-.card-subtitle-text {
-    color: #64748b !important;
-}
+.card-title-text { color: #0f172a !important; }
+.card-subtitle-text { color: #64748b !important; }
 
 .form-label {
     letter-spacing: 0.5px;
@@ -379,7 +397,6 @@ body.hero-body {
     color: #ffffff !important;
 }
 
-/* TELEGRAM BANNER LIGHT & DARK MODE READABILITY */
 .telegram-banner {
     width: 100%;
     background: rgba(255, 255, 255, 0.95) !important;
@@ -414,10 +431,7 @@ body.hero-body {
     color: #cbd5e1 !important;
 }
 
-[data-bs-theme="dark"] .form-label { 
-    color: #cbd5e1 !important; 
-}
-
+[data-bs-theme="dark"] .form-label { color: #cbd5e1 !important; }
 [data-bs-theme="dark"] .form-control { 
     background: rgba(15, 23, 42, 0.85) !important; 
     border: 1px solid #334155 !important; 
@@ -451,7 +465,6 @@ body.hero-body {
     color: #60a5fa !important;
 }
 
-/* ABOUT SYSTEM CARDS & MODAL */
 .about-card {
     background: rgba(241, 245, 249, 0.85) !important;
     border: 1px solid rgba(203, 213, 225, 0.8) !important;

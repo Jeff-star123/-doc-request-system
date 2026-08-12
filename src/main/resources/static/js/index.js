@@ -1,4 +1,7 @@
-// Dark Mode Initialization & Toggle Handler
+// Global confirmation log
+console.log("=== [STATIC ASSET CHECK v4.0] index.js LOADED SUCCESSFULLY ===");
+
+// Dark/Light Theme Handler
 const htmlElement = document.documentElement;
 const themeToggleBtn = document.getElementById('themeToggleBtn');
 const themeIcon = document.getElementById('themeIcon');
@@ -79,37 +82,33 @@ function togglePassword(inputId, iconId) {
     function toggleAuthMode() {
         if (!slidingContainer) return;
 
-        if (slidingContainer.classList.contains('active-signup')) {
-            // Switch to LOGIN Mode
-            slidingContainer.classList.remove('active-signup');
-            if (panelHeading) panelHeading.innerText = "Hello, Resident!";
-            if (panelSubtext) panelSubtext.innerText = "Don't have an account yet?";
-            if (btnToggleAuthText) btnToggleAuthText.innerText = "Create Account";
+        const isRegistering = !slidingContainer.classList.contains('active-signup');
 
-            setTimeout(() => {
-                if (registerViewWrapper) registerViewWrapper.classList.add('d-none');
-                if (loginViewWrapper) loginViewWrapper.classList.remove('d-none');
-            }, 300);
-        } else {
-            // Switch to REGISTER Mode
+        if (isRegistering) {
             slidingContainer.classList.add('active-signup');
+
+            if (loginViewWrapper) loginViewWrapper.classList.remove('active');
+            if (registerViewWrapper) registerViewWrapper.classList.add('active');
+
             if (panelHeading) panelHeading.innerText = "Welcome Back!";
             if (panelSubtext) panelSubtext.innerText = "Already have an account?";
             if (btnToggleAuthText) btnToggleAuthText.innerText = "Login to Portal";
+        } else {
+            slidingContainer.classList.remove('active-signup');
 
-            setTimeout(() => {
-                if (loginViewWrapper) loginViewWrapper.classList.add('d-none');
-                if (registerViewWrapper) registerViewWrapper.classList.remove('d-none');
-            }, 300);
+            if (registerViewWrapper) registerViewWrapper.classList.remove('active');
+            if (loginViewWrapper) loginViewWrapper.classList.add('active');
+
+            if (panelHeading) panelHeading.innerText = "Hello, Resident!";
+            if (panelSubtext) panelSubtext.innerText = "Don't have an account yet?";
+            if (btnToggleAuthText) btnToggleAuthText.innerText = "Create Account";
         }
     }
 
-    // Event Listeners
     interactiveSeal.addEventListener('click', openSlidingContainer);
     if (btnCloseSlidingCard) btnCloseSlidingCard.addEventListener('click', closeSlidingContainer);
     if (btnToggleAuthMode) btnToggleAuthMode.addEventListener('click', toggleAuthMode);
 
-    // Auto reveal sliding card if Spring Boot redirects with alert messages
     const hasErrorAlert = document.querySelector('.alert-danger');
     const hasSuccessAlert = document.querySelector('.alert-success');
     if (hasErrorAlert || hasSuccessAlert) {
@@ -150,27 +149,62 @@ function showCustomToast(type, title, message) {
     toast.classList.remove("d-none");
 }
 
-// Telegram OTP Registration Verification Handlers
+// UPDATED: Telegram OTP Registration Verification Handler with 30s Countdown
 function requestTelegramOtp() {
-    const chatId = document.getElementById("telegramChatId").value.trim();
+    const chatIdInput = document.getElementById("telegramChatId");
+    const chatId = chatIdInput ? chatIdInput.value.trim() : '';
+    const sendBtn = document.getElementById("btnSendTelegramOtp");
+
     if (!chatId) {
         showCustomToast("error", "Error", "Please enter your Telegram Chat ID first!");
         return;
     }
 
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerText = "Sending OTP...";
+    }
+
     fetch('/api/requests/telegram/send-otp?chatId=' + encodeURIComponent(chatId), { method: 'POST' })
         .then(res => res.json())
         .then(data => {
-            document.getElementById("telegramOtpContainer").classList.remove("d-none");
+            const otpContainer = document.getElementById("telegramOtpContainer");
+            if (otpContainer) otpContainer.classList.remove("d-none");
+
             if (data.success) {
                 showCustomToast("success", "OTP Sent!", "OTP dispatched to your Telegram via @BrgyDocRequestBot!");
+
+                // Start 30-second Resend Countdown Timer to Prevent Spamming
+                if (sendBtn) {
+                    let seconds = 30;
+                    sendBtn.innerText = `Resend in ${seconds}s`;
+                    const timer = setInterval(() => {
+                        seconds--;
+                        if (seconds > 0) {
+                            sendBtn.innerText = `Resend in ${seconds}s`;
+                        } else {
+                            clearInterval(timer);
+                            sendBtn.disabled = false;
+                            sendBtn.innerText = "Send OTP";
+                        }
+                    }, 1000);
+                }
             } else {
                 showCustomToast("error", "Failed", data.message || "Failed to send OTP. Make sure you started the bot first!");
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.innerText = "Send OTP";
+                }
             }
         })
         .catch(() => {
-            document.getElementById("telegramOtpContainer").classList.remove("d-none");
+            const otpContainer = document.getElementById("telegramOtpContainer");
+            if (otpContainer) otpContainer.classList.remove("d-none");
             showCustomToast("error", "Network Error", "Unable to reach server. Please check your network connection.");
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerText = "Send OTP";
+            }
         });
 }
 
@@ -189,9 +223,12 @@ function verifyTelegramOtp() {
             if (data.success) {
                 document.getElementById("telegramVerified").value = "true";
                 const sendBtn = document.getElementById("btnSendTelegramOtp");
-                sendBtn.className = "btn btn-success fw-semibold px-3 disabled";
-                sendBtn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Verified';
-                document.getElementById("telegramOtpContainer").classList.add("d-none");
+                if (sendBtn) {
+                    sendBtn.className = "btn btn-success fw-semibold px-3 disabled";
+                    sendBtn.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Verified';
+                }
+                const otpContainer = document.getElementById("telegramOtpContainer");
+                if (otpContainer) otpContainer.classList.add("d-none");
                 showCustomToast("success", "Verified!", "Telegram Chat ID verified successfully!");
             } else {
                 showCustomToast("error", "Verification Failed", data.message || "Invalid Telegram OTP code! Please try again.");
@@ -236,7 +273,6 @@ function validateForm() {
             widget.style.left = savedLeft + "px";
             widget.style.top = savedTop + "px";
         } else {
-            // Default initial placement in bottom-left corner
             const defaultLeft = 30;
             const defaultTop = window.innerHeight - 140;
             widget.style.left = defaultLeft + "px";
@@ -279,17 +315,12 @@ function validateForm() {
 
     function dragMove(e) {
         if (!isDragging) return;
-        if (e.cancelable) e.preventDefault();
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
         const deltaX = clientX - startX;
         const deltaY = clientY - startY;
-
-        if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
-            hasDragged = true;
-        }
 
         if (e.cancelable) e.preventDefault();
 
@@ -472,4 +503,186 @@ function validateForm() {
       updateDifyPositions(currentLeft, currentTop);
     }
   });
+})();
+
+// Toggle Interactive About Feature Cards inside Modal
+function toggleFeatureCard(cardElement) {
+    const allCards = document.querySelectorAll('.about-feature-card');
+    allCards.forEach(card => {
+        if (card !== cardElement) {
+            card.classList.remove('active');
+        }
+    });
+    cardElement.classList.toggle('active');
+}
+
+// KINETIC INTERACTIVE CANVAS BACKGROUND ENGINE
+(function initKineticCanvas() {
+    const canvas = document.getElementById('kineticCanvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+
+    const mouse = {
+        x: null,
+        y: null,
+        radius: 180,
+        active: false
+    };
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initParticles();
+    }
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.vx = (Math.random() - 0.5) * 1.2;
+            this.vy = (Math.random() - 0.5) * 1.2;
+            this.radius = Math.random() * 2.5 + 1.5;
+            this.density = (Math.random() * 25) + 10;
+        }
+
+        draw(isDark) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = isDark ? 'rgba(56, 189, 248, 0.85)' : 'rgba(30, 58, 138, 0.75)';
+            ctx.fill();
+        }
+
+        update(isDark) {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            if (this.x < 0 || this.x > width) this.vx *= -1;
+            if (this.y < 0 || this.y > height) this.vy *= -1;
+
+            if (mouse.active && mouse.x !== null && mouse.y !== null) {
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < mouse.radius) {
+                    let forceDirectionX = dx / distance;
+                    let forceDirectionY = dy / distance;
+                    let maxDistance = mouse.radius;
+                    let force = (maxDistance - distance) / maxDistance;
+                    let directionX = forceDirectionX * force * this.density;
+                    let directionY = forceDirectionY * force * this.density;
+
+                    this.x -= directionX * 0.1;
+                    this.y -= directionY * 0.1;
+                }
+            }
+
+            this.draw(isDark);
+        }
+    }
+
+    function initParticles() {
+        particles = [];
+        const particleCount = Math.floor((width * height) / 9500);
+        const clampedCount = Math.min(Math.max(particleCount, 40), 120);
+
+        for (let i = 0; i < clampedCount; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    function connectParticles(isDark) {
+        const maxDistance = 130;
+        for (let a = 0; a < particles.length; a++) {
+            for (let b = a; b < particles.length; b++) {
+                let dx = particles[a].x - particles[b].x;
+                let dy = particles[a].y - particles[b].y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < maxDistance) {
+                    let opacity = 1 - (distance / maxDistance);
+                    ctx.strokeStyle = isDark 
+                        ? `rgba(14, 165, 233, ${opacity * 0.35})` 
+                        : `rgba(37, 99, 235, ${opacity * 0.28})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(particles[a].x, particles[a].y);
+                    ctx.lineTo(particles[b].x, particles[b].y);
+                    ctx.stroke();
+                }
+            }
+
+            if (mouse.active && mouse.x !== null && mouse.y !== null) {
+                let dx = particles[a].x - mouse.x;
+                let dy = particles[a].y - mouse.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < mouse.radius) {
+                    let opacity = 1 - (distance / mouse.radius);
+                    ctx.strokeStyle = isDark 
+                        ? `rgba(56, 189, 248, ${opacity * 0.6})` 
+                        : `rgba(2, 132, 199, ${opacity * 0.5})`;
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(particles[a].x, particles[a].y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update(isDark);
+        }
+        connectParticles(isDark);
+
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', resize);
+
+    window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouse.active = true;
+    });
+
+    window.addEventListener('mouseleave', () => {
+        mouse.x = null;
+        mouse.y = null;
+        mouse.active = false;
+    });
+
+    window.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 0) {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+            mouse.active = true;
+        }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+            mouse.active = true;
+        }
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => {
+        mouse.active = false;
+        mouse.x = null;
+        mouse.y = null;
+    });
+
+    resize();
+    animate();
 })();

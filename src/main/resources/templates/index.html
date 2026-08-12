@@ -9,10 +9,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     
-    <!-- Custom Index CSS -->
-    <link rel="stylesheet" th:href="@{/css/index.css}" href="/css/index.css">
+    <!-- Custom Index CSS & New About Section CSS -->
+    <link rel="stylesheet" th:href="@{/css/index.css(v=3.9)}" href="/css/index.css?v=3.9">
+    <link rel="stylesheet" th:href="@{/css/about-section.css(v=3.9)}" href="/css/about-section.css?v=3.9">
 </head>
 <body class="hero-body">
+
+    <!-- KINETIC INTERACTIVE CANVAS BACKGROUND -->
+    <canvas id="kineticCanvas" class="kinetic-canvas"></canvas>
 
     <!-- Floating Dark Mode Toggle Button -->
     <button class="theme-toggle-fab" id="themeToggleBtn" title="Toggle Dark/Light Mode">
@@ -71,14 +75,14 @@
             <!-- 2. FORM PANEL (Contains Login or Register Forms) -->
             <div class="sliding-panel form-panel" id="formPanel">
                 
-                <!-- Login View Wrapper -->
-                <div id="loginViewWrapper" class="auth-view-content">
+                <!-- Login View Wrapper (Starts Active) -->
+                <div id="loginViewWrapper" class="auth-view-content active">
                     <div th:replace="~{fragments/index/telegram-banner :: telegramBanner}"></div>
                     <div th:replace="~{fragments/index/login-card :: loginCard}"></div>
                 </div>
 
                 <!-- Register View Wrapper -->
-                <div id="registerViewWrapper" class="auth-view-content d-none">
+                <div id="registerViewWrapper" class="auth-view-content">
                     <div th:replace="~{fragments/register/register-card :: registerCard}"></div>
                 </div>
 
@@ -88,7 +92,7 @@
 
     </div>
 
-    <!-- "WHAT IS THIS?" INFORMATION MODAL (6-Feature System Capability Grid) -->
+    <!-- "WHAT IS THIS?" INFORMATION MODAL -->
     <div class="modal fade" id="aboutSystemModal" tabindex="-1" aria-labelledby="aboutSystemModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content glass-modal border-0 shadow-2xl rounded-4">
@@ -100,73 +104,141 @@
                 </div>
                 <div class="modal-body p-4">
                     <p class="small text-secondary mb-4 leading-relaxed">
-                        The <strong>Barangay Bulsa-Korapot Document Request System</strong> is a digital platform designed to automate the process of requesting local documents like Barangay Clearances and Certificates of Residency without the need for in-person queuing. Crucially, this system was developed strictly as a school project requirement and presentation prototype for our BSIT program, and it is not an officially deployed government application.
+                        The <strong>Barangay Bulsa-Korapot Document Request System</strong> is a digital platform designed to automate the process of requesting local documents like Barangay Clearances and Certificates of Residency remotely. Developed strictly as a school project requirement and presentation prototype for our BSIT program.
                     </p>
-                    <div class="row g-3 small">
+
+                    <!-- NEW INTERACTIVE FEATURE CARDS GRID -->
+                    <div class="about-feature-grid mb-4">
                         
-                        <!-- 1. Remote Document Application -->
-                        <div class="col-md-6 col-lg-4">
-                            <div class="p-3 about-card h-100 rounded-3">
-                                <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                                    <i class="bi bi-file-earmark-text fs-5 text-primary"></i>
-                                    <span>Online Document Application</span>
+                        <!-- Card 1: Online Application -->
+                        <div class="about-feature-card active" onclick="toggleFeatureCard(this)">
+                            <div class="feature-card-visual bg-gradient-blue">
+                                <div class="feature-icon-wrapper">
+                                    <i class="bi bi-file-earmark-text-fill"></i>
                                 </div>
-                                <div class="text-secondary">Enables residents to request Barangay Clearances, Certificates of Residency, and Indigency remotely without physical queuing.</div>
+                            </div>
+                            <div class="feature-card-body">
+                                <h6 class="feature-card-title">Online Application</h6>
+                                <p class="feature-card-preview">Remote document request system...</p>
+                                <div class="feature-card-drawer">
+                                    <p class="feature-card-desc">
+                                        Enables residents to request Barangay Clearances, Certificates of Residency, and Indigency remotely without physical queuing.
+                                    </p>
+                                    <div class="feature-card-footer">
+                                        <span class="feature-badge"><i class="bi bi-check2-circle me-1"></i> 24/7 Access</span>
+                                        <button type="button" class="feature-action-btn">Active</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- 2. Automated Tesseract OCR -->
-                        <div class="col-md-6 col-lg-4">
-                            <div class="p-3 about-card h-100 rounded-3">
-                                <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                                    <i class="bi bi-card-text fs-5 text-info"></i>
-                                    <span>Automated Tesseract OCR</span>
+                        <!-- Card 2: Tesseract OCR -->
+                        <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                            <div class="feature-card-visual bg-gradient-cyan">
+                                <div class="feature-icon-wrapper">
+                                    <i class="bi bi-card-heading"></i>
                                 </div>
-                                <div class="text-secondary">Integrates Tesseract.js to automatically analyze uploaded IDs (PhilSys, School ID, Driver's License, UMID) for validity verification.</div>
+                            </div>
+                            <div class="feature-card-body">
+                                <h6 class="feature-card-title">Tesseract OCR</h6>
+                                <p class="feature-card-preview">Automated client-side ID reading...</p>
+                                <div class="feature-card-drawer">
+                                    <p class="feature-card-desc">
+                                        Integrates Tesseract.js to automatically analyze uploaded IDs (PhilSys, School ID, Driver's License, UMID) for validity verification.
+                                    </p>
+                                    <div class="feature-card-footer">
+                                        <span class="feature-badge"><i class="bi bi-cpu me-1"></i> Client-Side AI</span>
+                                        <button type="button" class="feature-action-btn">Explore</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- 3. Biometric Liveness Verification -->
-                        <div class="col-md-6 col-lg-4">
-                            <div class="p-3 about-card h-100 rounded-3">
-                                <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                                    <i class="bi bi-person-bounding-box fs-5 text-success"></i>
-                                    <span>Biometric Liveness Scan</span>
+                        <!-- Card 3: Biometric Scan -->
+                        <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                            <div class="feature-card-visual bg-gradient-emerald">
+                                <div class="feature-icon-wrapper">
+                                    <i class="bi bi-person-bounding-box"></i>
                                 </div>
-                                <div class="text-secondary">Powered by MediaPipe FaceMesh for 3-step real-time head landmark tracking to prevent proxy and fraudulent submissions.</div>
+                            </div>
+                            <div class="feature-card-body">
+                                <h6 class="feature-card-title">Biometric Liveness Scan</h6>
+                                <p class="feature-card-preview">3D Real-time face tracking...</p>
+                                <div class="feature-card-drawer">
+                                    <p class="feature-card-desc">
+                                        Powered by MediaPipe FaceMesh for 3-step real-time head landmark tracking to prevent proxy and fraudulent submissions.
+                                    </p>
+                                    <div class="feature-card-footer">
+                                        <span class="feature-badge"><i class="bi bi-shield-check me-1"></i> MediaPipe</span>
+                                        <button type="button" class="feature-action-btn">Explore</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- 4. Telegram Alerts & OTP Bot -->
-                        <div class="col-md-6 col-lg-4">
-                            <div class="p-3 about-card h-100 rounded-3">
-                                <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                                    <i class="bi bi-telegram fs-5 text-primary"></i>
-                                    <span>Telegram Alerts & OTP Bot</span>
+                        <!-- Card 4: Telegram Alerts -->
+                        <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                            <div class="feature-card-visual bg-gradient-purple">
+                                <div class="feature-icon-wrapper">
+                                    <i class="bi bi-telegram"></i>
                                 </div>
-                                <div class="text-secondary">Dispatches instant request approval/rejection alerts and 6-digit registration OTP codes directly via <b>@BrgyDocRequestBot</b>.</div>
+                            </div>
+                            <div class="feature-card-body">
+                                <h6 class="feature-card-title">Telegram Alerts & OTP Bot</h6>
+                                <p class="feature-card-preview">Instant OTP & status updates...</p>
+                                <div class="feature-card-drawer">
+                                    <p class="feature-card-desc">
+                                        Dispatches instant request approval/rejection alerts and 6-digit registration OTP codes directly via @BrgyDocRequestBot.
+                                    </p>
+                                    <div class="feature-card-footer">
+                                        <span class="feature-badge"><i class="bi bi-bell-fill me-1"></i> Instant Push</span>
+                                        <button type="button" class="feature-action-btn">Explore</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- 5. Embedded AI Assistant -->
-                        <div class="col-md-6 col-lg-4">
-                            <div class="p-3 about-card h-100 rounded-3">
-                                <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                                    <i class="bi bi-robot fs-5 text-warning"></i>
-                                    <span>Embedded AI Assistant</span>
+                        <!-- Card 5: AI Assistant -->
+                        <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                            <div class="feature-card-visual bg-gradient-amber">
+                                <div class="feature-icon-wrapper">
+                                    <i class="bi bi-robot"></i>
                                 </div>
-                                <div class="text-secondary">Features a bilingual (Tagalog/English) AI engine to answer queries regarding clearances, requirements, and portal navigation.</div>
+                            </div>
+                            <div class="feature-card-body">
+                                <h6 class="feature-card-title">Embedded AI Assistant</h6>
+                                <p class="feature-card-preview">Bilingual Tagalog/English chatbot...</p>
+                                <div class="feature-card-drawer">
+                                    <p class="feature-card-desc">
+                                        Features a bilingual AI engine to answer queries regarding clearances, requirements, and portal navigation.
+                                    </p>
+                                    <div class="feature-card-footer">
+                                        <span class="feature-badge"><i class="bi bi-chat-dots me-1"></i> Smart Bot</span>
+                                        <button type="button" class="feature-action-btn">Explore</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- 6. Admin Controls & Anti-Spam -->
-                        <div class="col-md-6 col-lg-4">
-                            <div class="p-3 about-card h-100 rounded-3">
-                                <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                                    <i class="bi bi-sliders fs-5 text-danger"></i>
-                                    <span>Admin & Anti-Spam Controls</span>
+                        <!-- Card 6: Admin Controls -->
+                        <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                            <div class="feature-card-visual bg-gradient-rose">
+                                <div class="feature-icon-wrapper">
+                                    <i class="bi bi-sliders"></i>
                                 </div>
-                                <div class="text-secondary">Equips barangay officials with verification review tools, user account controls, and automated anti-spam click protection.</div>
+                            </div>
+                            <div class="feature-card-body">
+                                <h6 class="feature-card-title">Admin & Anti-Spam Controls</h6>
+                                <p class="feature-card-preview">Secure approval dashboards...</p>
+                                <div class="feature-card-drawer">
+                                    <p class="feature-card-desc">
+                                        Equips barangay officials with verification review tools, user account controls, and automated anti-spam click protection.
+                                    </p>
+                                    <div class="feature-card-footer">
+                                        <span class="feature-badge"><i class="bi bi-shield-lock me-1"></i> Secure Admin</span>
+                                        <button type="button" class="feature-action-btn">Explore</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -186,7 +258,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Custom Index JS -->
-    <script th:src="@{/js/index.js}" src="/js/index.js"></script>
+    <script th:src="@{/js/index.js(v=3.9)}" src="/js/index.js?v=3.9"></script>
 
 </body>
 </html>

@@ -1,0 +1,232 @@
+/* =========================================================
+   DEVELOPER 3D REVOLVING CAROUSEL (FULL-IMAGE TILT CARDS)
+   ========================================================= */
+.dev-3d-viewport {
+    position: relative !important;
+    width: 100% !important;
+    height: clamp(480px, 68vh, 600px) !important;
+    perspective: 1200px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.dev-3d-carousel {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    transform-style: preserve-3d !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.dev-3d-card {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    width: clamp(260px, 45vw, 340px) !important;
+    height: clamp(380px, 58vh, 480px) !important;
+    border-radius: 24px !important;
+    cursor: pointer !important;
+    will-change: transform, opacity, filter !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 0.5s ease, 
+                filter 0.5s ease !important;
+}
+
+/* NESTED INNER FULL-IMAGE TILT CARD */
+.dev-card-inner {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 24px !important;
+    overflow: hidden !important;
+    background: #0f172a !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45) !important;
+    transform-style: preserve-3d !important;
+    perspective: 1000px !important;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+[data-bs-theme="dark"] .dev-card-inner {
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Restricts hover-tilt triggers strictly to the active central card [2] */
+.dev-3d-card:not(.active-dev-card) .dev-card-inner {
+    pointer-events: none !important;
+}
+
+.dev-3d-card.active-dev-card .dev-card-inner {
+    pointer-events: auto !important;
+}
+
+/* Full Background Image (Guarantees Uniform Sizing Across All 7 Cards) */
+.dev-card-full-img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center 25% !important; /* Perfect headshot centering */
+    transform: scale(1.02) translateZ(0) !important;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease !important;
+}
+
+.dev-3d-card:hover .dev-card-full-img {
+    transform: scale(1.08) translateZ(10px) !important;
+}
+
+/* Vignette Dark Gradient Overlay - Default Hidden */
+.dev-card-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    background: linear-gradient(
+        to top,
+        rgba(15, 23, 42, 0.95) 0%,
+        rgba(15, 23, 42, 0.7) 45%,
+        rgba(15, 23, 42, 0.2) 75%,
+        transparent 100%
+    ) !important;
+    z-index: 2 !important;
+    pointer-events: none !important;
+    opacity: 0 !important; /* Hidden when idle */
+    will-change: opacity;
+    transition: opacity 0.4s ease !important;
+}
+
+/* Floating 3D Information Block - Default Hidden [2] */
+.dev-card-floating-info {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    padding: 22px 20px !important;
+    z-index: 4 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    opacity: 0 !important; /* Hidden when idle */
+    transform: translateZ(10px) translateY(10px) !important; /* Sits flat initially */
+    will-change: transform, opacity;
+    transition: opacity 0.4s ease, transform 0.5s var(--ease-out-expo) !important;
+}
+
+/* Hover Reveals on Active Card (For PC) & Tap Reveals (For Mobile) */
+.dev-3d-card.active-dev-card:hover .dev-card-overlay,
+.dev-3d-card.info-revealed .dev-card-overlay {
+    opacity: 1 !important;
+}
+
+.dev-3d-card.active-dev-card:hover .dev-card-floating-info,
+.dev-3d-card.info-revealed .dev-card-floating-info {
+    opacity: 1 !important;
+    transform: translateZ(35px) translateY(0) !important; /* Parallax lift-off! [2] */
+}
+
+.dev-badge {
+    align-self: flex-start !important;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.05em !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    transform: translateZ(45px) !important;
+}
+
+.dev-name {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    letter-spacing: -0.01em !important;
+    line-height: 1.25 !important;
+    margin-top: 4px !important;
+    transform: translateZ(40px) !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dev-role {
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+    margin-top: 2px !important;
+    transform: translateZ(35px) !important;
+}
+
+.dev-desc {
+    font-size: 0.75rem !important;
+    line-height: 1.4 !important;
+    color: rgba(248, 250, 252, 0.75) !important;
+    margin-top: 4px !important;
+    transform: translateZ(30px) !important;
+}
+
+/* Nav Buttons for Dev Carousel */
+.dev-nav-btn {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    background: rgba(15, 23, 42, 0.75) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    z-index: 100 !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.dev-nav-btn:hover {
+    background: #0d6efd !important;
+    border-color: #0d6efd !important;
+    transform: translateY(-50%) scale(1.12) !important;
+}
+
+.dev-nav-btn.prev { left: 16px !important; }
+.dev-nav-btn.next { right: 16px !important; }
+
+@media (max-width: 768px) {
+    /* Adjusted ratios to prevent portraits from zooming/cropping on portrait viewports */
+    .dev-3d-viewport { 
+        height: clamp(400px, 62vh, 480px) !important; 
+    }
+    .dev-3d-card { 
+        width: clamp(280px, 84vw, 330px) !important; /* Widened card spacing avoids text boundaries clipping */
+        height: clamp(340px, 48vh, 390px) !important; /* Shorter card limits cover-flow scaling zooms */
+    }
+    .dev-nav-btn { width: 38px !important; height: 38px !important; }
+    .dev-nav-btn.prev { left: 6px !important; }
+    .dev-nav-btn.next { right: 6px !important; }
+    
+    /* Downscaled typography to fit within card bounds safely on small screens */
+    .dev-card-floating-info { padding: 14px 12px !important; }
+    .dev-name { font-size: 0.95rem !important; margin-top: 2px !important; }
+    .dev-role { font-size: 0.72rem !important; margin-top: 0px !important; }
+    .dev-desc { font-size: 0.68rem !important; line-height: 1.35 !important; margin-top: 2px !important; }
+    
+    /* Overlay adjustments for mobile background legibility */
+    .dev-card-overlay {
+        background: linear-gradient(
+            to top,
+            rgba(15, 23, 42, 0.98) 0%,
+            rgba(15, 23, 42, 0.85) 50%,
+            rgba(15, 23, 42, 0.3) 80%,
+            transparent 100%
+        ) !important;
+    }
+}

@@ -1,142 +1,318 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div th:fragment="documentForm" class="card card-custom request-form-card p-4 reveal-on-scroll focal-card">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 class="fw-bold mb-0 text-dark">
-                <i class="bi bi-file-earmark-plus-fill text-primary me-2"></i> Document Application
-            </h5>
-            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1">Identity Verification</span>
-        </div>
+    <div th:fragment="documentForm" class="card card-custom doc-form-theme p-3 p-md-4 reveal-on-scroll focal-card h-100 d-flex flex-column justify-content-between">
+        
+        <!-- EMBEDDED THEME-RESPONSIVE STYLES -->
+        <style>
+            .doc-form-theme {
+                background-color: var(--bs-body-bg) !important;
+                color: var(--bs-body-color) !important;
+                border: 1px solid var(--bs-border-color-translucent) !important;
+            }
 
-        <div class="stepper-wrapper">
-            <div class="stepper-item active" id="stepIndicator1">
-                <div class="step-counter" id="num1">1</div>
-                <div class="step-name">ID Upload</div>
-            </div>
-            <div class="stepper-item" id="stepIndicator2">
-                <div class="step-counter" id="num2">2</div>
-                <div class="step-name">Selfie Proof</div>
-            </div>
-            <div class="stepper-item" id="stepIndicator3">
-                <div class="step-counter" id="num3">3</div>
-                <div class="step-name">Face Scan</div>
-            </div>
-        </div>
+            /* Modern Stepper */
+            .doc-stepper {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                position: relative;
+                padding: 0 10px;
+            }
 
-        <form th:action="@{/request/submit}" method="post" enctype="multipart/form-data" id="requestForm">
-            <div class="row g-3">
-                <div class="col-md-6 mb-2">
-                    <label class="form-label small fw-bold text-secondary">DOCUMENT TYPE</label>
-                    <select name="documentType" class="form-select shadow-none" required>
-                        <option value="" disabled selected>Select document...</option>
-                        <option value="Barangay Clearance">Barangay Clearance</option>
-                        <option value="Certificate of Residency">Certificate of Residency</option>
-                        <option value="Certificate of Indigency">Certificate of Indigency</option>
-                    </select>
+            .doc-stepper::before {
+                content: '';
+                position: absolute;
+                top: 20px;
+                left: 15%;
+                right: 15%;
+                height: 2px;
+                background: var(--bs-border-color-translucent);
+                z-index: 1;
+            }
+
+            .doc-step-item {
+                position: relative;
+                z-index: 2;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .doc-step-num {
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                background: rgba(125, 125, 125, 0.12);
+                border: 2px solid var(--bs-border-color-translucent);
+                color: var(--bs-secondary-color);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.95rem;
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            .doc-step-item.active .doc-step-num {
+                background: #0d6efd !important;
+                border-color: #0d6efd !important;
+                color: #ffffff !important;
+                transform: scale(1.12);
+                box-shadow: 0 0 20px rgba(13, 110, 253, 0.4);
+            }
+
+            .doc-step-item.completed .doc-step-num {
+                background: #198754 !important;
+                border-color: #198754 !important;
+                color: #ffffff !important;
+            }
+
+            .doc-step-label {
+                font-size: 0.725rem;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                color: var(--bs-secondary-color);
+            }
+
+            .doc-step-item.active .doc-step-label {
+                color: #0d6efd;
+            }
+
+            /* Glass Field Cards */
+            .doc-field-card {
+                background: rgba(125, 125, 125, 0.05);
+                border: 1px solid var(--bs-border-color-translucent);
+                border-radius: 16px;
+                padding: 1rem;
+                transition: border-color 0.25s ease, box-shadow 0.25s ease;
+            }
+
+            .doc-field-card:focus-within {
+                border-color: rgba(13, 110, 253, 0.5) !important;
+                box-shadow: 0 0 15px rgba(13, 110, 253, 0.15);
+            }
+
+            /* Theme Inputs */
+            .doc-input {
+                background-color: var(--bs-body-bg) !important;
+                color: var(--bs-body-color) !important;
+                border-color: var(--bs-border-color-translucent) !important;
+                border-radius: 10px;
+            }
+
+            .doc-input:focus {
+                border-color: #0d6efd !important;
+                box-shadow: 0 0 10px rgba(13, 110, 253, 0.2) !important;
+            }
+
+            /* Interactive Step Panels */
+            .doc-step-panel {
+                display: none;
+                opacity: 0;
+                transform: translateY(10px);
+                transition: opacity 0.35s ease, transform 0.35s ease;
+            }
+
+            .doc-step-panel.active {
+                display: block;
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            /* Preview Boxes */
+            .doc-preview-card {
+                background: rgba(125, 125, 125, 0.08);
+                border: 1px dashed var(--bs-border-color-translucent);
+                border-radius: 14px;
+                padding: 1rem;
+            }
+
+            /* Submit Button Glow */
+            .doc-submit-btn {
+                background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
+                border: none !important;
+                box-shadow: 0 8px 24px rgba(13, 110, 253, 0.35) !important;
+                transition: all 0.3s ease !important;
+            }
+
+            .doc-submit-btn:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 30px rgba(13, 110, 253, 0.45) !important;
+            }
+
+            .doc-submit-btn:disabled {
+                opacity: 0.5;
+                box-shadow: none !important;
+            }
+        </style>
+
+        <div>
+            <!-- Header Bar -->
+            <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-4">
+                <div>
+                    <h5 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                        <i class="bi bi-file-earmark-plus-fill text-primary fs-4"></i> Official Document Application
+                    </h5>
+                    <p class="small text-secondary mb-0">Complete the 3-step biometric identity verification to submit your request.</p>
                 </div>
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 fw-bold align-self-start align-self-sm-center">
+                    <i class="bi bi-shield-lock-fill me-1"></i> Multi-Factor Liveness
+                </span>
+            </div>
 
-                <div class="col-md-6 mb-2">
-                    <label class="form-label small fw-bold text-secondary">PURPOSE OF REQUEST</label>
-                    <textarea name="purpose" class="form-control shadow-none" rows="1" required placeholder="e.g. School Requirement / Employment Application"></textarea>
+            <!-- GLOWING STEPPER -->
+            <div class="doc-stepper mb-4">
+                <div class="doc-step-item active" id="stepIndicator1">
+                    <div class="doc-step-num" id="num1">1</div>
+                    <span class="doc-step-label">ID Upload</span>
+                </div>
+                <div class="doc-step-item" id="stepIndicator2">
+                    <div class="doc-step-num" id="num2">2</div>
+                    <span class="doc-step-label">Selfie Proof</span>
+                </div>
+                <div class="doc-step-item" id="stepIndicator3">
+                    <div class="doc-step-num" id="num3">3</div>
+                    <span class="doc-step-label">Face Scan</span>
                 </div>
             </div>
 
-            <hr class="text-muted opacity-25 my-3">
+            <!-- MAIN FORM -->
+            <form th:action="@{/request/submit}" method="post" enctype="multipart/form-data" id="requestForm">
+                
+                <!-- Document & Purpose Fields -->
+                <div class="doc-field-card mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-secondary">
+                                <i class="bi bi-file-earmark-text text-primary me-1"></i> DOCUMENT TYPE
+                            </label>
+                            <select name="documentType" class="form-select doc-input shadow-none" required>
+                                <option value="" disabled selected>Select document requested...</option>
+                                <option value="Barangay Clearance">Barangay Clearance</option>
+                                <option value="Certificate of Residency">Certificate of Residency</option>
+                                <option value="Certificate of Indigency">Certificate of Indigency</option>
+                            </select>
+                        </div>
 
-            <!-- Step 1 Section -->
-            <div class="step-section active" id="step1Section">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h6 class="fw-bold text-dark mb-0">Step 1: Select & Upload Valid ID</h6>
-                    <!-- HIGH CONTRAST READABLE BADGE FIX -->
-                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1">Required</span>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label small text-secondary">SELECT ID TYPE</label>
-                        <select id="idTypeSelect" name="idType" class="form-select shadow-none" required>
-                            <option value="" disabled selected>Choose ID type...</option>
-                            <option value="National ID">Philippine National ID (PhilSys)</option>
-                            <option value="School ID">Student / School ID</option>
-                            <option value="Driver's License">Driver's License</option>
-                            <option value="UMID / SSS">UMID / SSS ID</option>
-                            <option value="Barangay ID">Barangay ID</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label small text-secondary">ATTACH ID IMAGE</label>
-                        <div class="input-group mb-2">
-                            <input type="file" name="idCardFile" class="form-control shadow-none" accept="image/*" id="idCardInput" disabled required>
-                            <button type="button" class="btn btn-outline-secondary" id="openIdCameraBtn" disabled>
-                                <i class="bi bi-camera-fill"></i> Use Camera
-                            </button>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-secondary">
+                                <i class="bi bi-pen text-primary me-1"></i> PURPOSE OF REQUEST
+                            </label>
+                            <textarea name="purpose" class="form-control doc-input shadow-none" rows="1" required placeholder="e.g. Employment / School Requirement / Business Permit"></textarea>
                         </div>
                     </div>
                 </div>
 
-                <div id="idPreviewContainer" class="d-none mt-2 text-center mb-3">
-                    <img id="idPreviewImg" src="" alt="ID Preview" class="img-thumbnail rounded" style="max-height: 150px;">
-                    <p class="small text-success mb-0 mt-1"><i class="bi bi-check-circle-fill"></i> ID Captured Successfully</p>
-                </div>
+                <!-- STEP 1: ID UPLOAD & OCR VERIFICATION -->
+                <div class="doc-step-panel active doc-field-card mb-4" id="step1Section">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                            <i class="bi bi-card-heading text-primary"></i> Step 1: Select & Upload Valid ID
+                        </h6>
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1 rounded-pill">Required</span>
+                    </div>
 
-                <div id="ocrFeedback" class="p-3 rounded-3 small d-none mb-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="spinner-border spinner-border-sm text-primary d-none" id="ocrSpinner" role="status"></div>
-                        <span id="ocrStatusText">Analyzing uploaded ID document...</span>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small text-secondary">SELECT OFFICIAL ID TYPE</label>
+                            <select id="idTypeSelect" name="idType" class="form-select doc-input shadow-none" required>
+                                <option value="" disabled selected>Choose ID type...</option>
+                                <option value="National ID">Philippine National ID (PhilSys)</option>
+                                <option value="School ID">Student / School ID</option>
+                                <option value="Driver's License">Driver's License</option>
+                                <option value="UMID / SSS">UMID / SSS ID</option>
+                                <option value="Barangay ID">Barangay ID</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small text-secondary">ATTACH ID PHOTO OR SNAP CAMERA</label>
+                            <div class="input-group">
+                                <input type="file" name="idCardFile" class="form-control doc-input shadow-none" accept="image/*" id="idCardInput" disabled required>
+                                <button type="button" class="btn btn-outline-primary" id="openIdCameraBtn" disabled>
+                                    <i class="bi bi-camera-fill me-1"></i> Use Camera
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ID Preview Container -->
+                    <div id="idPreviewContainer" class="doc-preview-card d-none text-center mb-3">
+                        <img id="idPreviewImg" src="" alt="ID Preview" class="img-thumbnail rounded-3 shadow-sm mb-2" style="max-height: 160px; object-fit: contain;">
+                        <p class="small text-success fw-semibold mb-0"><i class="bi bi-check-circle-fill me-1"></i> ID Image Uploaded</p>
+                    </div>
+
+                    <!-- OCR Feedback Alert -->
+                    <div id="ocrFeedback" class="p-3 rounded-3 small d-none">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="spinner-border spinner-border-sm text-primary d-none" id="ocrSpinner" role="status"></div>
+                            <span id="ocrStatusText">Analyzing uploaded ID document via client OCR...</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Step 2 Section -->
-            <div class="step-section" id="step2Section">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h6 class="fw-bold text-dark mb-0">Step 2: Selfie Holding Your ID</h6>
-                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1">Verification</span>
-                </div>
-                <p class="small text-muted mb-3">Please upload or snap a photo holding the ID selected in Step 1.</p>
+                <!-- STEP 2: SELFIE HOLDING ID -->
+                <div class="doc-step-panel doc-field-card mb-4" id="step2Section">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                            <i class="bi bi-person-badge text-primary"></i> Step 2: Selfie Holding Your ID
+                        </h6>
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1 rounded-pill">Verification</span>
+                    </div>
+                    <p class="small text-secondary mb-3">Please upload or snap a live photo of yourself holding the ID selected in Step 1.</p>
 
-                <div class="mb-3">
-                    <div class="input-group mb-2">
-                        <input type="file" name="selfieWithIdFile" class="form-control shadow-none" accept="image/*" id="selfieInput" required>
-                        <button type="button" class="btn btn-outline-secondary" id="openSelfieCameraBtn">
-                            <i class="bi bi-camera-fill"></i> Use Camera
+                    <div class="input-group mb-3">
+                        <input type="file" name="selfieWithIdFile" class="form-control doc-input shadow-none" accept="image/*" id="selfieInput" required>
+                        <button type="button" class="btn btn-outline-primary" id="openSelfieCameraBtn">
+                            <i class="bi bi-camera-fill me-1"></i> Use Camera
                         </button>
                     </div>
-                    <div id="selfiePreviewContainer" class="d-none mt-2 text-center">
-                        <img id="selfiePreviewImg" src="" alt="Selfie Preview" class="img-thumbnail rounded" style="max-height: 150px;">
-                        <p class="small text-success mb-0 mt-1"><i class="bi bi-check-circle-fill"></i> Selfie Captured Successfully</p>
+
+                    <div id="selfiePreviewContainer" class="doc-preview-card d-none text-center mb-3">
+                        <img id="selfiePreviewImg" src="" alt="Selfie Preview" class="img-thumbnail rounded-3 shadow-sm mb-2" style="max-height: 160px; object-fit: contain;">
+                        <p class="small text-success fw-semibold mb-0"><i class="bi bi-check-circle-fill me-1"></i> Selfie Proof Attached</p>
+                    </div>
+
+                    <div id="selfieFeedback" class="alert alert-success p-3 rounded-3 small mb-0 d-none">
+                        <i class="bi bi-check-circle-fill me-1"></i> Selfie verified. Unlocking Step 3 Biometric Liveness Check.
                     </div>
                 </div>
 
-                <div id="selfieFeedback" class="alert alert-success p-2 small mb-3 d-none">
-                    <i class="bi bi-check-circle-fill me-1"></i> Selfie attached. Unlocking Step 3.
-                </div>
-            </div>
+                <!-- STEP 3: BIOMETRIC LIVENESS SCAN -->
+                <div class="doc-step-panel doc-field-card mb-4" id="step3Section">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                            <i class="bi bi-person-bounding-box text-primary"></i> Step 3: Biometric Liveness Check
+                        </h6>
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1 rounded-pill">Final Verification</span>
+                    </div>
 
-            <!-- Step 3 Section -->
-            <div class="step-section" id="step3Section">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h6 class="fw-bold text-dark mb-0">Step 3: Biometric Liveness Check</h6>
-                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1">Final Step</span>
+                    <div id="scanStatusBox" class="p-4 rounded-4 text-center mb-3 bg-primary bg-opacity-10 border border-primary border-opacity-20">
+                        <i class="bi bi-person-bounding-box fs-1 text-primary d-block mb-2"></i>
+                        <p class="small text-secondary mb-0 fw-semibold" id="scanStatusText">Perform a 3D MediaPipe face liveness scan to complete identity verification.</p>
+                    </div>
+
+                    <button type="button" id="startScanBtn" class="btn btn-outline-primary w-100 fw-bold py-2.5 rounded-3 shadow-sm">
+                        <i class="bi bi-camera-fill me-2"></i> Launch Face Liveness Scan
+                    </button>
+                    <input type="hidden" name="faceVerified" id="faceVerifiedInput" value="false">
                 </div>
 
-                <div id="scanStatusBox" class="p-3 bg-light border rounded-3 text-center mb-3">
-                    <i class="bi bi-person-bounding-box fs-2 text-muted"></i>
-                    <p class="small text-muted mb-0 mt-1" id="scanStatusText">Perform a face scan to complete identity verification.</p>
-                </div>
-
-                <button type="button" id="startScanBtn" class="btn btn-outline-primary w-100 fw-semibold mb-3 py-2 shadow-sm">
-                    <i class="bi bi-camera-fill me-1"></i> Launch Face Liveness Scan
+                <!-- SUBMIT BUTTON -->
+                <button type="submit" id="submitBtn" class="btn btn-primary doc-submit-btn w-100 py-3 fw-bold rounded-3 text-white" disabled>
+                    <i class="bi bi-send-fill me-2"></i> Submit Request for Verification
                 </button>
-                <input type="hidden" name="faceVerified" id="faceVerifiedInput" value="false">
-            </div>
+            </form>
+        </div>
 
-            <button type="submit" id="submitBtn" class="btn btn-primary w-100 py-2 fw-semibold mt-2 text-white" disabled>
-                <i class="bi bi-send-fill me-1"></i> Submit Request for Verification
-            </button>
-        </form>
+        <!-- Footer Bar -->
+        <div class="pt-3 mt-3 border-top border-opacity-10 d-flex align-items-center justify-content-between text-secondary small">
+            <span><i class="bi bi-lock-fill text-success me-1"></i> Client-side encrypted document verification</span>
+            <span>Need assistance? Ask <strong class="text-primary">AI Assistant</strong></span>
+        </div>
     </div>
 </body>
 </html>

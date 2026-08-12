@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div th:fragment="securitySection" class="card card-custom focal-card shadow-sm p-4 mb-4 settings-section" id="securitySection">
+    <div th:fragment="securitySection" class="card card-custom focal-card shadow-lg p-4 mb-4 settings-section" id="securitySection">
         <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 class="text-primary fw-bold mb-0">
-                <i class="bi bi-shield-lock-fill me-2"></i> Password Security
+            <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-shield-lock-fill text-primary fs-4"></i> Password & Security
             </h5>
-            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1">Security</span>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1 fw-bold">Security</span>
         </div>
         
-        <p class="text-muted small mb-4">Ensure your account is using a strong password to maintain security against unauthorized access.</p>
-        
-        <div>
-            <button type="button" class="btn btn-outline-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+        <p class="text-secondary small mb-4">Ensure your account is using a strong password to maintain security against unauthorized portal access.</p>
+
+        <div class="settings-field-card mb-4 p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h6 class="fw-bold mb-1 text-dark"><i class="bi bi-key-fill text-primary me-2"></i> Password Protection</h6>
+                <p class="small text-secondary mb-0">Update your account password regularly to keep your document requests secure.</p>
+            </div>
+            <button type="button" class="btn btn-outline-primary fw-bold px-4 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                 <i class="bi bi-key-fill me-1"></i> Change Password
             </button>
         </div>

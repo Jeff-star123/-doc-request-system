@@ -1,38 +1,56 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div th:fragment="profileSection" class="card card-custom focal-card shadow-sm p-4 mb-4 settings-section active-pane" id="profileSection">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 class="text-primary fw-bold mb-0">
-                <i class="bi bi-person-lines-fill me-2"></i> General Information & Notifications
+    <div th:fragment="profileSection" class="card card-custom focal-card shadow-lg p-4 mb-4 settings-section active-pane" id="profileSection">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-person-lines-fill text-primary fs-4"></i> General Information & Notifications
             </h5>
-            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1">Account Info</span>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1 fw-bold">Account Info</span>
         </div>
 
-        <form th:action="@{/settings/update-profile}" method="post">
-            <div class="mb-3">
-                <label class="form-label fw-bold small text-muted">FULL NAME</label>
-                <input type="text" name="fullName" class="form-control" th:value="${user.fullName}" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label fw-bold small text-muted">USERNAME</label>
-                <input type="text" name="username" class="form-control" th:value="${user.username}" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label fw-bold small text-muted">TELEGRAM CHAT ID</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-telegram text-primary"></i></span>
-                    <input type="text" name="telegramChatId" class="form-control" th:value="${user.telegramChatId}" placeholder="e.g. 123456789">
+        <form th:action="@{/settings/update-profile}" method="post" id="profileUpdateForm">
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="settings-field-card">
+                        <label class="form-label fw-bold small text-secondary">
+                            <i class="bi bi-person text-primary me-1"></i> FULL NAME
+                        </label>
+                        <input type="text" name="fullName" class="form-control settings-input shadow-none" th:value="${user.fullName}" required>
+                    </div>
                 </div>
-                <div class="form-text small mt-2 text-muted">
-                    Need your ID? Start <a href="https://t.me/userinfobot" target="_blank" class="fw-semibold text-decoration-underline text-primary">@userinfobot <i class="bi bi-box-arrow-up-right"></i></a> on Telegram to copy your numerical ID.
+
+                <div class="col-md-6">
+                    <div class="settings-field-card">
+                        <label class="form-label fw-bold small text-secondary">
+                            <i class="bi bi-at text-primary me-1"></i> USERNAME
+                        </label>
+                        <input type="text" name="username" class="form-control settings-input shadow-none" th:value="${user.username}" required>
+                    </div>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary fw-semibold px-4 text-white">
-                <i class="bi bi-save-fill me-1"></i> Save Changes
+            <!-- Telegram Chat ID Section -->
+            <div class="settings-field-card mb-4">
+                <label class="form-label fw-bold small text-secondary">
+                    <i class="bi bi-telegram text-primary me-1"></i> TELEGRAM CHAT ID FOR BOT NOTIFICATIONS
+                </label>
+                <div class="input-group mb-2">
+                    <span class="input-group-text bg-primary bg-opacity-10 text-primary border-end-0"><i class="bi bi-telegram"></i></span>
+                    <input type="text" name="telegramChatId" id="profileTelegramChatIdInput" class="form-control settings-input shadow-none" th:value="${user.telegramChatId}" placeholder="e.g. 123456789" oninput="document.getElementById('modalProfileTelegramId').value = this.value">
+                </div>
+                
+                <div class="p-3 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-20 text-secondary small">
+                    <i class="bi bi-info-circle-fill text-primary me-1"></i> Need your Chat ID? Open 
+                    <a href="https://t.me/userinfobot" target="_blank" class="fw-bold text-primary text-decoration-underline">@userinfobot <i class="bi bi-box-arrow-up-right ms-1"></i></a> 
+                    on Telegram to copy your numerical ID. Don't forget to tap START on 
+                    <a href="https://t.me/BrgyDocRequestBot" target="_blank" class="fw-bold text-primary text-decoration-underline">@BrgyDocRequestBot <i class="bi bi-box-arrow-up-right ms-1"></i></a>!
+                </div>
+            </div>
+
+            <!-- Save Profile Changes Button triggers Password + OTP Confirmation Modal -->
+            <button type="button" class="btn btn-primary settings-submit-btn fw-bold px-4 py-2 rounded-3 text-white" data-bs-toggle="modal" data-bs-target="#confirmProfileSaveModal">
+                <i class="bi bi-save-fill me-1"></i> Save Profile Changes
             </button>
         </form>
     </div>

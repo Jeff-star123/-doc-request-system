@@ -1,23 +1,31 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div th:fragment="sidebar" class="card card-custom focal-card shadow-sm p-4">
+    <div th:fragment="sidebar" class="card card-custom focal-card shadow-lg p-4">
+        <!-- User Avatar Header -->
         <div class="text-center mb-3">
-            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-lg" style="width: 75px; height: 75px; font-size: 2rem;">
-                <i class="bi bi-person-fill"></i>
+            <div class="settings-avatar-bubble text-primary rounded-circle d-inline-flex align-items-center justify-content-center shadow-md mb-2">
+                <i class="bi bi-person-fill fs-2"></i>
             </div>
-            <h6 class="fw-bold mt-3 mb-0 text-dark" th:text="${user.fullName}">User Name</h6>
-            <small class="text-muted" th:text="'@' + ${user.username}">username</small>
+            <h6 class="fw-bold mb-0 text-dark" th:text="${user.fullName}">User Name</h6>
+            <small class="text-secondary d-block mb-2" th:text="'@' + ${user.username}">@username</small>
+            
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1 small">
+                <i class="bi bi-shield-check me-1"></i> Active Session
+            </span>
         </div>
+
         <hr class="my-3 opacity-25">
-        <div class="list-group settings-nav" id="settingsTabList">
-            <a class="list-group-item list-group-item-action active d-flex align-items-center gap-2" data-target="profileSection">
+
+        <!-- Navigation Tab Pills -->
+        <div class="list-group settings-nav gap-2" id="settingsTabList">
+            <a class="list-group-item list-group-item-action active d-flex align-items-center gap-2 rounded-3" data-target="profileSection">
                 <i class="bi bi-person-gear fs-5"></i> Profile & Telegram
             </a>
-            <a class="list-group-item list-group-item-action d-flex align-items-center gap-2" data-target="securitySection">
+            <a class="list-group-item list-group-item-action d-flex align-items-center gap-2 rounded-3" data-target="securitySection">
                 <i class="bi bi-shield-lock fs-5"></i> Password & Security
             </a>
-            <a class="list-group-item list-group-item-action text-warning d-flex align-items-center gap-2" data-target="dangerSection">
+            <a class="list-group-item list-group-item-action text-warning d-flex align-items-center gap-2 rounded-3" data-target="dangerSection">
                 <i class="bi bi-pause-circle fs-5"></i> Deactivate Account
             </a>
         </div>

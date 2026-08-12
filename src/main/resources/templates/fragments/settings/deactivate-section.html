@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div th:fragment="deactivateSection" class="card card-custom focal-card shadow-sm border border-warning border-opacity-50 p-4 bg-warning bg-opacity-10 settings-section" id="dangerSection">
+    <div th:fragment="deactivateSection" class="card card-custom focal-card shadow-lg border border-warning border-opacity-30 p-4 settings-section bg-warning bg-opacity-10" id="dangerSection">
         <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 class="text-warning-emphasis fw-bold mb-0">
-                <i class="bi bi-pause-circle-fill me-2"></i> Account Deactivation
+            <h5 class="fw-bold mb-0 text-warning d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-4"></i> Account Deactivation
             </h5>
-            <span class="badge bg-warning text-dark fw-semibold px-2 py-1">Danger Zone</span>
+            <span class="badge bg-warning text-dark border border-warning border-opacity-50 fw-bold px-3 py-1 rounded-pill">Danger Zone</span>
         </div>
 
-        <p class="text-muted small mb-4">
+        <p class="text-secondary small mb-4">
             ⚠️ Deactivating your account will temporarily disable your portal access. All submitted requests will remain safely saved, but <strong>you will require ADMIN APPROVAL to reactivate your account</strong> once deactivated.
         </p>
         
         <div>
-            <button type="button" class="btn btn-warning fw-semibold px-4" data-bs-toggle="modal" data-bs-target="#deactivateAccountModal">
+            <button type="button" class="btn btn-warning fw-bold px-4 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#deactivateAccountModal">
                 <i class="bi bi-person-x-fill me-1"></i> Deactivate Account
             </button>
         </div>

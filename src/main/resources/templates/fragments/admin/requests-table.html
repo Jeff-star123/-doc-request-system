@@ -1,70 +1,350 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div th:fragment="requestsTable" class="card card-custom shadow-sm p-4 reveal-on-scroll focal-card">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="card-title text-dark mb-0 fw-bold">
-                <i class="bi bi-card-checklist text-primary me-2"></i> Document Requests Management
-            </h5>
-            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1">Real-time Review</span>
+    <div th:fragment="requestsTable" class="card card-custom shadow-lg p-3 p-md-4 reveal-on-scroll focal-card mb-4 admin-card-theme">
+        
+        <!-- EMBEDDED STYLES -->
+        <style>
+            .admin-card-theme {
+                background-color: var(--bs-body-bg) !important;
+                color: var(--bs-body-color) !important;
+                border: 1px solid var(--bs-border-color-translucent) !important;
+            }
+
+            .admin-filter-group {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 4px;
+                background: rgba(125, 125, 125, 0.12);
+                border-radius: 50px;
+                border: 1px solid var(--bs-border-color-translucent);
+            }
+
+            .admin-filter-btn {
+                border: none;
+                background: transparent;
+                color: var(--bs-secondary-color);
+                font-size: 0.8rem;
+                font-weight: 600;
+                padding: 5px 15px;
+                border-radius: 50px;
+                transition: all 0.2s ease-in-out;
+                cursor: pointer;
+            }
+
+            .admin-filter-btn:hover {
+                color: var(--bs-body-color);
+            }
+
+            .admin-filter-btn.active {
+                background: #0d6efd !important;
+                color: #ffffff !important;
+                box-shadow: 0 4px 12px rgba(13, 110, 253, 0.35);
+            }
+
+            .admin-search-input {
+                background-color: var(--bs-body-bg) !important;
+                color: var(--bs-body-color) !important;
+                border-color: var(--bs-border-color-translucent) !important;
+            }
+
+            .admin-table-wrapper {
+                border: 1px solid var(--bs-border-color-translucent) !important;
+                border-radius: 16px;
+                overflow: hidden;
+            }
+
+            .admin-table-wrapper table {
+                color: var(--bs-body-color) !important;
+                margin-bottom: 0;
+            }
+
+            .admin-table-wrapper thead {
+                background-color: rgba(125, 125, 125, 0.08) !important;
+                color: var(--bs-secondary-color) !important;
+                border-bottom: 1px solid var(--bs-border-color-translucent);
+            }
+
+            .admin-row {
+                border-bottom: 1px solid var(--bs-border-color-translucent);
+                transition: background-color 0.15s ease;
+            }
+
+            .admin-row:hover {
+                background-color: rgba(13, 110, 253, 0.06) !important;
+            }
+
+            .badge-status-pending {
+                background-color: rgba(251, 191, 36, 0.2) !important;
+                color: #92400e !important;
+                border: 1px solid rgba(217, 119, 6, 0.4) !important;
+            }
+
+            [data-bs-theme="dark"] .badge-status-pending {
+                color: #fbbf24 !important;
+                background-color: rgba(251, 191, 36, 0.15) !important;
+                border-color: rgba(251, 191, 36, 0.3) !important;
+            }
+
+            .badge-status-approved {
+                background-color: rgba(25, 135, 84, 0.2) !important;
+                color: #14532d !important;
+                border: 1px solid rgba(25, 135, 84, 0.4) !important;
+            }
+
+            [data-bs-theme="dark"] .badge-status-approved {
+                color: #34d399 !important;
+                background-color: rgba(25, 135, 84, 0.15) !important;
+            }
+
+            .badge-status-rejected {
+                background-color: rgba(220, 53, 69, 0.2) !important;
+                color: #7f1d1d !important;
+                border: 1px solid rgba(220, 53, 69, 0.4) !important;
+            }
+
+            [data-bs-theme="dark"] .badge-status-rejected {
+                color: #f87171 !important;
+                background-color: rgba(220, 53, 69, 0.15) !important;
+            }
+
+            .status-pulse-dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background-color: #d97706;
+                display: inline-block;
+                box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7);
+                animation: statusDotPulse 1.6s infinite;
+            }
+
+            [data-bs-theme="dark"] .status-pulse-dot {
+                background-color: #fbbf24;
+            }
+
+            @keyframes statusDotPulse {
+                0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7); }
+                70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(217, 119, 6, 0); }
+                100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+            }
+
+            .admin-req-mobile-card {
+                background: rgba(125, 125, 125, 0.08);
+                border: 1px solid var(--bs-border-color-translucent);
+                border-radius: 14px;
+                padding: 12px;
+            }
+        </style>
+        
+        <!-- Header Bar -->
+        <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-4">
+            <div>
+                <h5 class="fw-bold mb-1 d-flex align-items-center gap-2 text-dark">
+                    <i class="bi bi-card-checklist text-primary fs-4"></i> Document Requests Management
+                </h5>
+                <p class="small text-secondary mb-0">Review resident document applications, inspect OCR valid IDs, and approve clearances.</p>
+            </div>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 fw-bold align-self-start align-self-sm-center">
+                <i class="bi bi-activity me-1"></i> Real-time Review
+            </span>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small">
+        <!-- METRIC CARDS -->
+        <div class="row g-2 g-md-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-20 text-primary h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="small fw-bold text-uppercase opacity-75">Total Requests</span>
+                        <i class="bi bi-folder-fill fs-5"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0" th:text="${#lists.size(requests)}">0</h4>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <div class="p-3 rounded-4 bg-warning-adaptive border border-warning-adaptive text-warning-adaptive h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="small fw-bold text-uppercase opacity-90">Pending Review</span>
+                        <i class="bi bi-hourglass-split fs-5"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0" id="adminPendingCounter" th:text="${#lists.size(requests.?[status == 'PENDING'])}">0</h4>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <div class="p-3 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-20 text-success h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="small fw-bold text-uppercase opacity-75">Approved</span>
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0" id="adminApprovedCounter" th:text="${#lists.size(requests.?[status == 'APPROVED'])}">0</h4>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <div class="p-3 rounded-4 bg-danger bg-opacity-10 border border-danger border-opacity-20 text-danger h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="small fw-bold text-uppercase opacity-75">Rejected</span>
+                        <i class="bi bi-x-circle-fill fs-5"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0" id="adminRejectedCounter" th:text="${#lists.size(requests.?[status == 'REJECTED'])}">0</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTER PILLS & LIVE SEARCH -->
+        <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-2 mb-3">
+            <div class="admin-filter-group overflow-x-auto pb-1 pb-md-0">
+                <button type="button" class="admin-filter-btn active" data-filter="ALL" onclick="filterAdminRequests('ALL', this)">All</button>
+                <button type="button" class="admin-filter-btn" data-filter="PENDING" onclick="filterAdminRequests('PENDING', this)">Pending</button>
+                <button type="button" class="admin-filter-btn" data-filter="APPROVED" onclick="filterAdminRequests('APPROVED', this)">Approved</button>
+                <button type="button" class="admin-filter-btn" data-filter="REJECTED" onclick="filterAdminRequests('REJECTED', this)">Rejected</button>
+            </div>
+
+            <div class="input-group input-group-sm w-100 w-md-auto max-w-md">
+                <span class="input-group-text bg-transparent border-end-0 text-secondary">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="adminRequestSearch" class="form-control admin-search-input border-start-0 ps-0 shadow-none" placeholder="Search resident, document, or purpose..." onkeyup="searchAdminRequests()" oninput="searchAdminRequests()">
+            </div>
+        </div>
+
+        <!-- DESKTOP TABLE VIEW (Visible on md and up) -->
+        <div class="d-none d-md-block table-responsive admin-table-wrapper">
+            <table class="table align-middle mb-0" id="adminRequestsTableEl">
+                <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Resident Name</th>
-                        <th>Document Type</th>
-                        <th>Purpose</th>
-                        <th>Verification</th>
-                        <th>Status</th>
-                        <th>Remarks</th>
-                        <th class="text-center" style="min-width: 220px;">Actions</th>
+                        <th class="ps-3 py-3" style="width: 7%;">ID</th>
+                        <th class="py-3" style="width: 18%;">Resident Name</th>
+                        <th class="py-3" style="width: 18%;">Document Type</th>
+                        <th class="py-3" style="width: 12%;">Purpose</th>
+                        <th class="py-3" style="width: 16%;">Verification</th>
+                        <th class="py-3" style="width: 14%;">Status</th>
+                        <th class="py-3" style="width: 13%;">Remarks</th>
+                        <th class="text-center pe-3 py-3" style="width: 12%;">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr th:each="req : ${requests}">
-                        <td class="fw-bold" th:text="'#' + ${req.id}">#1</td>
-                        <td class="fw-bold text-primary" th:text="${req.user != null ? req.user.fullName : 'N/A'}">Juan Dela Cruz</td>
-                        <td th:text="${req.documentType}">Clearance</td>
-                        <td class="small text-muted" th:text="${req.purpose != null ? req.purpose : '—'}">Purpose</td>
+                <tbody class="small" id="adminRequestsBody">
+                    <tr th:each="req : ${requests}" class="admin-row admin-req-row" th:data-status="${req.status}">
+                        <td class="ps-3 py-3 font-monospace fw-bold" th:text="'#' + ${req.id}">#1</td>
+                        <td class="py-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="text-primary rounded-circle d-flex align-items-center justify-content-center p-2 bg-primary bg-opacity-10 flex-shrink-0" style="width: 34px; height: 34px;">
+                                    <i class="bi bi-person-fill fs-6"></i>
+                                </div>
+                                <strong class="admin-res-name text-body" th:text="${req.user != null ? req.user.fullName : 'N/A'}">Resident Name</strong>
+                            </div>
+                        </td>
+                        <td class="py-3">
+                            <span class="fw-semibold admin-doc-type text-body" th:text="${req.documentType}">Clearance</span>
+                        </td>
+                        <td class="py-3">
+                            <span class="badge bg-body-tertiary text-body border px-2 py-1 font-monospace admin-purpose-text" th:text="${req.purpose != null ? req.purpose : '—'}">Purpose</span>
+                        </td>
                         
-                        <td>
-                            <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" th:data-bs-target="'#idModal' + ${req.id}">
-                                <i class="bi bi-person-bounding-box"></i> View Verification
+                        <td class="py-3">
+                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold text-nowrap" data-bs-toggle="modal" th:data-bs-target="'#idModal' + ${req.id}">
+                                <i class="bi bi-person-bounding-box me-1"></i> View Verification
                             </button>
                         </td>
 
-                        <td>
-                            <span class="badge" 
-                                th:classappend="${req.status == 'APPROVED' ? 'badge-approved' : (req.status == 'REJECTED' ? 'badge-rejected' : 'badge-pending')}"
-                                th:text="${req.status}">PENDING</span>
+                        <td class="py-3">
+                            <span th:if="${req.status == 'PENDING'}" class="badge badge-status-pending rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-2">
+                                <span class="status-pulse-dot"></span> PENDING
+                            </span>
+                            <span th:if="${req.status == 'APPROVED'}" class="badge badge-status-approved rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-check-circle-fill me-1"></i> APPROVED
+                            </span>
+                            <span th:if="${req.status == 'REJECTED'}" class="badge badge-status-rejected rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-x-circle-fill me-1"></i> REJECTED
+                            </span>
                         </td>
-                        <td class="small text-muted" th:text="${req.remarks != null ? req.remarks : '—'}">—</td>
-                        <td class="text-center">
+
+                        <td class="py-3 text-secondary" th:text="${req.remarks != null ? req.remarks : '—'}">—</td>
+
+                        <td class="text-center pe-3 py-3">
                             <div class="d-flex gap-1 justify-content-center">
                                 <div th:if="${req.status == 'PENDING'}" class="d-flex gap-1">
-                                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" th:data-bs-target="'#approveModal' + ${req.id}">
-                                        <i class="bi bi-check-circle"></i>
+                                    <button class="btn btn-sm btn-success rounded-circle p-2 shadow-sm" data-bs-toggle="modal" th:data-bs-target="'#approveModal' + ${req.id}" title="Approve Request">
+                                        <i class="bi bi-check-lg"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" th:data-bs-target="'#rejectModal' + ${req.id}">
-                                        <i class="bi bi-x-circle"></i>
+                                    <button class="btn btn-sm btn-danger rounded-circle p-2 shadow-sm" data-bs-toggle="modal" th:data-bs-target="'#rejectModal' + ${req.id}" title="Reject Request">
+                                        <i class="bi bi-x-lg"></i>
                                     </button>
                                 </div>
-                                <form th:action="@{/admin/request/delete/{id}(id=${req.id})}" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete this request?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Request Permanently">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
+
+                                <!-- DELETE MODAL TRIGGER (NO NATIVE CONFIRM) -->
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-2" data-bs-toggle="modal" th:data-bs-target="'#deleteRequestModal' + ${req.id}" title="Delete Record">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
-                    <tr th:if="${#lists.isEmpty(requests)}">
-                        <td colspan="8" class="text-center text-muted py-4">No document requests found.</td>
+
+                    <tr th:if="${#lists.isEmpty(requests)}" id="emptyAdminRequestsRow">
+                        <td colspan="8" class="text-center py-5 text-secondary">No document requests found.</td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- MOBILE STACKED CARDS VIEW (Visible on mobile screens) -->
+        <div class="d-md-none d-flex flex-column gap-2" id="adminRequestsMobileList">
+            <div th:each="req : ${requests}" class="admin-req-mobile-card admin-req-row" th:data-status="${req.status}">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="text-primary rounded-circle d-flex align-items-center justify-content-center p-2 bg-primary bg-opacity-10 flex-shrink-0" style="width: 34px; height: 34px;">
+                            <i class="bi bi-person-fill fs-6"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0 admin-res-name text-body fs-6" th:text="${req.user != null ? req.user.fullName : 'N/A'}">Resident Name</h6>
+                            <span class="small fw-semibold admin-doc-type text-primary" th:text="${req.documentType}">Clearance</span>
+                        </div>
+                    </div>
+                    <span class="small text-secondary font-monospace" th:text="'#' + ${req.id}">#1</span>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                    <span class="badge bg-body-tertiary text-body border px-2 py-1 font-monospace small admin-purpose-text" th:text="${'Purpose: ' + (req.purpose != null ? req.purpose : '—')}">Purpose</span>
+                    
+                    <div>
+                        <span th:if="${req.status == 'PENDING'}" class="badge badge-status-pending rounded-pill px-2.5 py-1 small fw-bold">
+                            <span class="status-pulse-dot"></span> PENDING
+                        </span>
+                        <span th:if="${req.status == 'APPROVED'}" class="badge badge-status-approved rounded-pill px-2.5 py-1 small fw-bold">
+                            <i class="bi bi-check-circle-fill me-1"></i> APPROVED
+                        </span>
+                        <span th:if="${req.status == 'REJECTED'}" class="badge badge-status-rejected rounded-pill px-2.5 py-1 small fw-bold">
+                            <i class="bi bi-x-circle-fill me-1"></i> REJECTED
+                        </span>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between gap-2 pt-2 border-top border-opacity-10">
+                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-bold flex-grow-1 text-nowrap" data-bs-toggle="modal" th:data-bs-target="'#idModal' + ${req.id}">
+                        <i class="bi bi-person-bounding-box me-1"></i> Verification Details
+                    </button>
+
+                    <div class="d-flex gap-1 flex-shrink-0">
+                        <button th:if="${req.status == 'PENDING'}" class="btn btn-sm btn-success rounded-circle p-2 shadow-sm" data-bs-toggle="modal" th:data-bs-target="'#approveModal' + ${req.id}" title="Approve">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button th:if="${req.status == 'PENDING'}" class="btn btn-sm btn-danger rounded-circle p-2 shadow-sm" data-bs-toggle="modal" th:data-bs-target="'#rejectModal' + ${req.id}" title="Reject">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        
+                        <!-- DELETE MODAL TRIGGER FOR MOBILE -->
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-2" data-bs-toggle="modal" th:data-bs-target="'#deleteRequestModal' + ${req.id}" title="Delete">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(requests)}" class="text-center py-4 text-secondary">
+                No document requests found.
+            </div>
         </div>
     </div>
 </body>

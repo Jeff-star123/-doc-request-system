@@ -3,29 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay Portal - Admin Panel</title>
+    <title>Barangay Portal - Admin Management Console</title>
     
+    <!-- Framework Styles -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <link rel="stylesheet" th:href="@{/css/admin.css}" href="/css/admin.css">
+    <!-- Custom Admin CSS -->
+    <link rel="stylesheet" th:href="@{/css/admin.css(v=4.2)}" href="/css/admin.css?v=4.2">
+    <link rel="stylesheet" th:href="@{/css/overlay-hub.css(v=4.2)}" href="/css/overlay-hub.css?v=4.2">
+    <link rel="stylesheet" th:href="@{/css/dev-section.css(v=4.2)}" href="/css/dev-section.css?v=4.2">
+    <link rel="stylesheet" th:href="@{/css/about-section.css(v=4.2)}" href="/css/about-section.css?v=4.2">
+    <link rel="stylesheet" th:href="@{/css/ai-assistant.css(v=4.2)}" href="/css/ai-assistant.css?v=4.2">
 </head>
-<body>
+<body class="dashboard-body">
 
-    <!-- Header Navbar Component -->
+    <!-- TOP NAVIGATION BAR -->
     <div th:replace="~{fragments/admin/navbar :: adminNavbar}"></div>
 
-    <div class="container d-flex flex-column gap-4 pb-5">
+    <!-- MAIN ADMIN DASHBOARD CONTENT AREA -->
+    <div class="container py-4 d-flex flex-column gap-4">
 
-        <!-- Enhanced UI Flash Message Banners -->
+        <!-- Flash Messages -->
         <div class="reveal-on-scroll">
             <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm mb-0 rounded-3 border-0" role="alert" style="background: rgba(25, 135, 84, 0.15); backdrop-filter: blur(10px);">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-check-circle-fill fs-4 text-success"></i>
                     <div>
                         <h6 class="alert-heading mb-0 fw-bold text-success">Success!</h6>
-                        <span class="small" th:text="${success}"></span>
+                        <span class="small" th:text="${success}">Action completed successfully.</span>
                     </div>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -35,40 +42,276 @@
                     <i class="bi bi-exclamation-triangle-fill fs-4 text-danger"></i>
                     <div>
                         <h6 class="alert-heading mb-0 fw-bold text-danger">Error!</h6>
-                        <span class="small" th:text="${error}"></span>
+                        <span class="small" th:text="${error}">An error occurred.</span>
                     </div>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         </div>
 
-        <!-- Pending Account Reactivations Review Component -->
-        <div th:replace="~{fragments/admin/pending-reactivations :: pendingReactivations}"></div>
+        <!-- HERO WELCOME & DIRECT EMBEDDED ADMIN AI ASSISTANT -->
+        <div class="row g-4 reveal-on-scroll">
+            
+            <!-- Central Direct Admin AI Assistant Card -->
+            <div class="col-lg-8">
+                <div class="card card-custom ai-hero-card p-4 p-md-5 h-100 d-flex flex-column justify-content-between focal-card">
+                    <div class="mb-3">
+                        <!-- Responsive Badges Header -->
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-30 rounded-pill px-3 py-1.5 fw-bold">
+                                <i class="bi bi-stars me-1"></i> Admin AI Assistant
+                            </span>
+                            <span class="badge bg-warning bg-opacity-10 text-warning-adaptive border border-warning-adaptive rounded-pill px-3 py-1.5 fw-bold">
+                                <i class="bi bi-shield-lock-fill me-1"></i> System Admin <span class="d-none d-sm-inline">Console</span>
+                            </span>
+                        </div>
+                        <h2 class="display-6 fw-bold text-dark mb-2">
+                            Welcome, <span class="gradient-text" th:text="${adminUser.fullName}">Administrator</span>! 🛡️
+                        </h2>
+                        <p class="text-secondary fs-6 mb-0">
+                            Ask our Admin AI Assistant anything about clearance approvals, OCR verification, account reactivations, or anti-spam rules.
+                        </p>
+                    </div>
 
-        <!-- Document Requests Management Component -->
-        <div th:replace="~{fragments/admin/requests-table :: requestsTable}"></div>
+                    <!-- Direct AI Response Container -->
+                    <div id="aiResponseContainer" class="ai-response-box p-3 rounded-4 mb-3 d-none">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="ai-avatar-icon text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+                                <i class="bi bi-robot fs-5"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <strong class="small fw-bold text-primary">Barangay Admin AI Assistant</strong>
+                                    <button type="button" class="btn btn-sm btn-link p-0 text-muted text-decoration-none small" id="btnClearAiChat" title="Clear Chat">
+                                        <i class="bi bi-x-circle me-1"></i> Clear
+                                    </button>
+                                </div>
+                                <p class="small mb-1 text-muted fw-semibold" id="aiUserQuestionText"></p>
+                                <hr class="my-2 opacity-25">
+                                <div id="aiAnswerText" class="small text-dark leading-relaxed">
+                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                    <span>Analyzing query...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-        <!-- User Accounts Management Component -->
-        <div th:replace="~{fragments/admin/users-table :: usersTable}"></div>
+                    <!-- AI Query Input Box -->
+                    <div class="ai-query-container mb-3">
+                        <div class="input-group input-group-lg">
+                            <input type="text" id="aiStudioInput" class="form-control ai-input shadow-none" placeholder="Type admin query e.g. 'How do I approve document requests?'">
+                            <button class="btn btn-primary px-4 fw-bold text-white rounded-end-3" type="button" id="btnSendAiQuery">
+                                <i class="bi bi-send-fill me-1"></i> Ask AI
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Prompt Chips -->
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="prompt-chip" onclick="fillAiQuery('How do I approve or reject document requests?')">
+                            💡 How to Approve Requests
+                        </span>
+                        <span class="prompt-chip" onclick="fillAiQuery('How does account reactivation work?')">
+                            🔓 Account Reactivations
+                        </span>
+                        <span class="prompt-chip" onclick="fillAiQuery('How does OCR and Face Liveness verification work?')">
+                            🛡️ OCR & Biometric Info
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Quick Stats Bar -->
+            <div class="col-lg-4">
+                <div class="card card-custom p-4 h-100 d-flex flex-column justify-content-between focal-card">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-activity text-primary me-2"></i> Admin Quick Status</h6>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2">Real-time</span>
+                        </div>
+                        
+                        <div class="stat-mini-box mb-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <small class="stat-label d-block uppercase mb-1">TOTAL REQUESTS</small>
+                                    <h4 class="stat-value mb-0" th:text="${#lists.size(requests)}">0</h4>
+                                </div>
+                                <i class="bi bi-folder-check fs-1 text-primary opacity-50"></i>
+                            </div>
+                        </div>
+
+                        <div class="stat-mini-box mb-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <small class="stat-label d-block uppercase mb-1">REACTIVATION REQUESTS</small>
+                                    <h4 class="stat-value text-warning-adaptive mb-0" th:text="${#lists.size(pendingReactivations)}">0</h4>
+                                </div>
+                                <i class="bi bi-person-exclamation fs-1 text-warning-adaptive opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Control Banner -->
+                    <div class="p-3 bg-primary bg-opacity-10 border border-primary border-opacity-30 rounded-3 text-center">
+                        <small class="text-primary fw-bold d-block mb-1"><i class="bi bi-shield-check me-1"></i> Admin Security active</small>
+                        <span class="small text-secondary">Barangay Bulsa-Korapot Portal</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FLOATING ACTION CARDS GRID -->
+        <div class="row g-3 g-md-4 reveal-on-scroll">
+            
+            <!-- Card 0: Document Requests -->
+            <div class="col-md-6 col-xl-4">
+                <div class="card card-custom floating-action-card p-4 focal-card" onclick="openOverlayHub(0)">
+                    <div class="action-card-icon bg-primary bg-opacity-10 text-primary mb-3">
+                        <i class="bi bi-card-checklist fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">Document Requests</h5>
+                    <p class="small text-secondary mb-3">Review resident clearance applications, inspect OCR IDs & approve docs.</p>
+                    <span class="action-link-text">Open Requests Management <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </div>
+
+            <!-- Card 1: Pending Reactivations -->
+            <div class="col-md-6 col-xl-4">
+                <div class="card card-custom floating-action-card p-4 focal-card" onclick="openOverlayHub(1)">
+                    <div class="action-card-icon bg-warning bg-opacity-10 text-warning-adaptive mb-3">
+                        <i class="bi bi-person-exclamation fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">Pending Reactivations</h5>
+                    <p class="small text-secondary mb-3">Approve or reject deactivated resident account reactivation requests.</p>
+                    <span class="action-link-text text-warning-adaptive">Review Reactivations <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </div>
+
+            <!-- Card 2: User Directory & Anti-Spam -->
+            <div class="col-md-6 col-xl-4">
+                <div class="card card-custom floating-action-card p-4 focal-card" onclick="openOverlayHub(2)">
+                    <div class="action-card-icon bg-info bg-opacity-10 text-info mb-3">
+                        <i class="bi bi-people-fill fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">User Directory & Anti-Spam</h5>
+                    <p class="small text-secondary mb-3">Manage registered accounts, roles, and deactivate spammers.</p>
+                    <span class="action-link-text text-info">View User Directory <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </div>
+
+            <!-- Card 3: About System -->
+            <div class="col-md-6 col-xl-6">
+                <div class="card card-custom floating-action-card p-4 focal-card" onclick="openOverlayHub(3)">
+                    <div class="action-card-icon bg-purple bg-opacity-10 text-purple mb-3">
+                        <i class="bi bi-shield-lock-fill fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">About Portal & Capabilities</h5>
+                    <p class="small text-secondary mb-3">Learn about system features, Tesseract OCR, face liveness, and BSIT project disclaimer.</p>
+                    <span class="action-link-text text-purple">System Capabilities <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </div>
+
+            <!-- Card 4: BSIT Developers -->
+            <div class="col-md-12 col-xl-6">
+                <div class="card card-custom floating-action-card p-4 focal-card" onclick="openOverlayHub(4)">
+                    <div class="action-card-icon bg-success bg-opacity-10 text-success mb-3">
+                        <i class="bi bi-code-slash fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">BSIT Developer Team</h5>
+                    <p class="small text-secondary mb-3">Meet the student developers, researchers, and project creators.</p>
+                    <span class="action-link-text text-success">Meet Developers <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </div>
+
+        </div>
 
     </div>
 
-    <!-- Admin Modals & Draggable Widget Component -->
+    <!-- 3D REVOLVING OVERLAY HUB MODAL -->
+    <div class="modal fade" id="overlayHubModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content glass-hub-modal border-0 p-2 p-md-3">
+                
+                <!-- Modal Top Navigation Bar -->
+                <div class="d-flex justify-content-between align-items-center w-100 max-w-7xl mx-auto mb-2 px-2 px-md-3 pt-2">
+                    <!-- Tab Selector Pills inside Modal -->
+                    <div class="d-flex align-items-center gap-1 gap-md-2 modal-tab-pills overflow-x-auto">
+                        <button class="modal-tab-btn active" onclick="switchOverlayTab(0)" id="modalTab0"><i class="bi bi-card-checklist me-1"></i> Requests</button>
+                        <button class="modal-tab-btn" onclick="switchOverlayTab(1)" id="modalTab1"><i class="bi bi-person-exclamation me-1"></i> Reactivations</button>
+                        <button class="modal-tab-btn" onclick="switchOverlayTab(2)" id="modalTab2"><i class="bi bi-people-fill me-1"></i> Users</button>
+                        <button class="modal-tab-btn" onclick="switchOverlayTab(3)" id="modalTab3"><i class="bi bi-info-circle-fill me-1"></i> About</button>
+                        <button class="modal-tab-btn" onclick="switchOverlayTab(4)" id="modalTab4"><i class="bi bi-code-slash me-1"></i> Developers</button>
+                    </div>
+
+                    <!-- Controls: Theme & Close -->
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3 py-1 themeToggleBtn" title="Toggle Dark/Light Mode">
+                            <i class="themeIcon bi bi-moon-fill me-1"></i> <span class="small d-none d-sm-inline">Theme</span>
+                        </button>
+                        <button type="button" class="btn-close btn-close-white ms-1" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+
+                <!-- 3D Revolving Stage Viewport -->
+                <div class="overlay-3d-viewport mx-auto" id="overlay3dViewport">
+                    
+                    <!-- 3D Carousel Cards Container -->
+                    <div class="overlay-3d-carousel" id="overlay3dCarousel">
+                        
+                        <!-- Slide 0: Document Requests Table -->
+                        <div class="overlay-3d-card" id="overlayCard0" onclick="handleOverlayCardClick(0)">
+                            <div class="overlay-card-scroll">
+                                <div th:replace="~{fragments/admin/requests-table :: requestsTable}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 1: Pending Reactivations Table -->
+                        <div class="overlay-3d-card" id="overlayCard1" onclick="handleOverlayCardClick(1)">
+                            <div class="overlay-card-scroll">
+                                <div th:replace="~{fragments/admin/pending-reactivations :: pendingReactivations}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 2: Users Directory Table -->
+                        <div class="overlay-3d-card" id="overlayCard2" onclick="handleOverlayCardClick(2)">
+                            <div class="overlay-card-scroll">
+                                <div th:replace="~{fragments/admin/users-table :: usersTable}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 3: About System Cards -->
+                        <div class="overlay-3d-card" id="overlayCard3" onclick="handleOverlayCardClick(3)">
+                            <div class="overlay-card-scroll">
+                                <div th:replace="~{fragments/admin/about-section :: aboutSection}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 4: BSIT Developers Carousel -->
+                        <div class="overlay-3d-card" id="overlayCard4" onclick="handleOverlayCardClick(4)">
+                            <div class="overlay-card-scroll">
+                                <div th:replace="~{fragments/admin/dev-section :: devSection}"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals & Draggable Widget Component Fragment -->
     <div th:replace="~{fragments/admin/modals :: adminModals}"></div>
 
+    <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:src="@{/js/admin.js}" src="/js/admin.js"></script>
 
-    <!-- Dify AI Chatbot Integration Script -->
-    <script>
-     window.difyChatbotConfig = {
-      token: 'tuMY58SadttfVKCz',
-      inputs: {},
-      systemVariables: {},
-      userVariables: {}
-     }
-    </script>
-    <script src="https://udify.app/embed.min.js" id="tuMY58SadttfVKCz" defer></script>
+    <!-- 3D Parallax Tilt CDN Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+
+    <!-- Admin JS Controller Script -->
+    <script th:src="@{/js/admin.js(v=4.2)}" src="/js/admin.js?v=4.2"></script>
 
 </body>
 </html>

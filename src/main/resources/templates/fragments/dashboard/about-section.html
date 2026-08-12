@@ -1,90 +1,157 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div th:fragment="aboutSection" class="card card-custom p-4 reveal-on-scroll focal-card">
-        <!-- Header Title -->
-        <h5 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
-            <i class="bi bi-info-circle-fill text-primary fs-4"></i> About Barangay Bulsa-Korapot Document Request System
-        </h5>
-        
-        <!-- System Description -->
-        <p class="small text-secondary mb-4 leading-relaxed">
-            The <strong>Barangay Bulsa-Korapot Document Request System</strong> is a comprehensive digital portal designed to automate local government service delivery. It allows residents to request official documents like Barangay Clearances and Certificates remotely while enforcing multi-layered identity verification. Developed strictly as a school project requirement and presentation prototype for our <b>BSIT program</b>.
-        </p>
+    <div th:fragment="aboutSection" class="card card-custom p-3 p-md-4 reveal-on-scroll focal-card">
+        <!-- Section Header -->
+        <div class="text-center mb-4">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold mb-2">
+                <i class="bi bi-stars me-1"></i> System Features & Core Capabilities
+            </span>
+            <h4 class="fw-bold text-dark">About Barangay Bulsa-Korapot Portal</h4>
+            <p class="small text-secondary max-w-2xl mx-auto mb-0">
+                Explore our automated digital local government service features below. Click any card to expand details.
+            </p>
+        </div>
 
-        <!-- 6 Core System Capability Cards -->
-        <div class="row g-3 small">
+        <!-- REFERENCE-STYLE INTERACTIVE FEATURE CARDS GRID -->
+        <div class="about-feature-grid mb-4" id="aboutFeatureGrid">
             
-            <!-- 1. Remote Document Application -->
-            <div class="col-md-6 col-lg-4">
-                <div class="p-3 about-card h-100 rounded-3">
-                    <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                        <i class="bi bi-file-earmark-text fs-5 text-primary"></i>
-                        <span>Online Document Application</span>
+            <!-- Card 1: Online Application -->
+            <div class="about-feature-card active" onclick="toggleFeatureCard(this)">
+                <div class="feature-card-visual bg-gradient-blue">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-file-earmark-text-fill"></i>
                     </div>
-                    <div class="text-secondary">Enables residents to request Barangay Clearances, Certificates of Residency, and Indigency remotely without physical queuing.</div>
+                </div>
+                <div class="feature-card-body">
+                    <h6 class="feature-card-title">Online Application</h6>
+                    <p class="feature-card-preview">Remote document request system...</p>
+                    <div class="feature-card-drawer">
+                        <p class="feature-card-desc">
+                            Enables residents to request Barangay Clearances, Certificates of Residency, and Indigency remotely without physical queuing.
+                        </p>
+                        <div class="feature-card-footer">
+                            <span class="feature-badge"><i class="bi bi-check2-circle me-1"></i> 24/7 Access</span>
+                            <button type="button" class="feature-action-btn">Active</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 2. Automated Tesseract OCR -->
-            <div class="col-md-6 col-lg-4">
-                <div class="p-3 about-card h-100 rounded-3">
-                    <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                        <i class="bi bi-card-text fs-5 text-info"></i>
-                        <span>Automated Tesseract OCR</span>
+            <!-- Card 2: Tesseract OCR -->
+            <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                <div class="feature-card-visual bg-gradient-cyan">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-card-heading"></i>
                     </div>
-                    <div class="text-secondary">Integrates Tesseract.js to automatically analyze uploaded IDs (PhilSys, School ID, Driver's License, UMID) for validity verification.</div>
+                </div>
+                <div class="feature-card-body">
+                    <h6 class="feature-card-title">Tesseract OCR</h6>
+                    <p class="feature-card-preview">Automated client-side ID reading...</p>
+                    <div class="feature-card-drawer">
+                        <p class="feature-card-desc">
+                            Integrates Tesseract.js directly inside the client browser to automatically read and analyze uploaded IDs for valid identity verification.
+                        </p>
+                        <div class="feature-card-footer">
+                            <span class="feature-badge"><i class="bi bi-cpu me-1"></i> Client-Side AI</span>
+                            <button type="button" class="feature-action-btn">Explore</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 3. Biometric Liveness Verification -->
-            <div class="col-md-6 col-lg-4">
-                <div class="p-3 about-card h-100 rounded-3">
-                    <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                        <i class="bi bi-person-bounding-box fs-5 text-success"></i>
-                        <span>Biometric Liveness Scan</span>
+            <!-- Card 3: Biometric Scan -->
+            <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                <div class="feature-card-visual bg-gradient-emerald">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-person-bounding-box"></i>
                     </div>
-                    <div class="text-secondary">Powered by MediaPipe FaceMesh for 3-step real-time head landmark tracking to prevent proxy and fraudulent submissions.</div>
+                </div>
+                <div class="feature-card-body">
+                    <h6 class="feature-card-title">Biometric Liveness Scan</h6>
+                    <p class="feature-card-preview">3D Real-time face tracking...</p>
+                    <div class="feature-card-drawer">
+                        <p class="feature-card-desc">
+                            Powered by MediaPipe FaceMesh for real-time 3D head-pose tracking. Enforces 3-step physical liveness checks to prevent fraudulent requests.
+                        </p>
+                        <div class="feature-card-footer">
+                            <span class="feature-badge"><i class="bi bi-shield-check me-1"></i> MediaPipe</span>
+                            <button type="button" class="feature-action-btn">Explore</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 4. Telegram Alerts & OTP Bot -->
-            <div class="col-md-6 col-lg-4">
-                <div class="p-3 about-card h-100 rounded-3">
-                    <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                        <i class="bi bi-telegram fs-5 text-primary"></i>
-                        <span>Telegram Alerts & OTP Bot</span>
+            <!-- Card 4: Telegram Alerts -->
+            <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                <div class="feature-card-visual bg-gradient-purple">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-telegram"></i>
                     </div>
-                    <div class="text-secondary">Dispatches instant request approval/rejection alerts and 6-digit registration OTP codes directly via <b>@BrgyDocRequestBot</b>.</div>
+                </div>
+                <div class="feature-card-body">
+                    <h6 class="feature-card-title">Telegram Alerts & Bot</h6>
+                    <p class="feature-card-preview">Instant OTP & status updates...</p>
+                    <div class="feature-card-drawer">
+                        <p class="feature-card-desc">
+                            Dispatches automated real-time status alerts and 6-digit registration OTP codes directly to residents' Telegram accounts via @BrgyDocRequestBot.
+                        </p>
+                        <div class="feature-card-footer">
+                            <span class="feature-badge"><i class="bi bi-bell-fill me-1"></i> Instant Alerts</span>
+                            <button type="button" class="feature-action-btn">Explore</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 5. Embedded AI Assistant -->
-            <div class="col-md-6 col-lg-4">
-                <div class="p-3 about-card h-100 rounded-3">
-                    <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                        <i class="bi bi-robot fs-5 text-warning"></i>
-                        <span>Embedded AI Assistant</span>
+            <!-- Card 5: AI Assistant -->
+            <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                <div class="feature-card-visual bg-gradient-amber">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-robot"></i>
                     </div>
-                    <div class="text-secondary">Features a bilingual (Tagalog/English) AI engine to answer queries regarding clearances, requirements, and portal navigation.</div>
+                </div>
+                <div class="feature-card-body">
+                    <h6 class="feature-card-title">Embedded AI Assistant</h6>
+                    <p class="feature-card-preview">Bilingual Tagalog/English chatbot...</p>
+                    <div class="feature-card-drawer">
+                        <p class="feature-card-desc">
+                            Employs a custom-built chatbot engine designed to instantly resolve queries regarding documentary requirements, process guides, or portal navigation.
+                        </p>
+                        <div class="feature-card-footer">
+                            <span class="feature-badge"><i class="bi bi-chat-dots me-1"></i> Smart Bot</span>
+                            <button type="button" class="feature-action-btn">Explore</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 6. Admin Controls & Anti-Spam -->
-            <div class="col-md-6 col-lg-4">
-                <div class="p-3 about-card h-100 rounded-3">
-                    <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
-                        <i class="bi bi-sliders fs-5 text-danger"></i>
-                        <span>Admin & Anti-Spam Controls</span>
+            <!-- Card 6: Admin Controls -->
+            <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                <div class="feature-card-visual bg-gradient-rose">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-sliders"></i>
                     </div>
-                    <div class="text-secondary">Equips barangay officials with verification review tools, user account controls, and automated anti-spam click protection.</div>
+                </div>
+                <div class="feature-card-body">
+                    <h6 class="feature-card-title">Admin Controls</h6>
+                    <p class="feature-card-preview">Secure approval dashboards...</p>
+                    <div class="feature-card-drawer">
+                        <p class="feature-card-desc">
+                            Equips local barangay administrators with secure document review dashboards, user management controls, and anti-spam warning mitigations.
+                        </p>
+                        <div class="feature-card-footer">
+                            <span class="feature-badge"><i class="bi bi-shield-lock me-1"></i> Secure Admin</span>
+                            <button type="button" class="feature-action-btn">Explore</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
         </div>
 
         <!-- Academic Disclaimer Banner -->
-        <div class="alert alert-warning bg-warning bg-opacity-10 border-warning border-opacity-25 text-dark small mb-0 rounded-3 mt-4">
+        <div class="alert alert-warning bg-warning bg-opacity-10 border-warning border-opacity-25 text-dark small mb-0 rounded-3">
             <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> <strong>Academic Prototype Disclaimer:</strong> This web application is strictly an academic project prototype developed for BSIT program demonstration purposes.
         </div>
     </div>

@@ -1,4 +1,330 @@
-// Automatic Scroll Reveal Animation
+// =========================================================
+// BARANGAY ADMIN CONSOLE 3D STAGE & AI ASSISTANT CONTROLLER
+// =========================================================
+
+let currentOverlayTab = 0;
+let overlayHubModal = null;
+
+// Open Overlay Hub Modal at specific Tab Index
+function openOverlayHub(tabIndex) {
+    if (!overlayHubModal) {
+        const modalEl = document.getElementById('overlayHubModal');
+        if (modalEl) overlayHubModal = new bootstrap.Modal(modalEl);
+    }
+    currentOverlayTab = tabIndex;
+    if (overlayHubModal) overlayHubModal.show();
+    setTimeout(() => {
+        update3dOverlayHub();
+        if (currentOverlayTab === 4) {
+            updateDev3dCarousel();
+        }
+    }, 150);
+}
+
+function closeOverlayHub() {
+    if (overlayHubModal) {
+        overlayHubModal.hide();
+    }
+}
+
+function switchOverlayTab(tabIndex) {
+    currentOverlayTab = tabIndex;
+    update3dOverlayHub();
+}
+
+function rotateOverlayHub(direction) {
+    const total = 5; // 0: Requests, 1: Reactivations, 2: Users, 3: About, 4: Developers
+    currentOverlayTab += direction;
+    if (currentOverlayTab < 0) currentOverlayTab = total - 1;
+    if (currentOverlayTab >= total) currentOverlayTab = 0;
+    update3dOverlayHub();
+}
+
+function handleOverlayCardClick(cardIndex) {
+    if (cardIndex !== currentOverlayTab) {
+        currentOverlayTab = cardIndex;
+        update3dOverlayHub();
+    }
+}
+
+// 3D Revolving Stage Math
+function update3dOverlayHub() {
+    const cards = document.querySelectorAll('.overlay-3d-card');
+    const total = cards.length;
+    if (total === 0) return;
+
+    const isMobile = window.innerWidth <= 768;
+    const spacing = isMobile ? 280 : 420;
+
+    cards.forEach((card, index) => {
+        let diff = index - currentOverlayTab;
+        let absDiff = Math.abs(diff);
+
+        let translateX = diff * spacing;
+        let translateZ = -Math.min(absDiff * 220, 500);
+        let rotateY = diff < 0 ? Math.min(Math.abs(diff) * 35, 60) : -Math.min(Math.abs(diff) * 35, 60);
+        let scale = Math.max(1 - absDiff * 0.12, 0.65);
+        let opacity = diff === 0 ? 1 : Math.max(0.35, 1 - absDiff * 0.4);
+
+        card.style.transform = `translate(-50%, -50%) translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
+        card.style.opacity = opacity;
+        card.style.zIndex = 30 - absDiff;
+
+        if (diff === 0) {
+            card.classList.add('active-overlay-card');
+            card.style.pointerEvents = 'auto';
+            card.style.filter = 'none';
+        } else {
+            card.classList.remove('active-overlay-card');
+            card.style.pointerEvents = 'auto';
+            card.style.filter = 'brightness(0.55) blur(2px)';
+        }
+    });
+
+    if (currentOverlayTab === 4) {
+        setTimeout(updateDev3dCarousel, 50);
+    }
+
+    for (let i = 0; i < total; i++) {
+        const tabBtn = document.getElementById(`modalTab${i}`);
+        if (tabBtn) {
+            if (i === currentOverlayTab) {
+                tabBtn.classList.add('active');
+            } else {
+                tabBtn.classList.remove('active');
+            }
+        }
+    }
+
+    const navPillsMap = ['pillRequests', 'pillReactivations', 'pillUsers', 'pillAbout', 'pillDevs'];
+    navPillsMap.forEach((pillId, idx) => {
+        const pill = document.getElementById(pillId);
+        if (pill) {
+            if (idx === currentOverlayTab) {
+                pill.classList.add('active');
+            } else {
+                pill.classList.remove('active');
+            }
+        }
+    });
+}
+
+// DEVELOPER 3D CAROUSEL CONTROLLER
+let currentDevTab = 0;
+
+function updateDev3dCarousel() {
+    const cards = document.querySelectorAll('.dev-3d-card');
+    const total = cards.length;
+    if (total === 0) return;
+
+    const isMobile = window.innerWidth <= 768;
+    const spacing = isMobile ? 180 : 260;
+
+    cards.forEach((card, index) => {
+        let diff = index - currentDevTab;
+        
+        if (diff > total / 2) diff -= total;
+        if (diff < -total / 2) diff += total;
+
+        let absDiff = Math.abs(diff);
+
+        let translateX = diff * spacing;
+        let translateZ = -Math.min(absDiff * 160, 400);
+        let rotateY = diff < 0 ? Math.min(Math.abs(diff) * 28, 45) : -Math.min(Math.abs(diff) * 28, 45);
+        let scale = Math.max(1 - absDiff * 0.12, 0.65);
+        let opacity = Math.max(1 - absDiff * 0.35, 0);
+
+        card.style.transform = `translate(-50%, -50%) translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
+        card.style.opacity = opacity;
+        card.style.zIndex = 30 - absDiff;
+
+        if (diff === 0) {
+            card.classList.add('active-dev-card');
+            card.style.pointerEvents = 'auto';
+            card.style.filter = 'none';
+        } else {
+            card.classList.remove('active-dev-card');
+            card.style.pointerEvents = 'auto';
+            card.style.filter = 'brightness(0.65) blur(1px)';
+        }
+    });
+}
+
+function rotateDev3d(direction) {
+    const total = 7;
+    currentDevTab += direction;
+    if (currentDevTab < 0) currentDevTab = total - 1;
+    if (currentDevTab >= total) currentDevTab = 0;
+    updateDev3dCarousel();
+}
+
+function selectDev3d(index) {
+    const total = 7;
+    if (index >= 0 && index < total && index !== currentDevTab) {
+        currentDevTab = index;
+        updateDev3dCarousel();
+    }
+}
+
+// TOGGLE ABOUT FEATURE CARDS
+function toggleFeatureCard(cardElement) {
+    const allCards = document.querySelectorAll('.about-feature-card');
+    allCards.forEach(card => {
+        if (card !== cardElement) {
+            card.classList.remove('active');
+        }
+    });
+    cardElement.classList.toggle('active');
+}
+
+// DIRECT EMBEDDED ADMIN AI ASSISTANT ENGINE
+function fillAiQuery(text) {
+    const aiInput = document.getElementById('aiStudioInput');
+    if (aiInput) {
+        aiInput.value = text;
+        handleSendAiQuery();
+    }
+}
+
+function handleSendAiQuery() {
+    const aiInput = document.getElementById('aiStudioInput');
+    const responseBox = document.getElementById('aiResponseContainer');
+    const userQuestionText = document.getElementById('aiUserQuestionText');
+    const aiAnswerText = document.getElementById('aiAnswerText');
+
+    if (!aiInput || !aiInput.value.trim() || !responseBox) return;
+
+    const query = aiInput.value.trim();
+    userQuestionText.innerHTML = `<i class="bi bi-person-fill text-primary me-1"></i> Admin Asked: "${query}"`;
+    responseBox.classList.remove('d-none');
+
+    aiAnswerText.innerHTML = `
+        <div class="d-flex align-items-center gap-2 py-1">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            <span class="text-muted">Admin AI is analyzing system records...</span>
+        </div>
+    `;
+
+    setTimeout(() => {
+        const answer = generateAdminAiResponse(query);
+        aiAnswerText.innerHTML = answer;
+    }, 600);
+}
+
+function generateAdminAiResponse(query) {
+    const q = query.toLowerCase().trim();
+    const containsAny = (keywords) => keywords.some(k => q.includes(k));
+
+    if (q === 'hi' || q === 'hello' || q === 'hey' || containsAny(['sino ka', 'who are you', 'what are you', 'magandang araw'])) {
+        return `
+            <strong><i class="bi bi-shield-lock-fill text-warning me-1"></i> Barangay Admin AI Assistant 👋</strong><br>
+            Magandang araw, Administrator! Ako ang inyong <b>Barangay Admin AI Assistant</b>.<br><br>
+            💡 <b>Maaari mo akong tanungin tungkol sa:</b><br>
+            • <b>Document Request Approvals:</b> Paano mag-approve, mag-reject, o mag-delete ng requests.<br>
+            • <b>Account Reactivations:</b> Paano i-approve ang deactivated residents.<br>
+            • <b>OCR & Biometric Security:</b> Tesseract.js ID checking at MediaPipe Face scan.<br>
+            • <b>User Directory & Anti-Spam:</b> Deactivating suspicious resident accounts.
+        `;
+    }
+
+    if (containsAny(['approve', 'reject', 'remarks', 'paano mag approve', 'how to approve', 'document request', 'delete'])) {
+        return `
+            <strong><i class="bi bi-card-checklist text-primary me-1"></i> Document Request Management:</strong><br>
+            • <b>Viewing OCR & Selfie Proof:</b> I-click ang <b>"View Verification"</b> button para makita ang uploaded Valid ID at Selfie holding ID ng residente.<br>
+            • <b>Approving Requests:</b> I-click ang berdeng <b>Check</b> icon o <b>"Approve"</b> button, at maglagay ng optional remarks.<br>
+            • <b>Rejecting Requests:</b> I-click ang pulang <b>X</b> icon, at maglagay ng dahilan (e.g., <i>"Unclear Selfie / Invalid ID"</i>).<br>
+            • <b>Telegram Alert:</b> Matapos i-approve/reject, awtomatikong makakatanggap ng notification ang residente sa Telegram!
+        `;
+    }
+
+    if (containsAny(['reactivate', 'reactivation', 'deactivated', 'lock out', 'unlock'])) {
+        return `
+            <strong><i class="bi bi-person-exclamation text-warning me-1"></i> Account Reactivation Management:</strong><br>
+            • Kapag nag-deactivate ang isang residente ng kanyang account, kailangan nito ng <b>Admin Approval</b> para muling maka-login.<br>
+            • Makikita ang mga humihingi ng reactivation sa <b>"Pending Account Reactivation Requests"</b> card o tab.<br>
+            • I-click ang <b>"Approve"</b> button para ibalik the access ng residente!
+        `;
+    }
+
+    if (containsAny(['ocr', 'face scan', 'liveness', 'tesseract', 'mediapipe', 'verification', 'id check'])) {
+        return `
+            <strong><i class="bi bi-shield-check text-success me-1"></i> Identity Verification System:</strong><br>
+            • <b>Tesseract OCR:</b> Awtomatikong binabasa ang text sa uploaded ID para makumpirma kung National ID, School ID, Driver's License, UMID, o Barangay ID ito.<br>
+            • <b>MediaPipe Liveness Scan:</b> Sinisigurado ng system na buhay at totoong tao ang nag-aapply sa pamamagitan ng 3D head pose tracking (Left/Right turn).
+        `;
+    }
+
+    if (containsAny(['spam', 'deactivate user', 'ban', 'user directory', 'anti-spam'])) {
+        return `
+            <strong><i class="bi bi-people-fill text-info me-1"></i> User Directory & Anti-Spam Controls:</strong><br>
+            • Makikita ang lahat ng rehistradong accounts sa <b>"Registered Users Directory"</b> tab.<br>
+            • Kung may resident na nagi-spam ng requests o nag-violate ng security rules, i-click ang <b>"Deactivate"</b> button sa tabi ng kanyang account para i-lockout siya.
+        `;
+    }
+
+    if (containsAny(['developer', 'creator', 'who made', 'sino gumawa', 'bsit'])) {
+        return `
+            <strong><i class="bi bi-code-slash text-primary me-1"></i> BSIT Project Team:</strong><br>
+            • <b>Lead Developer:</b> Jeffrey M. Serrano Jr.<br>
+            • <b>Assistant Developer:</b> Jalayahay, Jessa Mae P.<br>
+            • <b>Presentor:</b> Mines, Manzor M.<br>
+            • <b>Documentation Team:</b> Gutierrez, Rovil B., Prescillas, Ej Y., Kurt Bactat Russel, Tyrone James Oribiada.
+        `;
+    }
+
+    return `
+        <strong><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Admin AI Scope Notice:</strong><br>
+        Administrator! 👋 Ako ang <b>Barangay Admin AI Assistant</b> na nakadisenyo para tumulong sa pamamahala ng portal.<br><br>
+        💡 <b>Maaari mo akong tanungin tungkol sa:</b><br>
+        • "Paano mag-approve o mag-reject ng document requests?"<br>
+        • "Paano ang Account Reactivations?"<br>
+        • "Paano gumagana ang OCR at Biometric Liveness Check?"<br>
+        • "Paano i-deactivate ang spammer account?"
+    `;
+}
+
+document.getElementById('btnSendAiQuery')?.addEventListener('click', handleSendAiQuery);
+document.getElementById('aiStudioInput')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSendAiQuery();
+    }
+});
+
+document.getElementById('btnClearAiChat')?.addEventListener('click', () => {
+    const responseBox = document.getElementById('aiResponseContainer');
+    const aiInput = document.getElementById('aiStudioInput');
+    if (responseBox) responseBox.classList.add('d-none');
+    if (aiInput) aiInput.value = '';
+});
+
+// TOUCH SWIPE ENGINE
+function detectSwipe(elementId, callback) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    element.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    element.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diffX = touchEndX - touchStartX;
+
+        if (Math.abs(diffX) > 50) {
+            if (diffX > 0) {
+                callback(-1);
+            } else {
+                callback(1);
+            }
+        }
+    }, { passive: true });
+}
+
+// SCROLL REVEAL & FOCAL CARD CONTROLLER
 const observerOptions = { root: null, threshold: 0.15 };
 const observer = new IntersectionObserver((entries, obs) => {
     entries.forEach(entry => {
@@ -11,7 +337,6 @@ const observer = new IntersectionObserver((entries, obs) => {
 
 document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
 
-// Scroll-Driven Focal Card Focus Effect
 const focalCards = document.querySelectorAll('.focal-card');
 function updateFocalCards() {
     const viewportCenter = window.innerHeight / 2;
@@ -40,269 +365,115 @@ function updateFocalCards() {
 
 window.addEventListener('scroll', updateFocalCards, { passive: true });
 window.addEventListener('resize', updateFocalCards);
-document.addEventListener('DOMContentLoaded', updateFocalCards);
 
-// Dark Mode Initialization & Toggle Handler
+// DARK / LIGHT THEME CONTROLLER
 const htmlElement = document.documentElement;
-const themeToggleBtn = document.getElementById('themeToggleBtn');
-const themeIcon = document.getElementById('themeIcon');
 
 function setTheme(theme) {
     htmlElement.setAttribute('data-bs-theme', theme);
     localStorage.setItem('portal_theme', theme);
-    if (themeIcon) {
+    document.querySelectorAll('.themeIcon').forEach(icon => {
         if (theme === 'dark') {
-            themeIcon.className = 'bi bi-sun-fill text-warning';
+            icon.className = 'themeIcon bi bi-sun-fill text-warning';
         } else {
-            themeIcon.className = 'bi bi-moon-fill';
+            icon.className = 'themeIcon bi bi-moon-fill';
         }
-    }
+    });
 }
 
 const savedTheme = localStorage.getItem('portal_theme') || 'light';
 setTheme(savedTheme);
 
-if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
+document.querySelectorAll('.themeToggleBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
         const currentTheme = htmlElement.getAttribute('data-bs-theme');
         setTheme(currentTheme === 'dark' ? 'light' : 'dark');
     });
-}
+});
 
-// Draggable Floating GIF Widget
-(function makeDraggable() {
-    const widget = document.getElementById("draggableWidget");
-    if (!widget) return;
-    let isDragging = false;
-    let startX, startY, initialLeft, initialTop;
-
-    window.addEventListener("DOMContentLoaded", () => {
-        const savedLeft = localStorage.getItem("gif_pos_left");
-        const savedTop = localStorage.getItem("gif_pos_top");
-
-        if (savedLeft !== null && savedTop !== null) {
-            widget.style.left = savedLeft + "px";
-            widget.style.top = savedTop + "px";
-        } else {
-            const maxLeft = window.innerWidth - widget.offsetWidth;
-            const maxTop = window.innerHeight - widget.offsetHeight;
-            widget.style.left = Math.max(0, maxLeft / 2) + "px";
-            widget.style.top = Math.max(0, maxTop / 2) + "px";
-        }
-    });
-
-    widget.addEventListener("mousedown", dragStart);
-    document.addEventListener("mousemove", dragMove);
-    document.addEventListener("mouseup", dragEnd);
-
-    widget.addEventListener("touchstart", dragStart, { passive: false });
-    document.addEventListener("touchmove", dragMove, { passive: false });
-    document.addEventListener("touchend", dragEnd);
-
-    function dragStart(e) {
-        isDragging = true;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-        const rect = widget.getBoundingClientRect();
-        startX = clientX;
-        startY = clientY;
-        initialLeft = rect.left;
-        initialTop = rect.top;
-
-        widget.style.bottom = "auto";
-        widget.style.right = "auto";
-        widget.style.left = initialLeft + "px";
-        widget.style.top = initialTop + "px";
-    }
-
-    function dragMove(e) {
-        if (!isDragging) return;
-        if (e.cancelable) e.preventDefault();
-
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-        const deltaX = clientX - startX;
-        const deltaY = clientY - startY;
-
-        let newLeft = initialLeft + deltaX;
-        let newTop = initialTop + deltaY;
-
-        const maxLeft = window.innerWidth - widget.offsetWidth;
-        const maxTop = window.innerHeight - widget.offsetHeight;
-
-        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-        newTop = Math.max(0, Math.min(newTop, maxTop));
-
-        widget.style.left = newLeft + "px";
-        widget.style.top = newTop + "px";
-    }
-
-    function dragEnd() {
-        if (isDragging) {
-            isDragging = false;
-            localStorage.setItem("gif_pos_left", parseInt(widget.style.left));
-            localStorage.setItem("gif_pos_top", parseInt(widget.style.top));
-        }
-    }
-})();
-
-// Draggable Dify Chatbot Initialization
-(function makeDifyDraggable() {
-  let difyBtn = null;
-  let isDragging = false;
-  let hasDragged = false;
-  let startX, startY, initialLeft, initialTop;
-
-  function updateDifyPositions(left, top) {
-    difyBtn = document.getElementById('dify-chatbot-bubble-button');
-    if (!difyBtn) return;
-
-    const btnWidth = difyBtn.offsetWidth || 56;
-    const btnHeight = difyBtn.offsetHeight || 56;
-    const maxLeft = window.innerWidth - btnWidth;
-    const maxTop = window.innerHeight - btnHeight;
-
-    const clampedLeft = Math.max(10, Math.min(left, maxLeft - 10));
-    const clampedTop = Math.max(10, Math.min(top, maxTop - 10));
-
-    difyBtn.style.setProperty('left', clampedLeft + 'px', 'important');
-    difyBtn.style.setProperty('top', clampedTop + 'px', 'important');
-    difyBtn.style.setProperty('bottom', 'auto', 'important');
-    difyBtn.style.setProperty('right', 'auto', 'important');
-
-    localStorage.setItem('dify_btn_left', clampedLeft);
-    localStorage.setItem('dify_btn_top', clampedTop);
-
-    const difyWindow = document.getElementById('dify-chatbot-bubble-window');
-    if (difyWindow) {
-      const isMobile = window.innerWidth <= 640;
-      const winWidth = isMobile ? (window.innerWidth - 32) : 384;
-      const winHeight = Math.min(608, window.innerHeight - 120);
-
-      let winLeft, winTop;
-
-      if (clampedLeft + winWidth > window.innerWidth - 16) {
-        winLeft = Math.max(16, clampedLeft + btnWidth - winWidth);
-      } else {
-        winLeft = Math.max(16, clampedLeft);
-      }
-
-      if (clampedTop > winHeight + 20) {
-        winTop = clampedTop - winHeight - 12;
-      } else {
-        winTop = clampedTop + btnHeight + 12;
-      }
-
-      winLeft = Math.max(10, Math.min(winLeft, window.innerWidth - winWidth - 10));
-      winTop = Math.max(10, Math.min(winTop, window.innerHeight - winHeight - 10));
-
-      difyWindow.style.setProperty('left', winLeft + 'px', 'important');
-      difyWindow.style.setProperty('top', winTop + 'px', 'important');
-      difyWindow.style.setProperty('bottom', 'auto', 'important');
-      difyWindow.style.setProperty('right', 'auto', 'important');
-    }
-  }
-
-  function initDifyDrag() {
-    difyBtn = document.getElementById('dify-chatbot-bubble-button');
-    if (!difyBtn) {
-      setTimeout(initDifyDrag, 150);
-      return;
-    }
-
-    difyBtn.style.position = 'fixed';
-    difyBtn.style.touchAction = 'none';
-
-    const savedLeft = localStorage.getItem('dify_btn_left');
-    const savedTop = localStorage.getItem('dify_btn_top');
-
-    if (savedLeft !== null && savedTop !== null) {
-      updateDifyPositions(parseFloat(savedLeft), parseFloat(savedTop));
+// GLOBAL SEARCH & STATUS FILTER ENGINE
+window.filterAdminRequests = function(status, btnEl) {
+    const buttons = document.querySelectorAll('.admin-filter-btn');
+    buttons.forEach(b => b.classList.remove('active'));
+    
+    if (btnEl) {
+        btnEl.classList.add('active');
     } else {
-      const defaultLeft = window.innerWidth - (difyBtn.offsetWidth || 56) - 24;
-      const defaultTop = window.innerHeight - (difyBtn.offsetHeight || 56) - 24;
-      updateDifyPositions(defaultLeft, defaultTop);
+        const matchBtn = document.querySelector(`.admin-filter-btn[data-filter="${status}"]`);
+        if (matchBtn) matchBtn.classList.add('active');
     }
 
-    difyBtn.addEventListener('mousedown', dragStart);
-    document.addEventListener('mousemove', dragMove);
-    document.addEventListener('mouseup', dragEnd);
+    const query = (document.getElementById('adminRequestSearch')?.value || '').toLowerCase().trim();
+    const items = document.querySelectorAll('#adminRequestsBody .admin-req-row, #adminRequestsMobileList .admin-req-mobile-card');
 
-    difyBtn.addEventListener('touchstart', dragStart, { passive: false });
-    document.addEventListener('touchmove', dragMove, { passive: false });
-    document.addEventListener('touchend', dragEnd);
+    items.forEach(item => {
+        const itemStatus = (item.getAttribute('data-status') || '').toUpperCase().trim();
+        const nameText = (item.querySelector('.admin-res-name')?.innerText || '').toLowerCase();
+        const docText = (item.querySelector('.admin-doc-type')?.innerText || '').toLowerCase();
+        const purposeText = (item.querySelector('.admin-purpose-text')?.innerText || '').toLowerCase();
 
-    difyBtn.addEventListener('click', (e) => {
-      if (hasDragged) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        hasDragged = false;
-      }
-    }, true);
+        const matchesStatus = (status === 'ALL' || itemStatus === status);
+        const matchesSearch = (!query || nameText.includes(query) || docText.includes(query) || purposeText.includes(query));
 
-    const observer = new MutationObserver(() => {
-      const currentLeft = parseFloat(difyBtn.style.left) || (window.innerWidth - 80);
-      const currentTop = parseFloat(difyBtn.style.top) || (window.innerHeight - 80);
-      updateDifyPositions(currentLeft, currentTop);
+        if (matchesStatus && matchesSearch) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
+};
 
-  function dragStart(e) {
-    difyBtn = document.getElementById('dify-chatbot-bubble-button');
-    if (!difyBtn) return;
+window.searchAdminRequests = function() {
+    const activeBtn = document.querySelector('.admin-filter-btn.active');
+    const currentFilter = activeBtn ? (activeBtn.getAttribute('data-filter') || 'ALL') : 'ALL';
+    window.filterAdminRequests(currentFilter, activeBtn);
+};
 
-    isDragging = true;
-    hasDragged = false;
+// =========================================================
+// NESTED MODAL HANDLER (KEEPS 3D OVERLAY HUB OPEN AFTER ACTIONS)
+// =========================================================
+(function initNestedModalHandler() {
+    let activeHubTabBeforeAction = null;
 
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    document.addEventListener('show.bs.modal', function (event) {
+        const modalEl = event.target;
+        if (modalEl.id !== 'overlayHubModal') {
+            const hubEl = document.getElementById('overlayHubModal');
+            if (hubEl && (hubEl.classList.contains('show') || hubEl.style.display === 'block')) {
+                activeHubTabBeforeAction = typeof currentOverlayTab !== 'undefined' ? currentOverlayTab : 0;
+            }
+        }
+    });
 
-    const rect = difyBtn.getBoundingClientRect();
-    startX = clientX;
-    startY = clientY;
-    initialLeft = rect.left;
-    initialTop = rect.top;
-  }
-
-  function dragMove(e) {
-    if (!isDragging) return;
-
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-    const deltaX = clientX - startX;
-    const deltaY = clientY - startY;
-
-    if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
-      hasDragged = true;
-    }
-
-    if (e.cancelable) e.preventDefault();
-
-    updateDifyPositions(initialLeft + deltaX, initialTop + deltaY);
-  }
-
-  function dragEnd() {
-    if (isDragging) {
-      isDragging = false;
-    }
-  }
-
-  if (document.readyState === 'complete') {
-    initDifyDrag();
-  } else {
-    window.addEventListener('load', initDifyDrag);
-  }
-
-  window.addEventListener('resize', () => {
-    if (difyBtn) {
-      const currentLeft = parseFloat(difyBtn.style.left) || (window.innerWidth - 80);
-      const currentTop = parseFloat(difyBtn.style.top) || (window.innerHeight - 80);
-      updateDifyPositions(currentLeft, currentTop);
-    }
-  });
+    document.addEventListener('hidden.bs.modal', function (event) {
+        const modalEl = event.target;
+        if (modalEl.id !== 'overlayHubModal' && activeHubTabBeforeAction !== null) {
+            const savedTab = activeHubTabBeforeAction;
+            activeHubTabBeforeAction = null;
+            
+            setTimeout(() => {
+                openOverlayHub(savedTab);
+            }, 100);
+        }
+    });
 })();
+
+// INITIALIZE LISTENERS
+document.addEventListener('DOMContentLoaded', () => {
+    detectSwipe('overlay3dCarousel', rotateOverlayHub);
+    detectSwipe('dev3dCarousel', rotateDev3d);
+
+    if (typeof VanillaTilt !== 'undefined') {
+        VanillaTilt.init(document.querySelectorAll(".dev-card-inner"), {
+            max: 18,
+            speed: 800,
+            glare: true,
+            "max-glare": 0.35,
+            perspective: 1000,
+            scale: 1.04
+        });
+    }
+
+    updateDev3dCarousel();
+    updateFocalCards();
+});

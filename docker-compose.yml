@@ -9,6 +9,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: doc_request_db
     ports:
+      # Host 3307 maps to Docker internal 3306 (prevents port conflicts with local MySQL)
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
@@ -28,9 +29,11 @@ services:
       mysqldb:
         condition: service_healthy
     environment:
+      # Inside Docker network, use internal container port 3306
       SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/doc_request_db?allowPublicKeyRetrieval=true&useSSL=false
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-8899447670:AAEf2lB22lM9eFM9aCVDZLGhL-bXhq068LA}
     volumes:
       - ./uploads:/app/uploads
     develop:

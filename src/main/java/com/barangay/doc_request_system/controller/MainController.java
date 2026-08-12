@@ -130,21 +130,18 @@ public class MainController {
 
     @GetMapping("/dashboard")
     public String viewDashboard(HttpSession session, Model model) {
-        // 1. Check if the user is banned or deactivated
         String redirectUrl = checkUserAndRedirect(session);
         if (redirectUrl != null) {
-            return redirectUrl; // Redirects them to /spam-banned or / if not logged in
+            return redirectUrl;
         }
         
-        // 2. Proceed with loading the dashboard for valid users
         User user = getAuthenticatedUser(session);
         model.addAttribute("user", user);
         
-        // Fetch user requests to populate the history table
         List<DocumentRequest> requests = requestRepository.findByUser(user);
         model.addAttribute("requests", requests);
         
-        return "dashboard"; // Renders your dashboard.html
+        return "dashboard";
     }
 
     @PostMapping("/request/submit")
@@ -394,18 +391,15 @@ public class MainController {
 
         long currentTime = System.currentTimeMillis();
         
-        // Track print timestamps in a sliding window of 10 seconds (10000 ms)
         List<Long> printTimestamps = (List<Long>) session.getAttribute("printTimestamps");
         if (printTimestamps == null) {
             printTimestamps = new ArrayList<>();
         }
 
         printTimestamps.add(currentTime);
-        // Remove timestamps older than 10 seconds
         printTimestamps.removeIf(timestamp -> (currentTime - timestamp) > 10000);
         session.setAttribute("printTimestamps", printTimestamps);
 
-        // Trigger deactivation if 5 print attempts occur within 10 seconds
         if (printTimestamps.size() >= 5) {
             if (user != null && !"ADMIN".equals(user.getRole())) {
                 ArchivedUser archivedUser = new ArchivedUser(user);
@@ -436,26 +430,21 @@ public class MainController {
         User currentUser = getAuthenticatedUser(session);
         
         if (currentUser != null) {
-            // Fetch the fresh user from the database to ensure we update the latest record
             User freshUser = userRepository.findById(currentUser.getId()).orElse(null);
             
             if (freshUser != null && !"DEACTIVATED".equalsIgnoreCase(freshUser.getStatus())) {
-                // 1. Lock the account
                 freshUser.setStatus("DEACTIVATED");
                 userRepository.save(freshUser);
                 
-                // 2. Notify via Telegram (since you have telegramService injected)
                 if (freshUser.getTelegramChatId() != null && !freshUser.getTelegramChatId().trim().isEmpty()) {
                     telegramService.sendNotification(freshUser.getTelegramChatId(),
                         "🚨 ALERT: Your account has been DEACTIVATED due to continuous spamming of the print request system. Admin approval is required to restore access."
                     );
                 }
             }
-            // 3. Clear the session so they are effectively logged out and cannot bypass the block
             session.invalidate();
         }
         
-        // Render the spam-banned.html template with the jump scare
         return "spam-banned";
     }
 
@@ -517,10 +506,13 @@ public class MainController {
         return "settings";
     }
 
+    // UPDATED: Require Current Password AND Telegram OTP Verification to Update Profile
     @PostMapping("/settings/update-profile")
     public String updateProfile(@RequestParam String fullName,
                                 @RequestParam String username,
                                 @RequestParam(required = false) String telegramChatId,
+                                @RequestParam String currentPassword,
+                                @RequestParam(required = false) String otpCode,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
         String statusRedirect = checkUserAndRedirect(session);
@@ -528,15 +520,36 @@ public class MainController {
 
         User user = getAuthenticatedUser(session);
 
+        // 1. Verify Current Password via BCrypt
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Incorrect current password entered!");
+            return "redirect:/settings";
+        }
+
+        // 2. Resolve Target Telegram Chat ID
+        String targetChatId = (telegramChatId != null && !telegramChatId.trim().isEmpty()) 
+                ? telegramChatId.trim() 
+                : user.getTelegramChatId();
+
+        // 3. Verify Telegram OTP if Chat ID is present
+        if (targetChatId != null && !targetChatId.trim().isEmpty()) {
+            if (otpCode == null || !telegramService.verifyOtp(targetChatId, otpCode)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Invalid or expired Telegram OTP code! Verification failed.");
+                return "redirect:/settings";
+            }
+        }
+
+        // 4. Check Username Uniqueness
         Optional<User> existingUser = userRepository.findByUsername(username);
         if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Username is already taken by another user!");
             return "redirect:/settings";
         }
 
+        // 5. Apply Updates
         user.setFullName(fullName);
         user.setUsername(username);
-        user.setTelegramChatId(telegramChatId != null ? telegramChatId.trim() : "");
+        user.setTelegramChatId(targetChatId != null ? targetChatId : "");
 
         userRepository.save(user);
         session.setAttribute("loggedInUser", user);
@@ -545,10 +558,12 @@ public class MainController {
         return "redirect:/settings";
     }
 
+    // UPDATED: Require Current Password AND Telegram OTP Verification to Change Password
     @PostMapping("/settings/change-password")
     public String changePassword(@RequestParam String currentPassword,
                                  @RequestParam String newPassword,
                                  @RequestParam String confirmPassword,
+                                 @RequestParam(required = false) String otpCode,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes) {
         String statusRedirect = checkUserAndRedirect(session);
@@ -556,16 +571,27 @@ public class MainController {
 
         User user = getAuthenticatedUser(session);
 
+        // 1. Verify Current Password
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Incorrect current password entered!");
             return "redirect:/settings";
         }
 
+        // 2. Verify New Passwords Match
         if (!newPassword.equals(confirmPassword)) {
             redirectAttributes.addFlashAttribute("errorMessage", "New passwords do not match!");
             return "redirect:/settings";
         }
 
+        // 3. Verify Telegram OTP if user has Telegram Chat ID
+        if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
+            if (otpCode == null || !telegramService.verifyOtp(user.getTelegramChatId(), otpCode)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Invalid or expired Telegram OTP code!");
+                return "redirect:/settings";
+            }
+        }
+
+        // 4. Update Password
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         session.setAttribute("loggedInUser", user);
@@ -574,18 +600,29 @@ public class MainController {
         return "redirect:/settings";
     }
 
+    // UPDATED: Require Password AND Telegram OTP Verification to Deactivate Account
     @PostMapping("/settings/deactivate-account")
     public String deactivateAccount(@RequestParam String confirmPassword,
-                                HttpSession session,
-                                RedirectAttributes redirectAttributes) {
+                                    @RequestParam(required = false) String otpCode,
+                                    HttpSession session,
+                                    RedirectAttributes redirectAttributes) {
         String statusRedirect = checkUserAndRedirect(session);
         if (statusRedirect != null) return statusRedirect;
 
         User user = getAuthenticatedUser(session);
 
+        // 1. Verify Password
         if (!passwordEncoder.matches(confirmPassword, user.getPassword())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Incorrect password confirmation. Account deactivation cancelled.");
             return "redirect:/settings";
+        }
+
+        // 2. Verify Telegram OTP if user has Telegram Chat ID
+        if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
+            if (otpCode == null || !telegramService.verifyOtp(user.getTelegramChatId(), otpCode)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Invalid or expired Telegram OTP code!");
+                return "redirect:/settings";
+            }
         }
 
         try {

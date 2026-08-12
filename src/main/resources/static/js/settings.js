@@ -342,3 +342,70 @@ function togglePassword(inputId, iconId) {
     }
   });
 })();
+
+// =========================================================
+// SETTINGS TELEGRAM OTP SENDER HELPER
+// =========================================================
+function sendSettingsOtp(chatIdInputId, btnId, statusTextId) {
+    const chatIdInput = document.getElementById(chatIdInputId);
+    const chatId = chatIdInput ? chatIdInput.value.trim() : '';
+    const btn = document.getElementById(btnId);
+    const statusText = document.getElementById(statusTextId);
+
+    if (!chatId) {
+        if (statusText) {
+            statusText.className = "small text-danger fw-bold mt-1 d-block";
+            statusText.innerText = "Please enter a valid Telegram Chat ID first!";
+        }
+        return;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Sending OTP...";
+    }
+
+    fetch('/api/requests/telegram/send-otp?chatId=' + encodeURIComponent(chatId), { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (statusText) {
+                    statusText.className = "small text-success fw-bold mt-1 d-block";
+                    statusText.innerText = "OTP sent to your Telegram! Check @BrgyDocRequestBot.";
+                }
+                if (btn) {
+                    let seconds = 30;
+                    btn.innerText = `Resend in ${seconds}s`;
+                    const timer = setInterval(() => {
+                        seconds--;
+                        if (seconds > 0) {
+                            btn.innerText = `Resend in ${seconds}s`;
+                        } else {
+                            clearInterval(timer);
+                            btn.disabled = false;
+                            btn.innerText = "Send Telegram OTP";
+                        }
+                    }, 1000);
+                }
+            } else {
+                if (statusText) {
+                    statusText.className = "small text-danger fw-bold mt-1 d-block";
+                    statusText.innerText = data.message || "Failed to send OTP. Make sure you started the bot first!";
+                }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "Send Telegram OTP";
+                }
+            }
+        })
+        .catch(() => {
+            if (statusText) {
+                statusText.className = "small text-danger fw-bold mt-1 d-block";
+                statusText.innerText = "Unable to reach server. Please check your network connection.";
+            }
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "Send Telegram OTP";
+            }
+        });
+}

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <nav th:fragment="adminNavbar" class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4 py-3">
+    <nav th:fragment="adminNavbar" class="navbar navbar-expand-lg navbar-dark dashboard-navbar sticky-top py-3">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#">
                 <div class="logo-wrapper-sm">
@@ -12,16 +12,30 @@
                 </div>
                 Barangay Admin Console
             </a>
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-outline-light btn-sm px-2 py-1 d-inline-flex align-items-center gap-1" id="themeToggleBtn" title="Toggle Theme">
-                    <i id="themeIcon" class="bi bi-moon-fill"></i> <span class="d-none d-md-inline small">Theme</span>
+
+            <!-- Navigation Pills Bar -->
+            <div class="d-none d-lg-flex align-items-center gap-2 nav-pills-bar mx-auto">
+                <button class="nav-pill-item active" id="pillHome" onclick="closeOverlayHub()"><i class="bi bi-speedometer2 me-1"></i> Dashboard</button>
+                <button class="nav-pill-item" id="pillRequests" onclick="openOverlayHub(0)"><i class="bi bi-card-checklist me-1"></i> Requests</button>
+                <button class="nav-pill-item" id="pillReactivations" onclick="openOverlayHub(1)"><i class="bi bi-person-exclamation me-1"></i> Reactivations</button>
+                <button class="nav-pill-item" id="pillUsers" onclick="openOverlayHub(2)"><i class="bi bi-people-fill me-1"></i> User Directory</button>
+                <button class="nav-pill-item" id="pillAbout" onclick="openOverlayHub(3)"><i class="bi bi-info-circle-fill me-1"></i> About System</button>
+                <button class="nav-pill-item" id="pillDevs" onclick="openOverlayHub(4)"><i class="bi bi-code-slash me-1"></i> Developers</button>
+            </div>
+
+            <!-- Right Controls -->
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-light btn-sm px-2 py-1 rounded-pill themeToggleBtn" title="Toggle Dark/Light Mode">
+                    <i class="themeIcon bi bi-moon-fill"></i> <span class="d-none d-md-inline small ms-1">Theme</span>
                 </button>
-                <span class="navbar-text text-light d-none d-sm-inline small">
-                    <i class="bi bi-person-badge"></i> <strong th:text="${adminUser.fullName}">Administrator</strong>
+                <span class="navbar-text text-light d-none d-sm-inline me-2 small">
+                    <i class="bi bi-shield-lock-fill text-warning me-1"></i> <strong th:text="${adminUser.fullName}">Administrator</strong>
                 </span>
-                <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm px-3">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
+
+                <!-- Logout Confirmation Modal Trigger -->
+                <button type="button" class="btn btn-outline-danger btn-sm px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal">
+                    <i class="bi bi-box-arrow-right me-1"></i> Logout
+                </button>
             </div>
         </div>
     </nav>

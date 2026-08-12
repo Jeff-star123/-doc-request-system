@@ -1,45 +1,72 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div th:fragment="usersTable" class="card card-custom shadow-sm p-4 reveal-on-scroll focal-card">
+    <div th:fragment="usersTable" class="card card-custom shadow-lg p-3 p-md-4 reveal-on-scroll focal-card admin-card-theme">
+        
+        <!-- EMBEDDED MOBILE STYLES -->
+        <style>
+            .user-mobile-card {
+                background: rgba(125, 125, 125, 0.08);
+                border: 1px solid var(--bs-border-color-translucent);
+                border-radius: 14px;
+                padding: 12px;
+            }
+        </style>
+
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="card-title text-dark mb-0 fw-bold">
-                <i class="bi bi-people-fill text-primary me-2"></i> Registered Users & Anti-Spam Control
+            <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2 fs-6 fs-md-5">
+                <i class="bi bi-people-fill text-primary fs-4"></i> Registered Users Directory & Anti-Spam Control
             </h5>
-            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1">User Directory</span>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1 fw-bold">User Directory</span>
         </div>
         
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small">
+        <!-- DESKTOP TABLE VIEW (Visible on md and up) -->
+        <div class="d-none d-md-block table-responsive admin-table-wrapper">
+            <table class="table align-middle mb-0">
+                <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>FULL NAME</th>
-                        <th>USERNAME</th>
-                        <th>ROLE</th>
-                        <th>STATUS</th>
-                        <th>ACTIONS</th>
+                        <th class="ps-3 py-3" style="width: 10%;">User ID</th>
+                        <th class="py-3" style="width: 25%;">Full Name</th>
+                        <th class="py-3" style="width: 20%;">Username</th>
+                        <th class="py-3" style="width: 15%;">Role</th>
+                        <th class="py-3" style="width: 15%;">Status</th>
+                        <th class="text-end pe-3 py-3" style="width: 15%;">Account Control</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr th:each="u : ${allUsers}">
-                        <td th:text="${u.id}">1</td>
-                        <td th:text="${u.fullName}">Name</td>
-                        <td th:text="${'@' + u.username}">username</td>
-                        <td th:text="${u.role}">STUDENT</td>
-                        <td>
-                            <span class="badge" th:classappend="${u.status == 'ACTIVE' || u.status == null ? 'bg-success' : (u.status == 'REACTIVATION_PENDING' ? 'bg-warning text-dark' : 'bg-secondary')}" th:text="${u.status != null ? u.status : 'ACTIVE'}">ACTIVE</span>
+                <tbody class="small">
+                    <tr th:each="u : ${allUsers}" class="admin-row">
+                        <td class="ps-3 py-3 font-monospace fw-bold" th:text="'#' + ${u.id}">#1</td>
+                        <td class="py-3">
+                            <strong class="text-body" th:text="${u.fullName}">Name</strong>
                         </td>
-                        <td>
-                            <span th:if="${u.role == 'ADMIN'}" class="text-muted small">System Admin</span>
+                        <td class="py-3">
+                            <span class="badge bg-body-tertiary text-body border px-2 py-1 font-monospace" th:text="${'@' + u.username}">@username</span>
+                        </td>
+                        <td class="py-3">
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1 font-monospace" th:text="${u.role}">RESIDENT</span>
+                        </td>
+                        <td class="py-3">
+                            <span th:if="${u.status == 'ACTIVE' || u.status == null}" class="badge badge-status-approved rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-check-circle-fill me-1"></i> ACTIVE
+                            </span>
+                            <span th:if="${u.status == 'REACTIVATION_PENDING'}" class="badge badge-status-pending rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-2">
+                                <span class="status-pulse-dot"></span> REACTIVATION PENDING
+                            </span>
+                            <span th:if="${u.status == 'DEACTIVATED'}" class="badge badge-status-rejected rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-pause-circle-fill me-1"></i> DEACTIVATED
+                            </span>
+                        </td>
+                        <td class="text-end pe-3 py-3">
+                            <span th:if="${u.role == 'ADMIN'}" class="badge bg-secondary bg-opacity-10 text-secondary border rounded-pill px-3 py-1">System Admin</span>
                             
-                            <div th:if="${u.role != 'ADMIN'}" class="d-flex gap-1">
-                                <form th:if="${u.status == 'ACTIVE' || u.status == null}" th:action="@{/admin/user/deactivate/{id}(id=${u.id})}" method="post" class="d-inline" onsubmit="return confirm('⚠️ WARNING: Deactivating this account will lock the user out. They will require ADMIN APPROVAL to reactivate their account. Do you wish to proceed?');">
-                                    <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-pause-circle"></i> Deactivate</button>
-                                </form>
+                            <div th:if="${u.role != 'ADMIN'}" class="d-inline-flex gap-1">
+                                <!-- DEACTIVATE MODAL TRIGGER (NO NATIVE CONFIRM) -->
+                                <button th:if="${u.status == 'ACTIVE' || u.status == null}" type="button" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold" data-bs-toggle="modal" th:data-bs-target="'#deactivateUserModal' + ${u.id}">
+                                    <i class="bi bi-pause-circle me-1"></i> Deactivate
+                                </button>
 
-                                <button th:if="${u.status == 'DEACTIVATED' || u.status == 'REACTIVATION_PENDING'}" type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" th:data-bs-target="'#approveReactivationModal' + ${u.id}">
-                                    <i class="bi bi-check-circle"></i> Activate
+                                <button th:if="${u.status == 'DEACTIVATED' || u.status == 'REACTIVATION_PENDING'}" type="button" class="btn btn-success btn-sm rounded-pill px-3 fw-bold shadow-sm" data-bs-toggle="modal" th:data-bs-target="'#approveReactivationModal' + ${u.id}">
+                                    <i class="bi bi-check-circle me-1"></i> Activate
                                 </button>
                             </div>
                         </td>
@@ -47,6 +74,51 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- MOBILE STACKED CARDS VIEW (Visible on mobile screens) -->
+        <div class="d-md-none d-flex flex-column gap-2">
+            <div th:each="u : ${allUsers}" class="user-mobile-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div>
+                        <strong class="text-body fs-6 d-block" th:text="${u.fullName}">Name</strong>
+                        <span class="badge bg-body-tertiary text-body border px-2 py-0.5 font-monospace small" th:text="${'@' + u.username}">@username</span>
+                    </div>
+                    <span class="small text-secondary font-monospace" th:text="'#' + ${u.id}">#1</span>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2.5 py-1 font-monospace small" th:text="${u.role}">RESIDENT</span>
+
+                    <div>
+                        <span th:if="${u.status == 'ACTIVE' || u.status == null}" class="badge badge-status-approved rounded-pill px-2.5 py-1 small fw-bold">
+                            <i class="bi bi-check-circle-fill me-1"></i> ACTIVE
+                        </span>
+                        <span th:if="${u.status == 'REACTIVATION_PENDING'}" class="badge badge-status-pending rounded-pill px-2.5 py-1 small fw-bold">
+                            <span class="status-pulse-dot"></span> PENDING
+                        </span>
+                        <span th:if="${u.status == 'DEACTIVATED'}" class="badge badge-status-rejected rounded-pill px-2.5 py-1 small fw-bold">
+                            <i class="bi bi-pause-circle-fill me-1"></i> DEACTIVATED
+                        </span>
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    <span th:if="${u.role == 'ADMIN'}" class="badge bg-secondary bg-opacity-10 text-secondary border rounded-pill px-3 py-1 w-100 d-block text-center">System Admin Account</span>
+                    
+                    <div th:if="${u.role != 'ADMIN'}">
+                        <!-- DEACTIVATE MODAL TRIGGER FOR MOBILE -->
+                        <button th:if="${u.status == 'ACTIVE' || u.status == null}" type="button" class="btn btn-warning btn-sm w-100 rounded-pill fw-bold" data-bs-toggle="modal" th:data-bs-target="'#deactivateUserModal' + ${u.id}">
+                            <i class="bi bi-pause-circle me-1"></i> Deactivate Account
+                        </button>
+
+                        <button th:if="${u.status == 'DEACTIVATED' || u.status == 'REACTIVATION_PENDING'}" type="button" class="btn btn-success btn-sm w-100 rounded-pill fw-bold shadow-sm" data-bs-toggle="modal" th:data-bs-target="'#approveReactivationModal' + ${u.id}">
+                            <i class="bi bi-check-circle me-1"></i> Activate Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </body>
 </html>
