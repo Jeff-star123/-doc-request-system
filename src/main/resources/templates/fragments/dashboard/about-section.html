@@ -2,9 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
     <div th:fragment="aboutSection" class="card card-custom p-3 p-md-4 reveal-on-scroll focal-card">
+        
         <!-- Section Header -->
         <div class="text-center mb-4">
-            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold mb-2">
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-bold mb-2">
                 <i class="bi bi-stars me-1"></i> System Features & Core Capabilities
             </span>
             <h4 class="fw-bold text-dark">About Barangay Bulsa-Korapot Portal</h4>
@@ -13,7 +14,7 @@
             </p>
         </div>
 
-        <!-- REFERENCE-STYLE INTERACTIVE FEATURE CARDS GRID -->
+        <!-- INTERACTIVE FEATURE CARDS GRID -->
         <div class="about-feature-grid mb-4" id="aboutFeatureGrid">
             
             <!-- Card 1: Online Application -->
@@ -28,7 +29,7 @@
                     <p class="feature-card-preview">Remote document request system...</p>
                     <div class="feature-card-drawer">
                         <p class="feature-card-desc">
-                            Enables residents to request Barangay Clearances, Certificates of Residency, and Indigency remotely without physical queuing.
+                            Enables residents to request Barangay Clearances, Certificates of Residency, and Certificates of Indigency remotely with automated PDF printing upon approval.
                         </p>
                         <div class="feature-card-footer">
                             <span class="feature-badge"><i class="bi bi-check2-circle me-1"></i> 24/7 Access</span>
@@ -46,11 +47,11 @@
                     </div>
                 </div>
                 <div class="feature-card-body">
-                    <h6 class="feature-card-title">Tesseract OCR</h6>
+                    <h6 class="feature-card-title">Tesseract OCR Reader</h6>
                     <p class="feature-card-preview">Automated client-side ID reading...</p>
                     <div class="feature-card-drawer">
                         <p class="feature-card-desc">
-                            Integrates Tesseract.js directly inside the client browser to automatically read and analyze uploaded IDs for valid identity verification.
+                            Integrates Tesseract.js directly inside the client browser to automatically verify uploaded IDs (National ID, Student ID, Driver's License, UMID, Barangay ID).
                         </p>
                         <div class="feature-card-footer">
                             <span class="feature-badge"><i class="bi bi-cpu me-1"></i> Client-Side AI</span>
@@ -60,7 +61,7 @@
                 </div>
             </div>
 
-            <!-- Card 3: Biometric Scan -->
+            <!-- Card 3: Biometric Liveness Scan -->
             <div class="about-feature-card" onclick="toggleFeatureCard(this)">
                 <div class="feature-card-visual bg-gradient-emerald">
                     <div class="feature-icon-wrapper">
@@ -68,21 +69,21 @@
                     </div>
                 </div>
                 <div class="feature-card-body">
-                    <h6 class="feature-card-title">Biometric Liveness Scan</h6>
+                    <h6 class="feature-card-title">3D Biometric Face Scan</h6>
                     <p class="feature-card-preview">3D Real-time face tracking...</p>
                     <div class="feature-card-drawer">
                         <p class="feature-card-desc">
-                            Powered by MediaPipe FaceMesh for real-time 3D head-pose tracking. Enforces 3-step physical liveness checks to prevent fraudulent requests.
+                            Powered by MediaPipe FaceMesh for real-time 3D head landmark tracking. Enforces a 3-step gesture scan (Straight, Turn Left, Turn Right) to prevent proxy fraud.
                         </p>
                         <div class="feature-card-footer">
-                            <span class="feature-badge"><i class="bi bi-shield-check me-1"></i> MediaPipe</span>
+                            <span class="feature-badge"><i class="bi bi-shield-check me-1"></i> MediaPipe AI</span>
                             <button type="button" class="feature-action-btn">Explore</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 4: Telegram Alerts -->
+            <!-- Card 4: Telegram Alerts & Bot -->
             <div class="about-feature-card" onclick="toggleFeatureCard(this)">
                 <div class="feature-card-visual bg-gradient-purple">
                     <div class="feature-icon-wrapper">
@@ -94,17 +95,17 @@
                     <p class="feature-card-preview">Instant OTP & status updates...</p>
                     <div class="feature-card-drawer">
                         <p class="feature-card-desc">
-                            Dispatches automated real-time status alerts and 6-digit registration OTP codes directly to residents' Telegram accounts via @BrgyDocRequestBot.
+                            Dispatches automated real-time status alerts (Approved/Rejected) and 6-digit verification OTP codes directly to residents' Telegram accounts via @BrgyDocRequestBot.
                         </p>
                         <div class="feature-card-footer">
-                            <span class="feature-badge"><i class="bi bi-bell-fill me-1"></i> Instant Alerts</span>
+                            <span class="feature-badge"><i class="bi bi-bell-fill me-1"></i> Real-time Push</span>
                             <button type="button" class="feature-action-btn">Explore</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 5: AI Assistant -->
+            <!-- Card 5: Embedded AI Assistant -->
             <div class="about-feature-card" onclick="toggleFeatureCard(this)">
                 <div class="feature-card-visual bg-gradient-amber">
                     <div class="feature-icon-wrapper">
@@ -112,21 +113,21 @@
                     </div>
                 </div>
                 <div class="feature-card-body">
-                    <h6 class="feature-card-title">Embedded AI Assistant</h6>
+                    <h6 class="feature-card-title">Bilingual AI Assistant</h6>
                     <p class="feature-card-preview">Bilingual Tagalog/English chatbot...</p>
                     <div class="feature-card-drawer">
                         <p class="feature-card-desc">
-                            Employs a custom-built chatbot engine designed to instantly resolve queries regarding documentary requirements, process guides, or portal navigation.
+                            An embedded bilingual chatbot designed to answer resident questions regarding clearance requirements, face scan steps, Telegram setup, and tracking.
                         </p>
                         <div class="feature-card-footer">
-                            <span class="feature-badge"><i class="bi bi-chat-dots me-1"></i> Smart Bot</span>
+                            <span class="feature-badge"><i class="bi bi-chat-dots-fill me-1"></i> Taglish Bot</span>
                             <button type="button" class="feature-action-btn">Explore</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 6: Admin Controls -->
+            <!-- Card 6: Admin Command Console -->
             <div class="about-feature-card" onclick="toggleFeatureCard(this)">
                 <div class="feature-card-visual bg-gradient-rose">
                     <div class="feature-icon-wrapper">
@@ -134,14 +135,102 @@
                     </div>
                 </div>
                 <div class="feature-card-body">
-                    <h6 class="feature-card-title">Admin Controls</h6>
-                    <p class="feature-card-preview">Secure approval dashboards...</p>
+                    <h6 class="feature-card-title">Admin Command Console</h6>
+                    <p class="feature-card-preview">Verification review & user controls...</p>
                     <div class="feature-card-drawer">
                         <p class="feature-card-desc">
-                            Equips local barangay administrators with secure document review dashboards, user management controls, and anti-spam warning mitigations.
+                            Equips barangay officials with verification inspection tools, approval/rejection decision workflows, and pending account reactivation management.
                         </p>
                         <div class="feature-card-footer">
-                            <span class="feature-badge"><i class="bi bi-shield-lock me-1"></i> Secure Admin</span>
+                            <span class="feature-badge"><i class="bi bi-shield-lock-fill me-1"></i> Admin Console</span>
+                            <button type="button" class="feature-action-btn">Explore</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW CARD 7: Spotify-Inspired Admin Music Player & iTunes API -->
+            <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                <div class="feature-card-visual bg-gradient-purple">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-spotify"></i>
+                    </div>
+                </div>
+                <div class="feature-card-body">
+                    <h6 class="feature-card-title">Admin Spotify Player</h6>
+                    <p class="feature-card-preview">iTunes JSONP live music stream...</p>
+                    <div class="feature-card-drawer">
+                        <p class="feature-card-desc">
+                            Features a Spotify-inspired media player embedded in the Admin Console. Uses Apple iTunes JSONP API for real-time track searching, album cover rendering, and 30s audio streaming without CORS blocking.
+                        </p>
+                        <div class="feature-card-footer">
+                            <span class="feature-badge"><i class="bi bi-music-note-beaming me-1"></i> iTunes API</span>
+                            <button type="button" class="feature-action-btn">Explore</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 8: In-App API Gateway -->
+            <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                <div class="feature-card-visual bg-gradient-blue">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-cpu-fill"></i>
+                    </div>
+                </div>
+                <div class="feature-card-body">
+                    <h6 class="feature-card-title">In-App API Gateway</h6>
+                    <p class="feature-card-preview">Rate limiting & IP proxy awareness...</p>
+                    <div class="feature-card-drawer">
+                        <p class="feature-card-desc">
+                            Interceptors running on /api/** routes enforce client rate limiting (10 req/min), header normalization (X-API-Gateway), and X-Forwarded-For proxy IP resolution.
+                        </p>
+                        <div class="feature-card-footer">
+                            <span class="feature-badge"><i class="bi bi-speedometer2 me-1"></i> Gateway Filter</span>
+                            <button type="button" class="feature-action-btn">Explore</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 9: Anti-Spam Safeguards -->
+            <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                <div class="feature-card-visual bg-gradient-rose">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-shield-fill-x"></i>
+                    </div>
+                </div>
+                <div class="feature-card-body">
+                    <h6 class="feature-card-title">Anti-Spam Safeguards</h6>
+                    <p class="feature-card-preview">Click tracking & auto-deactivation...</p>
+                    <div class="feature-card-drawer">
+                        <p class="feature-card-desc">
+                            Tracks rapid document print attempts. Displays countdown warnings on 4 clicks and triggers automatic account deactivation with archival logging on 5 clicks.
+                        </p>
+                        <div class="feature-card-footer">
+                            <span class="feature-badge"><i class="bi bi-shield-exclamation me-1"></i> Spam Lock</span>
+                            <button type="button" class="feature-action-btn">Explore</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 10: Secure Uploads & Privacy -->
+            <div class="about-feature-card" onclick="toggleFeatureCard(this)">
+                <div class="feature-card-visual bg-gradient-cyan">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-lock-fill"></i>
+                    </div>
+                </div>
+                <div class="feature-card-body">
+                    <h6 class="feature-card-title">Secure Uploads & Privacy</h6>
+                    <p class="feature-card-preview">Authenticated file serving & anti-cache...</p>
+                    <div class="feature-card-drawer">
+                        <p class="feature-card-desc">
+                            Serves uploaded ID and selfie proof files through authenticated endpoints with HTTP anti-caching headers (no-store, no-cache) to prevent intermediate CDN caching.
+                        </p>
+                        <div class="feature-card-footer">
+                            <span class="feature-badge"><i class="bi bi-eye-slash-fill me-1"></i> Encrypted View</span>
                             <button type="button" class="feature-action-btn">Explore</button>
                         </div>
                     </div>
