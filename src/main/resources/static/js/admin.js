@@ -561,6 +561,236 @@ window.searchAdminUsers = function() {
     });
 })();
 
+// =========================================================
+// SPOTIFY-INSPIRED ADMIN MUSIC PLAYER ENGINE (APPLE ITUNES JSONP)
+// =========================================================
+(function initAdminMusicOverlayPlayer() {
+    const audioEngine = document.getElementById('adminAudioEngine');
+    const searchInput = document.getElementById('musicModalSearchInput');
+    const searchBtn = document.getElementById('btnModalSearchMusic');
+    const resultsList = document.getElementById('musicSearchResultsList');
+    const activePlayerBox = document.getElementById('modalActivePlayerBox');
+    
+    const modalCoverImg = document.getElementById('modalCoverImg');
+    const modalActiveTitle = document.getElementById('modalActiveTitle');
+    const modalActiveArtist = document.getElementById('modalActiveArtist');
+    const btnModalPlayPause = document.getElementById('btnModalPlayPause');
+    const modalPlayIcon = document.getElementById('modalPlayIcon');
+
+    const mainTrackTitle = document.getElementById('musicTrackTitle');
+    const mainArtistTitle = document.getElementById('musicArtistTitle');
+    const mainCoverImg = document.getElementById('musicCoverImg');
+    const btnMainPlayPause = document.getElementById('btnMainPlayPause');
+    const mainPlayIcon = document.getElementById('mainPlayIcon');
+
+    const progressBar = document.getElementById('musicProgressBar');
+    const currentTimeEl = document.getElementById('musicCurrentTime');
+    const totalTimeEl = document.getElementById('musicTotalTime');
+    const btnMainPrev = document.getElementById('btnMainPrev');
+    const btnMainNext = document.getElementById('btnMainNext');
+
+    if (!resultsList || !audioEngine) return;
+
+    const fallbackCover = "https://cdn-icons-png.flaticon.com/512/3844/3844724.png";
+
+    // NO DEFAULT PLAYLIST - Starts completely empty on page load!
+    let playlist = [];
+    let currentTrackIndex = -1;
+
+    function loadTrack(index) {
+        if (index < 0 || index >= playlist.length) return;
+        currentTrackIndex = index;
+        const song = playlist[currentTrackIndex];
+
+        if (!song || !song.audio) return;
+
+        // Enable Play button
+        if (btnMainPlayPause) btnMainPlayPause.disabled = false;
+
+        audioEngine.src = song.audio;
+        audioEngine.play().then(() => {
+            updatePlayIcons(true);
+        }).catch(e => console.log("Audio Playback Notice:", e));
+
+        // Update Modal UI
+        if (modalActiveTitle) modalActiveTitle.innerText = song.title;
+        if (modalActiveArtist) modalActiveArtist.innerText = song.artist;
+        if (modalCoverImg) {
+            modalCoverImg.src = song.cover || fallbackCover;
+            modalCoverImg.onerror = function() { this.src = fallbackCover; };
+        }
+        if (activePlayerBox) activePlayerBox.classList.remove('d-none');
+
+        // Update Dashboard Compact Player Bar
+        if (mainTrackTitle) mainTrackTitle.innerText = song.title;
+        if (mainArtistTitle) mainArtistTitle.innerText = song.artist;
+        if (mainCoverImg) {
+            mainCoverImg.src = song.cover || fallbackCover;
+            mainCoverImg.onerror = function() { this.src = fallbackCover; };
+        }
+    }
+
+    function updatePlayIcons(isPlaying) {
+        const iconClass = isPlaying ? "bi bi-pause-fill fs-4" : "bi bi-play-fill fs-4";
+        if (mainPlayIcon) mainPlayIcon.className = iconClass;
+        if (modalPlayIcon) modalPlayIcon.className = iconClass;
+    }
+
+    function togglePlayPause() {
+        if (!audioEngine.src) return;
+        if (audioEngine.paused) {
+            audioEngine.play().then(() => updatePlayIcons(true)).catch(e => console.log(e));
+        } else {
+            audioEngine.pause();
+            updatePlayIcons(false);
+        }
+    }
+
+    btnMainPlayPause?.addEventListener('click', togglePlayPause);
+    btnModalPlayPause?.addEventListener('click', togglePlayPause);
+
+    btnMainPrev?.addEventListener('click', () => {
+        let prevIndex = currentTrackIndex - 1;
+        if (prevIndex < 0) prevIndex = playlist.length - 1;
+        loadTrack(prevIndex);
+    });
+
+    btnMainNext?.addEventListener('click', () => {
+        let nextIndex = currentTrackIndex + 1;
+        if (nextIndex >= playlist.length) nextIndex = 0;
+        loadTrack(nextIndex);
+    });
+
+    // Time Seek Bar Synchronization
+    audioEngine.addEventListener('timeupdate', () => {
+        if (audioEngine.duration && progressBar) {
+            const percent = (audioEngine.currentTime / audioEngine.duration) * 100;
+            progressBar.value = percent;
+
+            const curMins = Math.floor(audioEngine.currentTime / 60);
+            const curSecs = Math.floor(audioEngine.currentTime % 60);
+            if (currentTimeEl) currentTimeEl.innerText = `${curMins}:${curSecs < 10 ? '0' : ''}${curSecs}`;
+
+            const durMins = Math.floor(audioEngine.duration / 60);
+            const durSecs = Math.floor(audioEngine.duration % 60);
+            if (totalTimeEl) totalTimeEl.innerText = `${durMins}:${durSecs < 10 ? '0' : ''}${durSecs}`;
+        }
+    });
+
+    audioEngine.addEventListener('ended', () => {
+        updatePlayIcons(false);
+    });
+
+    progressBar?.addEventListener('input', () => {
+        if (audioEngine.duration) {
+            audioEngine.currentTime = (progressBar.value / 100) * audioEngine.duration;
+        }
+    });
+
+    function renderResults(songs) {
+        resultsList.innerHTML = '';
+        if (!songs || songs.length === 0) {
+            resultsList.innerHTML = `
+                <div class="p-4 text-center text-secondary">
+                    <i class="bi bi-search fs-3 d-block mb-2 text-primary opacity-50"></i>
+                    <h6 class="fw-bold mb-1">No Music Found</h6>
+                    <small>Type a song title or artist name above and click Search.</small>
+                </div>`;
+            const badgeEl = document.getElementById('searchCountBadge');
+            if (badgeEl) badgeEl.innerText = `0 Tracks`;
+            return;
+        }
+
+        const badgeEl = document.getElementById('searchCountBadge');
+        if (badgeEl) badgeEl.innerText = `${songs.length} Tracks Found`;
+
+        songs.forEach((song, idx) => {
+            const card = document.createElement('div');
+            card.className = "d-flex align-items-center justify-content-between p-3 rounded-3 bg-body border border-secondary border-opacity-20 shadow-xs hover-shadow transition-all";
+            card.style.cursor = "pointer";
+
+            const imgSrc = song.cover || fallbackCover;
+
+            card.innerHTML = `
+                <div class="d-flex align-items-center gap-3 overflow-hidden">
+                    <img src="${imgSrc}" class="rounded-2 flex-shrink-0" style="width: 52px; height: 52px; object-fit: cover;" onerror="this.onerror=null; this.src='${fallbackCover}';">
+                    <div class="overflow-hidden">
+                        <h6 class="fw-bold mb-0 text-body text-truncate" style="max-width: 380px;">${song.title}</h6>
+                        <small class="text-secondary text-truncate d-block" style="max-width: 380px;">${song.artist}</small>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold flex-shrink-0">
+                    <i class="bi bi-play-fill me-1"></i> Play
+                </button>
+            `;
+
+            card.addEventListener('click', () => {
+                playlist = songs;
+                loadTrack(idx);
+            });
+            resultsList.appendChild(card);
+        });
+    }
+
+    // 100% BULLETPROOF APPLE ITUNES JSONP SEARCH ENGINE
+    function searchSongsJsonp(query) {
+        if (!query) return;
+        if (searchBtn) searchBtn.innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
+
+        const callbackName = 'itunesJsonpCb_' + Date.now();
+
+        window[callbackName] = function(data) {
+            if (searchBtn) searchBtn.innerHTML = `Search`;
+
+            if (data && data.results && data.results.length > 0) {
+                const songs = data.results.map(item => ({
+                    title: item.trackName || item.collectionName || "Song Track",
+                    artist: item.artistName || "Artist",
+                    cover: item.artworkUrl100 ? item.artworkUrl100.replace('100x100', '300x300') : fallbackCover,
+                    audio: item.previewUrl
+                })).filter(s => s.audio);
+
+                renderResults(songs);
+            } else {
+                renderResults([]);
+            }
+
+            try { delete window[callbackName]; } catch (e) {}
+            if (scriptTag && scriptTag.parentNode) scriptTag.parentNode.removeChild(scriptTag);
+        };
+
+        const scriptTag = document.createElement('script');
+        scriptTag.src = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=10&callback=${callbackName}`;
+        scriptTag.onerror = function() {
+            if (searchBtn) searchBtn.innerHTML = `Search`;
+            renderResults([]);
+        };
+
+        document.body.appendChild(scriptTag);
+    }
+
+    searchBtn?.addEventListener('click', () => {
+        const query = searchInput?.value.trim();
+        if (query) searchSongsJsonp(query);
+    });
+
+    searchInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = searchInput?.value.trim();
+            if (query) searchSongsJsonp(query);
+        }
+    });
+
+    // Initial state: Display search prompt in results list
+    resultsList.innerHTML = `
+        <div class="p-4 text-center text-secondary">
+            <i class="bi bi-search fs-3 d-block mb-2 text-primary opacity-50"></i>
+            <h6 class="fw-bold mb-1">Search Your Favorite Music</h6>
+            <small>Type any song title or artist name above and click Search.</small>
+        </div>`;
+})();
+
 // INITIALIZE LISTENERS
 document.addEventListener('DOMContentLoaded', () => {
     detectSwipe('overlay3dCarousel', rotateOverlayHub);

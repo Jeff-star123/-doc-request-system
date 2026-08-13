@@ -11,11 +11,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Custom Admin CSS -->
-    <link rel="stylesheet" th:href="@{/css/admin.css(v=4.2)}" href="/css/admin.css?v=4.2">
-    <link rel="stylesheet" th:href="@{/css/overlay-hub.css(v=4.2)}" href="/css/overlay-hub.css?v=4.2">
-    <link rel="stylesheet" th:href="@{/css/dev-section.css(v=4.2)}" href="/css/dev-section.css?v=4.2">
-    <link rel="stylesheet" th:href="@{/css/about-section.css(v=4.2)}" href="/css/about-section.css?v=4.2">
-    <link rel="stylesheet" th:href="@{/css/ai-assistant.css(v=4.2)}" href="/css/ai-assistant.css?v=4.2">
+    <link rel="stylesheet" th:href="@{/css/admin.css(v=4.9)}" href="/css/admin.css?v=4.9">
+    <link rel="stylesheet" th:href="@{/css/overlay-hub.css(v=4.9)}" href="/css/overlay-hub.css?v=4.9">
+    <link rel="stylesheet" th:href="@{/css/dev-section.css(v=4.9)}" href="/css/dev-section.css?v=4.9">
+    <link rel="stylesheet" th:href="@{/css/about-section.css(v=4.9)}" href="/css/about-section.css?v=4.9">
+    <link rel="stylesheet" th:href="@{/css/ai-assistant.css(v=4.9)}" href="/css/ai-assistant.css?v=4.9">
 </head>
 <body class="dashboard-body">
 
@@ -47,6 +47,49 @@
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+        </div>
+
+        <!-- SPOTIFY-INSPIRED THEME-ADAPTIVE ADMIN MUSIC PLAYER BAR -->
+        <div class="card card-custom p-3 mb-0 focal-card shadow-lg border-0 reveal-on-scroll" id="adminMusicPlayerCard">
+            <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3">
+                
+                <!-- Left: Track Cover & Details -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="position-relative flex-shrink-0">
+                        <img id="musicCoverImg" 
+                             src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150" 
+                             alt="Cover Art" 
+                             class="rounded-3 border shadow-sm" 
+                             style="width: 48px; height: 48px; object-fit: cover;"
+                             onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/3844/3844724.png';">
+                    </div>
+                    <div class="overflow-hidden">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2.5 py-0.5 small fw-bold mb-1 d-inline-block">
+                            <i class="bi bi-music-note-beaming me-1"></i> Admin Audio Player
+                        </span>
+                        <h6 class="fw-bold mb-0 text-dark text-truncate" id="musicTrackTitle" style="max-width: 280px;">No Song Selected</h6>
+                        <small class="text-secondary text-truncate d-block" id="musicArtistTitle" style="max-width: 280px;">Click 'Search & Play Music' to search tracks</small>
+                    </div>
+                </div>
+
+                <!-- Center: Quick Play / Pause -->
+                <div class="d-flex align-items-center gap-3" id="quickMainPlayerControls">
+                    <button type="button" class="btn btn-primary rounded-circle shadow-md d-flex align-items-center justify-content-center p-0 text-white" id="btnMainPlayPause" style="width: 40px; height: 40px;" disabled>
+                        <i class="bi bi-play-fill fs-4" id="mainPlayIcon"></i>
+                    </button>
+                </div>
+
+                <!-- Right: Open Modal Button -->
+                <div class="flex-shrink-0">
+                    <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-white shadow-md d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#adminMusicModal">
+                        <i class="bi bi-search"></i> Search & Play Music
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Global HTML5 Audio Engine -->
+            <audio id="adminAudioEngine" preload="metadata"></audio>
         </div>
 
         <!-- HERO WELCOME & DIRECT EMBEDDED ADMIN AI ASSISTANT -->
@@ -301,6 +344,85 @@
         </div>
     </div>
 
+    <!-- SPOTIFY-INSPIRED SEARCH & PLAY MUSIC OVERLAY MODAL -->
+    <div class="modal fade" id="adminMusicModal" tabindex="-1" aria-labelledby="adminMusicModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content glass-modal border-0 shadow-2xl rounded-4 overflow-hidden">
+                
+                <!-- Modal Header -->
+                <div class="modal-header border-bottom p-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="p-2.5 rounded-circle bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-spotify fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0 text-dark" id="adminMusicModalLabel">Music Library & Search</h5>
+                            <span class="small text-secondary">Search millions of songs with Spotify-inspired player</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body p-4">
+                    
+                    <!-- Spotify-Style Search Input -->
+                    <div class="input-group input-group-lg mb-4 shadow-sm rounded-3 overflow-hidden">
+                        <span class="input-group-text bg-body border-end-0 text-secondary ps-3"><i class="bi bi-search"></i></span>
+                        <input type="text" id="musicModalSearchInput" class="form-control bg-body border-start-0 text-body shadow-none" placeholder="Search any song title or artist (e.g., skusta, Dati, Taylor Swift)...">
+                        <button class="btn btn-primary px-4 fw-bold text-white" type="button" id="btnModalSearchMusic">Search</button>
+                    </div>
+
+                    <!-- Active Song Player Box (Theme-Adaptive Spotify Card) -->
+                    <div id="modalActivePlayerBox" class="d-none mb-4 p-3.5 rounded-4 bg-body-tertiary border shadow-sm">
+                        <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3">
+                            <div class="d-flex align-items-center gap-3 text-sm-start overflow-hidden">
+                                <img id="modalCoverImg" 
+                                     src="" 
+                                     class="rounded-3 shadow-md flex-shrink-0" 
+                                     style="width: 64px; height: 64px; object-fit: cover;"
+                                     onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/3844/3844724.png';">
+                                <div class="overflow-hidden">
+                                    <h5 class="fw-bold mb-0 text-dark text-truncate" id="modalActiveTitle" style="max-width: 320px;">Song Title</h5>
+                                    <p class="text-secondary mb-1 text-truncate small" id="modalActiveArtist" style="max-width: 320px;">Artist Name</p>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-0.5 small fw-bold">
+                                        <i class="bi bi-volume-up-fill me-1"></i> Audio Stream Active
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Modal Play / Pause Controls -->
+                            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                <button type="button" class="btn btn-primary rounded-circle shadow-md d-flex align-items-center justify-content-center p-0 text-white" id="btnModalPlayPause" style="width: 44px; height: 44px;">
+                                    <i class="bi bi-play-fill fs-4" id="modalPlayIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search Results Container -->
+                    <div class="mb-2">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="small fw-bold text-secondary text-uppercase tracking-wider mb-0" id="searchResultsHeader">Music Tracks</h6>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border rounded-pill px-2.5 py-0.5 small" id="searchCountBadge">Tracks Found</span>
+                        </div>
+                        
+                        <!-- Search Results List -->
+                        <div id="musicSearchResultsList" class="d-flex flex-column gap-2 overflow-y-auto pr-1" style="max-height: 300px;">
+                            <!-- Populated via JavaScript -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer border-top p-3">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <!-- Modals & Draggable Widget Component Fragment -->
     <div th:replace="~{fragments/admin/modals :: adminModals}"></div>
 
@@ -311,7 +433,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
 
     <!-- Admin JS Controller Script -->
-    <script th:src="@{/js/admin.js(v=4.2)}" src="/js/admin.js?v=4.2"></script>
+    <script th:src="@{/js/admin.js(v=4.9)}" src="/js/admin.js?v=4.9"></script>
 
 </body>
 </html>

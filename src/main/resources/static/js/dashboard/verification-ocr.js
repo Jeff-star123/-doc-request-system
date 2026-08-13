@@ -53,11 +53,17 @@ let activeCameraStream = null;
 let activeCaptureTarget = null;
 let isScanFinished = false;
 
+// FIXED: Re-verify existing file if ID Category Dropdown changes!
 if (idTypeSelect) {
-    idTypeSelect.addEventListener('change', () => {
+    idTypeSelect.addEventListener('change', async () => {
         if (idTypeSelect.value) {
             idCardInput.disabled = false;
             openIdCameraBtn.disabled = false;
+
+            // Re-trigger OCR verification if an image is already attached!
+            if (idCardInput.files && idCardInput.files.length > 0) {
+                await processFileForOCR(idCardInput.files[0], idTypeSelect.value);
+            }
         }
     });
 }
@@ -100,10 +106,14 @@ async function processFileForOCR(file, selectedType) {
 
         } else {
             ocrFeedback.className = "alert alert-danger p-3 rounded-3 small mb-3";
-            ocrStatusText.innerHTML = `<strong><i class="bi bi-x-circle-fill"></i> Document Mismatch:</strong> The image does not match <b>${selectedType}</b>. Please attach a clear, valid ID.`;
+            ocrStatusText.innerHTML = `<strong><i class="bi bi-x-circle-fill"></i> Document Mismatch:</strong> The uploaded image does not match <b>${selectedType}</b>. Please attach a clear, valid ID for ${selectedType}.`;
             
+            // LOCK NEXT STEPS ON CATEGORY MISMATCH
             step2Section.classList.remove('active');
             step3Section.classList.remove('active');
+            stepIndicator1.classList.add('active');
+            stepIndicator1.classList.remove('completed');
+            num1.innerHTML = '1';
             stepIndicator2.classList.remove('active', 'completed');
             stepIndicator3.classList.remove('active', 'completed');
             submitBtn.disabled = true;
