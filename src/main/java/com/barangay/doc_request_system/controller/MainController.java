@@ -1,6 +1,5 @@
 package com.barangay.doc_request_system.controller;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,12 +42,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-
 @Controller
 public class MainController {
-
-    @Autowired
-    private CloudinaryService cloudinaryService;
 
     @Autowired
     private UserRepository userRepository;
@@ -61,6 +56,9 @@ public class MainController {
 
     @Autowired
     private TelegramService telegramService;
+
+    @Autowired(required = false)
+    private CloudinaryService cloudinaryService;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
@@ -227,53 +225,92 @@ public class MainController {
         if (statusRedirect != null) return statusRedirect;
 
         User user = getAuthenticatedUser(session);
+        if (user == null) {
+            return "redirect:/";
+        }
 
-        DocumentRequest docRequest = new DocumentRequest(user, documentType, purpose);
+        String formattedPurpose = purpose;
+        DocumentRequest docRequest = new DocumentRequest(user, documentType, formattedPurpose);
         docRequest.setFaceVerified(faceVerified);
 
         try {
-            // 1. Try Uploading to Cloudinary (Production Mode)
-            String cloudIdUrl = cloudinaryService.uploadFile(idCardFile);
-            String cloudSelfieUrl = cloudinaryService.uploadFile(selfieWithIdFile);
+            // 1. Process ID Card Image (Cloudinary or Local Fallback)
+            if (idCardFile != null && !idCardFile.isEmpty()) {
+                String cloudUrl = null;
+                if (cloudinaryService != null) {
+                    try {
+                        cloudUrl = cloudinaryService.uploadFile(idCardFile);
+                    } catch (Exception ex) {
+                        System.err.println("⚠️ Cloudinary ID upload error: " + ex.getMessage());
+                    }
+                }
 
-            if (cloudIdUrl != null) {
-                docRequest.setIdCardImagePath(cloudIdUrl);
-            } else if (idCardFile != null && !idCardFile.isEmpty()) {
-                // Fallback to local uploads if Cloudinary keys are not set
-                Path uploadPath = Paths.get("uploads");
-                if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
-                String fileName = System.currentTimeMillis() + "_id_" + Paths.get(idCardFile.getOriginalFilename()).getFileName().toString().replaceAll("[^a-zA-Z0-9.-]", "_");
-                Files.copy(idCardFile.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-                docRequest.setIdCardImagePath("/secure-uploads/" + fileName);
+                if (cloudUrl != null && !cloudUrl.isBlank()) {
+                    docRequest.setIdCardImagePath(cloudUrl);
+                } else {
+                    Path uploadPath = Paths.get("uploads");
+                    if (!Files.exists(uploadPath)) {
+                        Files.createDirectories(uploadPath);
+                    }
+                    String originalFilename = Paths.get(idCardFile.getOriginalFilename()).getFileName().toString();
+                    String fileName = System.currentTimeMillis() + "_id_" + originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
+                    Path filePath = uploadPath.resolve(fileName);
+                    Files.copy(idCardFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                    docRequest.setIdCardImagePath("/secure-uploads/" + fileName);
+                }
             }
 
-            if (cloudSelfieUrl != null) {
-                docRequest.setSelfieImagePath(cloudSelfieUrl);
-            } else if (selfieWithIdFile != null && !selfieWithIdFile.isEmpty()) {
-                Path uploadPath = Paths.get("uploads");
-                if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
-                String fileName = System.currentTimeMillis() + "_selfie_" + Paths.get(selfieWithIdFile.getOriginalFilename()).getFileName().toString().replaceAll("[^a-zA-Z0-9.-]", "_");
-                Files.copy(selfieWithIdFile.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-                docRequest.setSelfieImagePath("/secure-uploads/" + fileName);
+            // 2. Process Selfie Image (Cloudinary or Local Fallback)
+            if (selfieWithIdFile != null && !selfieWithIdFile.isEmpty()) {
+                String cloudUrl = null;
+                if (cloudinaryService != null) {
+                    try {
+                        cloudUrl = cloudinaryService.uploadFile(selfieWithIdFile);
+                    } catch (Exception ex) {
+                        System.err.println("⚠️ Cloudinary Selfie upload error: " + ex.getMessage());
+                    }
+                }
+
+                if (cloudUrl != null && !cloudUrl.isBlank()) {
+                    docRequest.setSelfieImagePath(cloudUrl);
+                } else {
+                    Path uploadPath = Paths.get("uploads");
+                    if (!Files.exists(uploadPath)) {
+                        Files.createDirectories(uploadPath);
+                    }
+                    String originalFilename = Paths.get(selfieWithIdFile.getOriginalFilename()).getFileName().toString();
+                    String fileName = System.currentTimeMillis() + "_selfie_" + originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
+                    Path filePath = uploadPath.resolve(fileName);
+                    Files.copy(selfieWithIdFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                    docRequest.setSelfieImagePath("/secure-uploads/" + fileName);
+                }
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("error", "Error uploading files. Please try again.");
+            redirectAttributes.addFlashAttribute("error", "Error uploading files: " + e.getMessage());
             return "redirect:/dashboard";
         }
 
-        DocumentRequest savedRequest = requestRepository.save(docRequest);
+        try {
+            DocumentRequest savedRequest = requestRepository.save(docRequest);
 
-        if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
-            String message = "📄 Barangay Document Request Submitted!\n\n" +
-                             "Document: " + savedRequest.getDocumentType() + "\n" +
-                             "ID Type: " + idType + "\n" +
-                             "Purpose: " + purpose + "\n" +
-                             "Face Verification: " + (savedRequest.isFaceVerified() ? "PASSED ✅" : "NOT PASSED ❌") + "\n" +
-                             "Status: PENDING\n\n" +
-                             "We will notify you once your document status changes!";
-            telegramService.sendNotification(user.getTelegramChatId(), message);
+            if (user.getTelegramChatId() != null && !user.getTelegramChatId().trim().isEmpty()) {
+                String message = "📄 Barangay Document Request Submitted!\n\n" +
+                                 "Document: " + savedRequest.getDocumentType() + "\n" +
+                                 "ID Type: " + idType + "\n" +
+                                 "Purpose: " + purpose + "\n" +
+                                 "Face Verification: " + (savedRequest.isFaceVerified() ? "PASSED ✅" : "NOT PASSED ❌") + "\n" +
+                                 "Status: PENDING\n\n" +
+                                 "We will notify you once your document status changes!";
+                telegramService.sendNotification(user.getTelegramChatId(), message);
+            }
+
+            redirectAttributes.addFlashAttribute("success", "Document request submitted successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Error saving request: " + e.getMessage());
+            return "redirect:/dashboard";
         }
 
         return "redirect:/dashboard";
