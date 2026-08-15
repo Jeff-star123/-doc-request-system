@@ -211,76 +211,250 @@ function handleSendAiQuery() {
     }, 600);
 }
 
+// Dynamic Trilingual Language Detector for Admin AI
+function detectAdminLanguage(query) {
+    const q = query.toLowerCase().trim();
+    
+    const tagalogTokens = ['ano', 'paano', 'kailan', 'sino', 'magkano', 'bakit', 'saan', 'ba', 'ko', 'mo', 'nito', 'ito', 'to', 'mga', 'kailangan', 'gumawa', 'kumuha', 'naman', 'pala', 'kasi', 'po', 'opo', 'libre', 'bayad', 'may', 'wala', 'ako', 'ikaw', 'kami', 'tayo', 'sa', 'na', 'nang'];
+    const englishTokens = ['what', 'how', 'when', 'who', 'why', 'where', 'can', 'should', 'would', 'is', 'are', 'the', 'this', 'that', 'which', 'does', 'do', 'requirement', 'requirements', 'need', 'apply', 'fee', 'cost', 'free', 'developer', 'developers', 'system', 'portal', 'status', 'print', 'clearance', 'approve', 'reject', 'reactivate', 'music', 'song'];
+
+    let tagalogCount = 0;
+    let englishCount = 0;
+
+    const words = q.split(/[\s,?.!]+/);
+    words.forEach(w => {
+        if (tagalogTokens.includes(w)) tagalogCount++;
+        if (englishTokens.includes(w)) englishCount++;
+    });
+
+    if (tagalogCount > 0 && englishCount > 0) return 'taglish';
+    if (tagalogCount > 0 && englishCount === 0) return 'tagalog';
+    if (englishCount > 0 && tagalogCount === 0) return 'english';
+
+    return 'taglish';
+}
+
 function generateAdminAiResponse(query) {
     const q = query.toLowerCase().trim();
+    const lang = detectAdminLanguage(query);
     const containsAny = (keywords) => keywords.some(k => q.includes(k));
 
     if (q === 'hi' || q === 'hello' || q === 'hey' || containsAny(['sino ka', 'who are you', 'what are you', 'magandang araw'])) {
-        return `
-            <strong><i class="bi bi-shield-lock-fill text-warning me-1"></i> Barangay Admin AI Assistant 👋</strong><br>
-            Magandang araw, Administrator! Ako ang inyong <b>Barangay Admin AI Assistant</b>.<br><br>
-            💡 <b>Maaari mo akong tanungin tungkol sa:</b><br>
-            • <b>Document Request Approvals:</b> Paano mag-approve, mag-reject, o mag-delete ng requests.<br>
-            • <b>Account Reactivations:</b> Paano i-approve ang deactivated residents.<br>
-            • <b>OCR & Biometric Security:</b> Tesseract.js ID checking at MediaPipe Face scan.<br>
-            • <b>User Directory & Anti-Spam:</b> Deactivating suspicious resident accounts.
-        `;
+        if (lang === 'tagalog') {
+            return `
+                <strong><i class="bi bi-shield-lock-fill text-warning me-1"></i> Barangay Admin AI Assistant 👋</strong><br>
+                Magandang araw, Administrator! Ako ang inyong <b>Barangay Admin AI Assistant</b>.<br><br>
+                💡 <b>Maaari mo akong tanungin tungkol sa:</b><br>
+                • <b>Document Request Approvals:</b> Paano mag-approve, mag-reject, o mag-delete ng requests.<br>
+                • <b>Account Reactivations:</b> Paano i-approve ang deactivated residents.<br>
+                • <b>OCR & Biometric Security:</b> Tesseract.js ID checking at MediaPipe Face scan.<br>
+                • <b>Admin Spotify Player:</b> Paano gamitin ang iTunes JSONP music player.
+            `;
+        } else if (lang === 'english') {
+            return `
+                <strong><i class="bi bi-shield-lock-fill text-warning me-1"></i> Barangay Admin AI Assistant 👋</strong><br>
+                Good day, Administrator! I am your **Barangay Admin AI Assistant**.<br><br>
+                💡 **You can ask me about:**<br>
+                • **Document Request Approvals:** How to approve, reject, or delete applications.<br>
+                • **Account Reactivations:** How to review and approve deactivated resident accounts.<br>
+                • **Verification Security:** Inspecting Tesseract OCR IDs and MediaPipe 3D face scan status.<br>
+                • **Admin Music Player:** How to search and stream songs using the iTunes API player.
+            `;
+        } else {
+            return `
+                <strong><i class="bi bi-shield-lock-fill text-warning me-1"></i> Barangay Admin AI Assistant 👋</strong><br>
+                Magandang araw, Administrator! Ako ang inyong <b>Barangay Admin AI Assistant</b>.<br><br>
+                💡 <b>Maaari mo akong tanungin tungkol sa:</b><br>
+                • <b>Document Request Approvals:</b> Paano mag-approve, mag-reject, o mag-delete ng requests.<br>
+                • <b>Account Reactivations:</b> Paano i-approve ang deactivated residents.<br>
+                • <b>OCR & Biometric Security:</b> Tesseract.js ID checking at MediaPipe Face scan.<br>
+                • <b>User Directory & Anti-Spam:</b> Deactivating suspicious resident accounts.
+            `;
+        }
     }
 
     if (containsAny(['approve', 'reject', 'remarks', 'paano mag approve', 'how to approve', 'document request', 'delete'])) {
-        return `
-            <strong><i class="bi bi-card-checklist text-primary me-1"></i> Document Request Management:</strong><br>
-            • <b>Viewing OCR & Selfie Proof:</b> I-click ang <b>"View Verification"</b> button para makita ang uploaded Valid ID at Selfie holding ID ng residente.<br>
-            • <b>Approving Requests:</b> I-click ang berdeng <b>Check</b> icon o <b>"Approve"</b> button, at maglagay ng optional remarks.<br>
-            • <b>Rejecting Requests:</b> I-click ang pulang <b>X</b> icon, at maglagay ng dahilan (e.g., <i>"Unclear Selfie / Invalid ID"</i>).<br>
-            • <b>Telegram Alert:</b> Matapos i-approve/reject, awtomatikong makakatanggap ng notification ang residente sa Telegram!
-        `;
+        if (lang === 'tagalog') {
+            return `
+                <strong><i class="bi bi-card-checklist text-primary me-1"></i> Pamamahala ng Document Requests:</strong><br>
+                • <b>Pagsusuri ng ID at Selfie:</b> I-click ang <b>"View Verification"</b> button para makita ang uploaded Valid ID at Selfie ng residente.<br>
+                • <b>Pag-approve:</b> I-click ang berdeng <b>Check</b> icon o <b>"Approve"</b> button.<br>
+                • <b>Pag-reject:</b> I-click ang pulang <b>X</b> icon at maglagay ng dahilan.<br>
+                • <b>Telegram Push:</b> Awtomatikong makakatanggap ng notification ang residente sa Telegram!
+            `;
+        } else if (lang === 'english') {
+            return `
+                <strong><i class="bi bi-card-checklist text-primary me-1"></i> Document Requests Management:</strong><br>
+                • **Viewing Verification Details:** Click **"View Verification"** to inspect the uploaded Valid ID, Selfie proof, and Biometric Scan status.<br>
+                • **Approving Applications:** Click the green **Check** icon or **"Approve"** button and enter optional remarks.<br>
+                • **Rejecting Applications:** Click the red **X** icon and provide a required rejection reason.<br>
+                • **Telegram Notification:** Residents automatically receive real-time push alerts upon decision!
+            `;
+        } else {
+            return `
+                <strong><i class="bi bi-card-checklist text-primary me-1"></i> Document Request Management:</strong><br>
+                • <b>Viewing OCR & Selfie Proof:</b> I-click ang <b>"View Verification"</b> button para makita ang uploaded Valid ID at Selfie holding ID ng residente.<br>
+                • <b>Approving Requests:</b> I-click ang berdeng <b>Check</b> icon o <b>"Approve"</b> button, at maglagay ng optional remarks.<br>
+                • <b>Rejecting Requests:</b> I-click ang pulang <b>X</b> icon, at maglagay ng dahilan (e.g., <i>"Unclear Selfie / Invalid ID"</i>).<br>
+                • <b>Telegram Alert:</b> Matapos i-approve/reject, awtomatikong makakatanggap ng notification ang residente sa Telegram!
+            `;
+        }
     }
 
     if (containsAny(['reactivate', 'reactivation', 'deactivated', 'lock out', 'unlock'])) {
-        return `
-            <strong><i class="bi bi-person-exclamation text-warning me-1"></i> Account Reactivation Management:</strong><br>
-            • Kapag nag-deactivate ang isang residente ng kanyang account, kailangan nito ng <b>Admin Approval</b> para muling maka-login.<br>
-            • Makikita ang mga humihingi ng reactivation sa <b>"Pending Account Reactivation Requests"</b> card o tab.<br>
-            • I-click ang <b>"Approve"</b> button para ibalik ang access ng residente!
-        `;
+        if (lang === 'tagalog') {
+            return `
+                <strong><i class="bi bi-person-exclamation text-warning me-1"></i> Pamamahala ng Reactivations:</strong><br>
+                • Kapag nag-deactivate ang residente, kailangan nito ng <b>Admin Approval</b> para muling makapasok.<br>
+                • Makikita ang mga humihingi ng reactivation sa <b>"Pending Account Reactivation Requests"</b> card.<br>
+                • I-click ang <b>"Approve"</b> button para ibalik ang access ng residente.
+            `;
+        } else if (lang === 'english') {
+            return `
+                <strong><i class="bi bi-person-exclamation text-warning me-1"></i> Account Reactivation Management:</strong><br>
+                • When a resident deactivates their account, manual **Admin Approval** is required to restore access.<br>
+                • View pending requests under the **"Pending Account Reactivation Requests"** section.<br>
+                • Click **"Approve"** to restore resident portal access immediately.
+            `;
+        } else {
+            return `
+                <strong><i class="bi bi-person-exclamation text-warning me-1"></i> Account Reactivation Management:</strong><br>
+                • Kapag nag-deactivate ang isang residente ng kanyang account, kailangan nito ng <b>Admin Approval</b> para muling maka-login.<br>
+                • Makikita ang mga humihingi ng reactivation sa <b>"Pending Account Reactivation Requests"</b> card o tab.<br>
+                • I-click ang <b>"Approve"</b> button para ibalik ang access ng residente!
+            `;
+        }
     }
 
     if (containsAny(['ocr', 'face scan', 'liveness', 'tesseract', 'mediapipe', 'verification', 'id check'])) {
-        return `
-            <strong><i class="bi bi-shield-check text-success me-1"></i> Identity Verification System:</strong><br>
-            • <b>Tesseract OCR:</b> Awtomatikong binabasa ang text sa uploaded ID para makumpirma kung National ID, School ID, Driver's License, UMID, o Barangay ID ito.<br>
-            • <b>MediaPipe Liveness Scan:</b> Sinisigurado ng system na buhay at totoong tao ang nag-aapply sa pamamagitan ng 3D head pose tracking (Left/Right turn).
-        `;
+        if (lang === 'tagalog') {
+            return `
+                <strong><i class="bi bi-shield-check text-success me-1"></i> Sistema ng Verification:</strong><br>
+                • <b>Tesseract OCR:</b> Awtomatikong binabasa ang text sa ID para makumpirma kung National ID, School ID, Driver's License, UMID, o Barangay ID ito.<br>
+                • <b>MediaPipe Face Scan:</b> Sinisigurado na totoong tao ang nag-aapply sa pamamagitan ng 3D head pose tracking (Turn Left/Right).
+            `;
+        } else if (lang === 'english') {
+            return `
+                <strong><i class="bi bi-shield-check text-success me-1"></i> Identity Verification System:</strong><br>
+                • **Tesseract OCR:** Analyzes text on uploaded IDs in-browser to confirm matching category keywords.<br>
+                • **MediaPipe Liveness Scan:** Enforces real-time 3D facial gesture detection (Straight, Turn Left, Turn Right) to prevent proxy/fraudulent submissions.
+            `;
+        } else {
+            return `
+                <strong><i class="bi bi-shield-check text-success me-1"></i> Identity Verification System:</strong><br>
+                • <b>Tesseract OCR:</b> Awtomatikong binabasa ang text sa uploaded ID para makumpirma kung National ID, School ID, Driver's License, UMID, o Barangay ID ito.<br>
+                • <b>MediaPipe Liveness Scan:</b> Sinisigurado ng system na buhay at totoong tao ang nag-aapply sa pamamagitan ng 3D head pose tracking (Left/Right turn).
+            `;
+        }
     }
 
     if (containsAny(['spam', 'deactivate user', 'ban', 'user directory', 'anti-spam'])) {
-        return `
-            <strong><i class="bi bi-people-fill text-info me-1"></i> User Directory & Anti-Spam Controls:</strong><br>
-            • Makikita ang lahat ng rehistradong accounts sa <b>"Registered Users Directory"</b> tab.<br>
-            • Kung may resident na nagi-spam ng requests o nag-violate ng security rules, i-click ang <b>"Deactivate"</b> button sa tabi ng kanyang account para i-lockout siya.
-        `;
+        if (lang === 'tagalog') {
+            return `
+                <strong><i class="bi bi-people-fill text-info me-1"></i> User Directory at Anti-Spam:</strong><br>
+                • Makikita ang lahat ng rehistradong accounts sa <b>"Registered Users Directory"</b>.<br>
+                • Kung may residente na nagi-spam ng requests, i-click ang <b>"Deactivate"</b> button sa tabi ng kanyang account para i-lockout siya.
+            `;
+        } else if (lang === 'english') {
+            return `
+                <strong><i class="bi bi-people-fill text-info me-1"></i> User Directory & Anti-Spam Controls:</strong><br>
+                • Review all registered accounts under the **"Registered Users Directory"** tab.<br>
+                • If a user spams document print requests or violates rules, click **"Deactivate"** next to their account to lock them out immediately.
+            `;
+        } else {
+            return `
+                <strong><i class="bi bi-people-fill text-info me-1"></i> User Directory & Anti-Spam Controls:</strong><br>
+                • Makikita ang lahat ng rehistradong accounts sa <b>"Registered Users Directory"</b> tab.<br>
+                • Kung may resident na nagi-spam ng requests o nag-violate ng security rules, i-click ang <b>"Deactivate"</b> button sa tabi ng kanyang account para i-lockout siya.
+            `;
+        }
+    }
+
+    if (containsAny(['music', 'song', 'spotify', 'itunes', 'audio player', 'tugtog', 'kanta'])) {
+        if (lang === 'tagalog') {
+            return `
+                <strong><i class="bi bi-spotify text-success me-1"></i> Admin Spotify Music Player:</strong><br>
+                • I-click ang <b>"Search & Play Music"</b> button sa itaas ng Admin Console.<br>
+                • I-type ang pangalan ng kanta o artist (hal. <i>"Dati"</i> o <i>"Taylor Swift"</i>) para mag-search gamit ang Apple iTunes API.<br>
+                • I-click ang <b>Play</b> button para mag-stream ng 30-second audio preview nang libre!
+            `;
+        } else if (lang === 'english') {
+            return `
+                <strong><i class="bi bi-spotify text-success me-1"></i> Admin Spotify Music Player:</strong><br>
+                • Click **"Search & Play Music"** at the top of your Admin Console.<br>
+                • Type any track title or artist (e.g., *"Taylor Swift"*, *"Skusta"*) to search via Apple iTunes API.<br>
+                • Click **Play** to stream 30-second high-quality audio previews directly on your dashboard!
+            `;
+        } else {
+            return `
+                <strong><i class="bi bi-spotify text-success me-1"></i> Admin Spotify Music Player:</strong><br>
+                • I-click ang <b>"Search & Play Music"</b> button sa itaas ng Admin Console.<br>
+                • Type any song title or artist name para mag-search sa milyun-milyong kanta gamit ang Apple iTunes API.<br>
+                • I-click ang <b>Play</b> para makinig sa 30s audio preview nang libre habang nag-aapprove ng requests!
+            `;
+        }
     }
 
     if (containsAny(['developer', 'creator', 'who made', 'sino gumawa', 'bsit'])) {
-        return `
-            <strong><i class="bi bi-code-slash text-primary me-1"></i> BSIT Project Team:</strong><br>
-            • <b>Lead Developer:</b> Jeffrey M. Serrano Jr.<br>
-            • <b>Assistant Developer:</b> Jalayahay, Jessa Mae P.<br>
-            • <b>Presentor:</b> Mines, Manzor M.<br>
-            • <b>Documentation Team:</b> Gutierrez, Rovil B., Prescillas, Ej Y., Kurt Bactat Russel, Tyrone James Oribiada.
-        `;
+        if (lang === 'tagalog') {
+            return `
+                <strong><i class="bi bi-code-slash text-primary me-1"></i> BSIT Project Team:</strong><br>
+                • <b>Lead Developer:</b> Jeffrey M. Serrano Jr.<br>
+                • <b>Assistant Developer:</b> Jalayahay, Jessa Mae P.<br>
+                • <b>Presentor:</b> Mines, Manzor M.<br>
+                • <b>Documentation Team:</b> Gutierrez, Rovil B., Prescillas, Ej Y., Kurt Bactat Russel, Tyrone James Oribiada.
+            `;
+        } else if (lang === 'english') {
+            return `
+                <strong><i class="bi bi-code-slash text-primary me-1"></i> System Developers (BSIT Project Team):</strong><br>
+                • **Lead Developer:** Jeffrey M. Serrano Jr.<br>
+                • **Assistant Developer:** Jalayahay, Jessa Mae P.<br>
+                • **Project Presentor:** Mines, Manzor M.<br>
+                • **Documentation Team:** Gutierrez, Rovil B., Prescillas, Ej Y., Kurt Bactat Russel, Tyrone James Oribiada.<br>
+                • Developed as an academic capstone prototype for local government service automation.
+            `;
+        } else {
+            return `
+                <strong><i class="bi bi-code-slash text-primary me-1"></i> BSIT Project Team:</strong><br>
+                • <b>Lead Developer:</b> Jeffrey M. Serrano Jr.<br>
+                • <b>Assistant Developer:</b> Jalayahay, Jessa Mae P.<br>
+                • <b>Presentor:</b> Mines, Manzor M.<br>
+                • <b>Documentation Team:</b> Gutierrez, Rovil B., Prescillas, Ej Y., Kurt Bactat Russel, Tyrone James Oribiada.
+            `;
+        }
     }
 
-    return `
-        <strong><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Admin AI Scope Notice:</strong><br>
-        Administrator! 👋 Ako ang <b>Barangay Admin AI Assistant</b> na nakadisenyo para tumulong sa pamamahala ng portal.<br><br>
-        💡 <b>Maaari mo akong tanungin tungkol sa:</b><br>
-        • "Paano mag-approve o mag-reject ng document requests?"<br>
-        • "Paano ang Account Reactivations?"<br>
-        • "Paano gumagana ang OCR at Biometric Liveness Check?"<br>
-        • "Paano i-deactivate ang spammer account?"
-    `;
+    if (lang === 'tagalog') {
+        return `
+            <strong><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Admin AI Scope Notice:</strong><br>
+            Administrator! Ako ang inyong <b>Barangay Admin AI Assistant</b> na nakadisenyo para tumulong sa pamamahala ng portal.<br><br>
+            💡 <b>Maaari mo akong tanungin tungkol sa:</b><br>
+            • "Paano mag-approve o mag-reject ng requests?"<br>
+            • "Paano ang Account Reactivations?"<br>
+            • "Paano gumagana ang OCR at Biometric Liveness Check?"<br>
+            • "Paano gamitin ang Admin Music Player?"
+        `;
+    } else if (lang === 'english') {
+        return `
+            <strong><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Admin AI Scope Notice:</strong><br>
+            Administrator! I am your **Barangay Admin AI Assistant**.<br><br>
+            💡 **You may ask me about:**<br>
+            • "How do I approve or reject document applications?"<br>
+            • "How do account reactivations work?"<br>
+            • "How does OCR and Biometric Face Liveness verification work?"<br>
+            • "How do I use the Admin Music Player?"
+        `;
+    } else {
+        return `
+            <strong><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Admin AI Scope Notice:</strong><br>
+            Administrator! 👋 Ako ang <b>Barangay Admin AI Assistant</b> na nakadisenyo para tumulong sa pamamahala ng portal.<br><br>
+            💡 <b>Maaari mo akong tanungin tungkol sa:</b><br>
+            • "Paano mag-approve o mag-reject ng document requests?"<br>
+            • "Paano ang Account Reactivations?"<br>
+            • "Paano gumagana ang OCR at Biometric Liveness Check?"<br>
+            • "Paano i-deactivate ang spammer account?"
+        `;
+    }
 }
 
 document.getElementById('btnSendAiQuery')?.addEventListener('click', handleSendAiQuery);
