@@ -36,14 +36,19 @@ import com.barangay.doc_request_system.model.User;
 import com.barangay.doc_request_system.repository.ArchivedUserRepository;
 import com.barangay.doc_request_system.repository.DocumentRequestRepository;
 import com.barangay.doc_request_system.repository.UserRepository;
+import com.barangay.doc_request_system.service.CloudinaryService;
 import com.barangay.doc_request_system.service.TelegramService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+
 @Controller
 public class MainController {
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     @Autowired
     private UserRepository userRepository;
@@ -223,30 +228,32 @@ public class MainController {
 
         User user = getAuthenticatedUser(session);
 
-        String formattedPurpose = purpose;
-        DocumentRequest docRequest = new DocumentRequest(user, documentType, formattedPurpose);
+        DocumentRequest docRequest = new DocumentRequest(user, documentType, purpose);
         docRequest.setFaceVerified(faceVerified);
 
-        Path uploadPath = Paths.get("uploads");
         try {
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
+            // 1. Try Uploading to Cloudinary (Production Mode)
+            String cloudIdUrl = cloudinaryService.uploadFile(idCardFile);
+            String cloudSelfieUrl = cloudinaryService.uploadFile(selfieWithIdFile);
 
-            // Save image paths pointing to /secure-uploads/ (FileAccessController)
-            if (idCardFile != null && !idCardFile.isEmpty()) {
-                String originalFilename = Paths.get(idCardFile.getOriginalFilename()).getFileName().toString();
-                String fileName = System.currentTimeMillis() + "_id_" + originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
-                Path filePath = uploadPath.resolve(fileName);
-                Files.copy(idCardFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            if (cloudIdUrl != null) {
+                docRequest.setIdCardImagePath(cloudIdUrl);
+            } else if (idCardFile != null && !idCardFile.isEmpty()) {
+                // Fallback to local uploads if Cloudinary keys are not set
+                Path uploadPath = Paths.get("uploads");
+                if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+                String fileName = System.currentTimeMillis() + "_id_" + Paths.get(idCardFile.getOriginalFilename()).getFileName().toString().replaceAll("[^a-zA-Z0-9.-]", "_");
+                Files.copy(idCardFile.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
                 docRequest.setIdCardImagePath("/secure-uploads/" + fileName);
             }
 
-            if (selfieWithIdFile != null && !selfieWithIdFile.isEmpty()) {
-                String originalFilename = Paths.get(selfieWithIdFile.getOriginalFilename()).getFileName().toString();
-                String fileName = System.currentTimeMillis() + "_selfie_" + originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
-                Path filePath = uploadPath.resolve(fileName);
-                Files.copy(selfieWithIdFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            if (cloudSelfieUrl != null) {
+                docRequest.setSelfieImagePath(cloudSelfieUrl);
+            } else if (selfieWithIdFile != null && !selfieWithIdFile.isEmpty()) {
+                Path uploadPath = Paths.get("uploads");
+                if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+                String fileName = System.currentTimeMillis() + "_selfie_" + Paths.get(selfieWithIdFile.getOriginalFilename()).getFileName().toString().replaceAll("[^a-zA-Z0-9.-]", "_");
+                Files.copy(selfieWithIdFile.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
                 docRequest.setSelfieImagePath("/secure-uploads/" + fileName);
             }
 
