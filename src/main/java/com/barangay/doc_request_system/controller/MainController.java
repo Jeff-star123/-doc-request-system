@@ -92,12 +92,39 @@ public class MainController {
         return null;
     }
 
+    // =========================================================
+    // FEATURE: Auto-Login Redirect (Like Facebook/YouTube)
+    // If user opens a new tab and is already logged in, redirect to Dashboard!
+    // =========================================================
     @GetMapping("/")
-    public String index(@RequestParam(value = "error", required = false) String error, Model model) {
+    public String index(@RequestParam(value = "error", required = false) String error, HttpSession session, Model model) {
+        User user = getAuthenticatedUser(session);
+        if (user != null) {
+            if ("ADMIN".equalsIgnoreCase(user.getRole()) || "ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
+                return "redirect:/admin";
+            }
+            return "redirect:/dashboard";
+        }
+
         if (error != null) {
             model.addAttribute("error", "Invalid username or password!");
         }
         return "index";
+    }
+
+    // =========================================================
+    // FIX: Handles GET /login when reloading or opening in new tab
+    // =========================================================
+    @GetMapping("/login")
+    public String handleGetLogin(HttpSession session) {
+        User user = getAuthenticatedUser(session);
+        if (user != null) {
+            if ("ADMIN".equalsIgnoreCase(user.getRole()) || "ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
+                return "redirect:/admin";
+            }
+            return "redirect:/dashboard";
+        }
+        return "redirect:/";
     }
 
     @PostMapping("/login")
@@ -178,6 +205,11 @@ public class MainController {
         return "redirect:/dashboard";
     }
 
+    @GetMapping("/request/reactivate")
+    public String handleGetReactivate() {
+        return "redirect:/";
+    }
+
     @PostMapping("/request/reactivate")
     public String requestReactivate(@RequestParam Long userId, RedirectAttributes redirectAttributes) {
         User user = userRepository.findById(userId).orElse(null);
@@ -209,6 +241,11 @@ public class MainController {
         model.addAttribute("requests", requests);
         
         return "dashboard";
+    }
+
+    @GetMapping("/request/submit")
+    public String handleGetSubmit() {
+        return "redirect:/dashboard";
     }
 
     @PostMapping("/request/submit")
@@ -560,7 +597,14 @@ public class MainController {
     }
 
     @GetMapping("/register")
-    public String registerPage() {
+    public String registerPage(HttpSession session) {
+        User user = getAuthenticatedUser(session);
+        if (user != null) {
+            if ("ADMIN".equalsIgnoreCase(user.getRole()) || "ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
+                return "redirect:/admin";
+            }
+            return "redirect:/dashboard";
+        }
         return "register";
     }
 
@@ -617,6 +661,11 @@ public class MainController {
         return "settings";
     }
 
+    @GetMapping("/settings/update-profile")
+    public String handleGetUpdateProfile() {
+        return "redirect:/settings";
+    }
+
     @PostMapping("/settings/update-profile")
     public String updateProfile(@RequestParam String fullName,
                                 @RequestParam String username,
@@ -663,6 +712,11 @@ public class MainController {
         return "redirect:/settings";
     }
 
+    @GetMapping("/settings/change-password")
+    public String handleGetChangePassword() {
+        return "redirect:/settings";
+    }
+
     @PostMapping("/settings/change-password")
     public String changePassword(@RequestParam String currentPassword,
                                  @RequestParam String newPassword,
@@ -697,6 +751,11 @@ public class MainController {
         session.setAttribute("loggedInUser", user);
 
         redirectAttributes.addFlashAttribute("successMessage", "Password changed successfully!");
+        return "redirect:/settings";
+    }
+
+    @GetMapping("/settings/deactivate-account")
+    public String handleGetDeactivateAccount() {
         return "redirect:/settings";
     }
 
