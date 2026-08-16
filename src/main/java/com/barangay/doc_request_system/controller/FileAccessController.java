@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -19,7 +20,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.barangay.doc_request_system.model.DocumentRequest;
 import com.barangay.doc_request_system.model.User;
+import com.barangay.doc_request_system.repository.DocumentRequestRepository;
 import com.barangay.doc_request_system.repository.UserRepository;
 
 @Controller
@@ -29,11 +32,14 @@ public class FileAccessController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private DocumentRequestRepository requestRepository;
+
     @GetMapping("/{filename:.+}")
     public ResponseEntity<Resource> getSecureFile(@PathVariable String filename) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        // 1. Privacy Check: Must be authenticated
+        // 1. Check if user is logged in
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -44,10 +50,23 @@ public class FileAccessController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        // 2. Authorization Check: Must be ADMIN or request owner
         boolean isAdmin = "ADMIN".equalsIgnoreCase(currentUser.getRole()) || "ROLE_ADMIN".equalsIgnoreCase(currentUser.getRole());
-        
-        // Sanitize filename to prevent Path Traversal attacks
+
+        // 2. Strict Privacy Check: If NOT admin, check if the file belongs to this user!
+        if (!isAdmin) {
+            List<DocumentRequest> userRequests = requestRepository.findByUser(currentUser);
+            boolean isOwner = userRequests.stream().anyMatch(req -> 
+                (req.getIdCardImagePath() != null && req.getIdCardImagePath().contains(filename)) ||
+                (req.getSelfieImagePath() != null && req.getSelfieImagePath().contains(filename))
+            );
+
+            if (!isOwner) {
+                // Block other logged-in residents from viewing photos that do not belong to them!
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+
+        // Sanitize filename to prevent Path Traversal
         String sanitizedFilename = Paths.get(filename).getFileName().toString();
         Path filePath = Paths.get("uploads").resolve(sanitizedFilename).normalize();
 
@@ -58,13 +77,11 @@ public class FileAccessController {
                 return ResponseEntity.notFound().build();
             }
 
-            // Determine content type (JPEG, PNG, etc.)
             String contentType = Files.probeContentType(filePath);
             if (contentType == null) {
                 contentType = "application/octet-stream";
             }
 
-            // Stream file with strict privacy headers
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
